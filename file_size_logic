@@ -1,0 +1,50 @@
+import os
+
+class FileProcessor:
+    """
+    A class to process files based on their size.
+
+    Attributes:
+        file_path (str): The path to the file to be processed.
+    """
+
+    def __init__(self, file_path):
+        """
+        Initializes the FileProcessor with the file path.
+
+        Args:
+            file_path (str): The path to the file to be processed.
+        """
+        self.file_path = file_path
+
+    def check_file_size(self):
+        """
+        Checks if the file size is greater than 500 KB.
+
+        Returns:
+            bool: True if the file size is greater than 500 KB, False otherwise.
+        """
+        file_size = os.path.getsize(self.file_path)
+        return file_size > 500 * 1024  # 500 KB in bytes
+
+    def process_file(self):
+        """
+        Processes the file if its size is greater than 500 KB.
+
+        Returns:
+            str: A success message if the file is processed, 'File is empty' otherwise.
+        """
+        if self.check_file_size():
+            # Add your file processing logic here
+            print("Processing file...")
+            # For demonstration purposes, just return a success message
+            return "File processed successfully!"
+        else:
+            return "File is empty"
+
+# Example usage
+if __name__ == "__main__":
+    file_path = "path_to_your_file.txt"  # Replace with your file path
+    processor = FileProcessor(file_path)
+    result = processor.process_file()
+    print(result)
