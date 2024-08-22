@@ -9,3 +9,12 @@ if isinstance(listDir, list):
                     processed_files.add(file)
                 except Exception as e:
                     print(f"An error occurred: {e}")
+
+
+
+Traceback (most recent call last):
+  File "C:\Users\jvineet\PycharmProjects\PythonLearnings\run_project.py", line 91, in <module>
+    if file not in processed_files:
+TypeError: unhashable type: 'dict'
+
+Process finished with exit code 1
