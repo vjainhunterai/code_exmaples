@@ -3,18 +3,11 @@ processed_files = set()
 if isinstance(listDir, list):
     for directory in listDir:
         for file in fetchUnprocessedFile:
-            if file not in processed_files:
+            file_identifier = file["filename"]  # Adjust this key based on your actual file structure
+
+            if file_identifier not in processed_files:
                 try:
                     downloadAndProcessFile(s3Client, bucketName, file, directory, localDirectory)
-                    processed_files.add(file)
+                    processed_files.add(file_identifier)
                 except Exception as e:
                     print(f"An error occurred: {e}")
-
-
-
-Traceback (most recent call last):
-  File "C:\Users\jvineet\PycharmProjects\PythonLearnings\run_project.py", line 91, in <module>
-    if file not in processed_files:
-TypeError: unhashable type: 'dict'
-
-Process finished with exit code 1
