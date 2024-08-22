@@ -1,6 +1,4 @@
-    if isinstance(listDir, list):
-        listDir = listDir[0]  # Assuming listDir contains one element
-
-    for file in fetchUnprocessedFile:
-        #print(s3Client, bucketName, file, listDir, localDirectory)
-        downloadAndProcessFile(s3Client, bucketName, file, listDir, localDirectory)
+if isinstance(listDir, list):
+    for directory in listDir:
+        for file in fetchUnprocessedFile:
+            downloadAndProcessFile(s3Client, bucketName, file, directory, localDirectory)
