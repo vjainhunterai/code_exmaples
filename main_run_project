@@ -1,0 +1,165 @@
+import boto3
+from botocore.client import BaseClient
+import pandas as pd
+from cryptography.fernet import Fernet
+import os
+import uuid
+from sqlalchemy import create_engine, Table, Column, Integer, String, MetaData, DateTime, insert, select
+from sqlalchemy.orm import sessionmaker
+
+from src.utils import (
+    decryptData,
+    listFilesInS3,
+    createMysqlConnection,
+    executeQuery,
+    databaseHandler,
+    stepLogger,
+    auditLogger,
+    readDocumentsFromPath,
+    find_delimiter,
+    schemaValidator,
+)
+from src.etl import (
+    getS3Directories,
+    listFilesInS3Directories,
+    getIncrementalFiles,
+    insertFilesToDb,
+    fetchUnprocessedFiles,
+    downloadAndProcessFile,
+    updateFileFlag,
+)
+
+if __name__ == "__main__":
+    # Define the relative path to the Excel file
+    relativeExcelPath = os.path.join('Data', 'metadata', 'paths.xlsx')
+
+    # Read paths from Excel file
+    pathsDf = pd.read_excel(relativeExcelPath)
+    pathsDict = pathsDf.set_index('Key_name')['Path'].to_dict()
+
+    keyPath = pathsDict['key_path']
+    encryptedFile = pathsDict['encrypted_file']
+
+    # Read the encryption key
+    scKey = open(keyPath, 'rb').read()
+    cipherSuite = Fernet(scKey)
+
+    # Read the encrypted file
+    df = pd.read_csv(encryptedFile)
+
+    # Decrypt the data
+    df_decrypted = df.map(lambda x: decryptData(str(x), cipherSuite))
+    df = pd.DataFrame(df_decrypted)
+
+    # Extract credentials and other details
+    regionName = str(df.at[0, 'region_name'])
+    bucketName = str(df.at[0, 'bucket_name'])
+    host = str(df.at[0, 'host'])
+    db = str(df.at[0, 'database'])
+    db1 = 'joblog_metadata'
+    user = str(df.at[0, 'user'])
+    password = str(df.at[0, 'password'])
+    port = 3306
+
+    # Connect to MySQL and execute query
+    daysS3 = 5
+    localDirectory = '/path/to/local/directory'
+    dbUrl = f"mysql+pymysql://{user}:{password}@{host}/{db}"
+    exec_id = str(uuid.uuid4())[:10]
+    job_name = "ETL Job"
+    dbHandler = databaseHandler(dbUrl)
+    stepLogger = stepLogger(dbHandler)
+    auditLogger = auditLogger(dbHandler)
+    dbConnection = create_engine(dbUrl)
+    # Define the metadata
+    metadata = MetaData()
+    metadata.reflect(bind=dbConnection)
+    # Create a session
+    Session = sessionmaker(bind=dbConnection)
+    session = Session()
+    # Define the table
+    s3FilesTable = Table('s3_files', metadata, autoload_with=dbConnection)
+
+    query = "SELECT * FROM joblog_metadata.prod_l1_context_db;"
+    dfMysql = pd.read_sql(query, dbConnection)
+    KeysDict = dfMysql.set_index('key')['value'].to_dict()
+    awsAccessKeyId = KeysDict['S3_AccessKey']
+    awsSecretAccessKey = KeysDict['S3_Secret_Access_Key']
+    s3Client: BaseClient = boto3.client('s3',
+                            aws_access_key_id=awsAccessKeyId,
+                            aws_secret_access_key=awsSecretAccessKey,
+                            region_name =regionName
+                            )
+
+
+
+listDir = getS3Directories(daysS3)
+s3Files = listFilesInS3Directories(listDir, s3Client, bucketName)
+
+if isinstance(listDir, list):
+    listDir = listDir[0]  # Assuming listDir contains one element
+
+
+
+
+auditFiles_query = ('select distinct file_name,s3_last_modified_date from joblog_metadata.L1_audit_data' )
+auditFiles = pd.read_sql(auditFiles_query, dbConnection)
+
+incrementalFilesDf = getIncrementalFiles(s3Files, auditFiles)
+
+
+insertFilesToDb(incrementalFilesDf, s3FilesTable , session, insert)
+fetchUnprocessedFile = fetchUnprocessedFiles(s3FilesTable, session, select)
+
+
+localDirectory = 'Data/raw/LA'
+for file in fetchUnprocessedFile:
+    downloadAndProcessFile(s3Client, bucketName, file, listDir, localDirectory)
+
+
+
+#File  delimiter process
+query1 = "SELECT * FROM joblog_metadata.prod_l1_context_dir;"
+dfMysqlDir = pd.read_sql(query1, dbConnection)
+KeysDict = dfMysqlDir.set_index('key')['value'].to_dict()
+S3LA = KeysDict['S3_Landing_Area']
+
+source_path = S3LA
+print(source_path)
+
+if not source_path:
+    print("No source path found.")
+else:
+    allFiles, _ = readDocumentsFromPath(source_path)
+
+if not allFiles:
+    print("No source file found.")
+else:
+    for file in allFiles:
+        doc_type = file.split(".")[-1]
+        if doc_type in ("xlsx", "xls"):
+            print(f"Source File {file} is in Excel format. Delimiter identification not required.")
+        else:
+            delimiter = find_delimiter(file, doc_type)
+            if delimiter:
+                print(f"Delimiter for {file} is '{delimiter}'")
+            else:
+                print(f"No delimiter identified for {file}.")
+
+
+#Schema Validation process
+# Example usage:
+# Replace these with your actual database credentials and details
+    dbUrl1 = "mysql+pymysql://admin:Gpoproddb!#!@prod-db.c969yoyq9cyy.us-east-1.rds.amazonaws.com/joblog_metadata"
+    tableName = 'AP'
+    schemaTable = 'Table_Schema'
+    filePath = 'C:\\Users\\jvineet\\PycharmProjects\\PythonLearnings\\Data\\raw\\LA\\Hurley Medical 8.2021-7.2023.csv'
+    mappingTable = 'mapping_table'
+    fileType = 'AP'
+    outputFilePath = 'C:\\Users\\jvineet\\PycharmProjects\\PythonLearnings\\Data\\processed\\LA_processed\\Hurley_Medical_8.2021-7.2023.csv'
+
+    # Initialize the validator
+    validator = schemaValidator(dbUrl1)
+
+    # Validate the file
+    validator.validate(schemaTable, tableName, filePath, delimiter, mappingTable, fileType, outputFilePath)
