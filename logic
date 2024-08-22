@@ -2,3 +2,17 @@ if isinstance(listDir, list):
     for directory in listDir:
         for file in fetchUnprocessedFile:
             downloadAndProcessFile(s3Client, bucketName, file, directory, localDirectory)
+
+
+
+C:\Users\jvineet\PycharmProjects\PythonLearnings\.venv\Scripts\python.exe C:\Users\jvineet\PycharmProjects\PythonLearnings\run_project.py 
+{'host': 'prod-db.c969yoyq9cyy.us-east-1.rds.amazonaws.com', 'database': 'stg_tbl', 'user': 'admin', 'password': 'Gpoproddb!#!', 'port': 3306}
+['customer_data/08_Data_Upload_August2024', 'customer_data/07_Data_Upload_July2024']
+Attempting to download from S3 path: customer_data/08_Data_Upload_August2024/Hurley Medical 8.2021-7.2023.csv
+Local file path: C:\Users\jvineet\PycharmProjects\PythonLearnings\Data\raw\LA/Hurley Medical 8.2021-7.2023.csv
+Downloaded customer_data/08_Data_Upload_August2024/Hurley Medical 8.2021-7.2023.csv to C:\Users\jvineet\PycharmProjects\PythonLearnings\Data\raw\LA/Hurley Medical 8.2021-7.2023.csv
+Attempting to download from S3 path: customer_data/07_Data_Upload_July2024/Hurley Medical 8.2021-7.2023.csv
+Local file path: C:\Users\jvineet\PycharmProjects\PythonLearnings\Data\raw\LA/Hurley Medical 8.2021-7.2023.csv
+An error occurred: An error occurred (404) when calling the HeadObject operation: Not Found
+
+Process finished with exit code 0
