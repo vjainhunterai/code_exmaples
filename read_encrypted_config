@@ -1,0 +1,45 @@
+def read_encrypted_config(excel_file_path):
+    """
+    Reads the encrypted configuration from the Excel file.
+
+    Args:
+        excel_file_path (str): The path to the Excel file.
+
+    Returns:
+        dict: A dictionary containing the decrypted configuration.
+    """
+    # Read paths from Excel file
+    paths_df = pd.read_excel(excel_file_path)
+    paths_dict = paths_df.set_index('Key_name')['Path'].to_dict()
+
+    # Read the encryption key
+    key_path = paths_dict['key_path']
+    encrypted_file = paths_dict['encrypted_file']
+
+    # Read the encryption key
+    sc_key = open(key_path, 'rb').read()
+    cipher_suite = Fernet(sc_key)
+
+    # Read the encrypted file
+    df = pd.read_csv(encrypted_file)
+
+    # Decrypt the data
+    df_decrypted = df.map(lambda x: decryptData(str(x), cipher_suite))
+    df = pd.DataFrame(df_decrypted)
+
+    # Extract configuration
+    config = {
+        'host': str(df.at[0, 'host']),
+        'database': str(df.at[0, 'database']),
+        'db1': 'joblog_metadata',
+        'user': str(df.at[0, 'user']),
+        'password': str(df.at[0, 'password']),
+        'port': 3306
+    }
+
+    return config
+
+# Example usage
+relative_excel_path = os.path.join('Data', 'metadata', 'paths.xlsx')
+config = read_encrypted_config(relative_excel_path)
+print(config)
