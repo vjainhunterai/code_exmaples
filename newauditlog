@@ -1,0 +1,50 @@
+# Assuming the same classes and main structure from your main program
+
+if __name__ == "__main__":
+    try:
+        # Initialize the database handler and loggers
+        dbUrl = "mysql+pymysql://admin:Gpoproddb!#!@prod-db.c969yoyq9cyy.us-east-1.rds.amazonaws.com:3306/stg_tbl"
+        dbHandler = databaseHandler(dbUrl)
+        step_logger = stepLogger(dbHandler)
+        audit_logger = auditLogger(dbHandler)
+        
+        exec_id = "1234567890123456789"
+        
+        # Log a step (add debug print)
+        print("Logging ETL step...")
+        step_logger.logStep(
+            execId=exec_id,
+            jobName="ETL Job",
+            stepName="Extract Data",
+            startTime=datetime.now(),
+            endTime=datetime.now(),
+            status="Success",
+            message="Data extracted successfully"
+        )
+        print("ETL step logged.")
+        
+        # Log an audit entry (add debug print)
+        print("Logging audit entry...")
+        audit_entry = {
+            'exec_id': exec_id,
+            'job_name': "ETL Job",
+            'file_name': "data.csv",
+            'start_time': datetime.now(),
+            'end_time': datetime.now(),
+            'src_cnt': 100,
+            'tgt_cnt': 95,
+            'lkp_cnt': 5,
+            'rej_cnt': 0,
+            'job_status': "Success",
+            'crt_dttm': datetime.now()
+        }
+        audit_logger.logAudit(audit_entry)
+        print("Audit entry logged.")
+    
+    except Exception as e:
+        print(f"An error occurred in the main program: {e}")
+    
+    finally:
+        # Ensure the database connection is closed
+        print("Closing the database connection...")
+        dbHandler.close()
