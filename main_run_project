@@ -43,6 +43,12 @@ if __name__ == "__main__":
 
     # Read Metadata from DataBase
     print(config)
+    host = config['host']
+    db =  config['database']
+    user = config['user']
+    password = config['password']
+    dbUrl = f"mysql+pymysql://{user}:{password}@{host}/{db}"
+    port = 3306
     (
         dbConnection,
         session,
@@ -62,7 +68,8 @@ if __name__ == "__main__":
                                         region_name=regionName)
 
     # Initialize loggers
-    dbHandler = databaseHandler(config['database_url'])  # Assuming config has 'database_url' key
+
+    dbHandler = databaseHandler(dbUrl)  # Assuming config has 'database_url' key
     step_logger = stepLogger(dbHandler)
     audit_logger = auditLogger(dbHandler)
 
@@ -105,6 +112,7 @@ if __name__ == "__main__":
                         filePath = os.path.join(localDirectoryLA, file_identifier)  # Adjust the path if necessary
                         processor = fileSizeProcessor(filePath)
                         result = processor.processFile()
+                        print(result)
 
                         if result == "File is empty":  # Assuming processFile returns 0 if the file is empty
                             audit_entry = {
