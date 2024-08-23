@@ -1,0 +1,27 @@
+exec_id varchar(10) 
+job_name varchar(255) 
+system_id varchar(255) 
+file_name varchar(255) 
+file_date datetime 
+total_rec_cnt int 
+processed_cnt int 
+job_status varchar(255) 
+rejection_cnt int 
+rejection_rsn varchar(255) 
+s3_last_modified_date datetime
+
+
+
+log table 
+id int AI PK
+exec_id varchar(19) 
+job_name varchar(255) 
+file_name varchar(500) 
+start_time datetime 
+end_time datetime 
+src_cnt int 
+tgt_cnt int 
+lkp_cnt int 
+rej_cnt int 
+job_status varchar(255) 
+crt_dttm datetime
