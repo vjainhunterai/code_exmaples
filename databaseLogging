@@ -1,0 +1,83 @@
+from datetime import datetime
+from sqlalchemy import create_engine, Table, Column, Integer, String, MetaData, DateTime
+from sqlalchemy.orm import sessionmaker
+
+
+class databaseHandler:
+    def __init__(self, dbUrl):
+        self.engine = create_engine(dbUrl)
+        self.connection = self.engine.connect()
+        self.metadata = MetaData()
+
+        # Define the log table structure
+        self.logTable = Table('etl_log_final', self.metadata,
+                              Column('id', Integer, primary_key=True, autoincrement=True),
+                              Column('exec_id', String(19)),
+                              Column('job_name', String(255)),
+                              Column('step_name', String(255)),
+                              Column('start_time', DateTime),
+                              Column('end_time', DateTime),
+                              Column('status', String(50)),
+                              Column('message', String(255)),
+                              Column('timestamp', DateTime, default=datetime.now))
+
+        # Define the audit table structure
+        self.auditTable = Table('etl_audit_final', self.metadata,
+                                Column('exec_id', String(19), primary_key=True),
+                                Column('job_name', String(255)),
+                                Column('file_name', String(500)),
+                                Column('start_time', DateTime),
+                                Column('end_time', DateTime),
+                                Column('src_cnt', Integer),
+                                Column('tgt_cnt', Integer),
+                                Column('lkp_cnt', Integer),
+                                Column('rej_cnt', Integer),
+                                Column('job_status', String(255)),
+                                Column('crt_dttm', DateTime, default=datetime.now))
+        self.metadata.create_all(self.engine)  # Create tables if they don't exist
+
+        Session = sessionmaker(bind=self.engine)
+        self.session = Session()
+
+    def insertLogEntry(self, logEntry):
+        try:
+            ins = self.logTable.insert().values(logEntry)
+            self.connection.execute(ins)
+        except Exception as e:
+            print(f"Error inserting log record: {e}")
+
+    def insertAuditEntry(self, auditEntry):
+        try:
+            ins = self.auditTable.insert().values(auditEntry)
+            self.connection.execute(ins)
+        except Exception as e:
+            print(f"Error inserting audit record: {e}")
+
+    def close(self):
+        self.connection.close()
+
+
+class stepLogger:
+    def __init__(self, dbHandler):
+        self.dbHandler = dbHandler
+
+    def logStep(self, execId, jobName, stepName, startTime, endTime, status, message):
+        logEntry = {
+            'exec_id': execId,
+            'job_name': jobName,
+            'step_name': stepName,
+            'start_time': startTime,
+            'end_time': endTime,
+            'status': status,
+            'message': message,
+            'timestamp': datetime.now()
+        }
+        self.dbHandler.insertLogEntry(logEntry)
+
+
+class auditLogger:
+    def __init__(self, dbHandler):
+        self.dbHandler = dbHandler
+
+    def logAudit(self, auditEntry):
+        self.dbHandler.insertAuditEntry(auditEntry)
