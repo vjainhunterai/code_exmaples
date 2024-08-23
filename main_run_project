@@ -106,7 +106,7 @@ if __name__ == "__main__":
                         processor = fileSizeProcessor(filePath)
                         result = processor.processFile()
 
-                        if result == 0:  # Assuming processFile returns 0 if the file is empty
+                        if result == "File is empty":  # Assuming processFile returns 0 if the file is empty
                             audit_entry = {
                                 'exec_id': str(uuid.uuid4()),
                                 'job_name': 'ETL Process Job',
