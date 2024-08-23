@@ -6,6 +6,7 @@ import os
 import uuid
 from sqlalchemy import create_engine, Table, Column, Integer, String, MetaData, DateTime, insert, select
 from sqlalchemy.orm import sessionmaker
+from datetime import datetime
 
 from src.utils import (
     readEncryptedConfig,
@@ -36,11 +37,11 @@ from src.data_quality import (
 )
 
 if __name__ == "__main__":
-    # read ecrypted data and get decrypt database configuration
+    # Initialize configuration and metadata
     relativeExcelPath = 'C:\\Users\\jvineet\\PycharmProjects\\PythonLearnings\\Data\\metadata\\paths.xlsx'
     config = readEncryptedConfig(relativeExcelPath)
 
-    # read Metadata from DataBase
+    # Read Metadata from DataBase
     print(config)
     (
         dbConnection,
@@ -49,65 +50,115 @@ if __name__ == "__main__":
         awsAccessKeyId,
         awsSecretAccessKey
     ) = readMetadata(config)
-    dbConnection = dbConnection
-    session = session
-    s3FilesTable = s3FilesTable
-    awsAccessKeyId = awsAccessKeyId
-    awsSecretAccessKey = awsSecretAccessKey
+
     regionName = 'us-east-1'  # these need to be available in database
     bucketName = 'etlhunter'  # these need to be available in database
-    daysS3 = 25                # these need to be available in database
-   # create s3 client
+    daysS3 = 25               # these need to be available in database
+
+    # Create S3 client
     s3Client: BaseClient = boto3.client('s3',
                                         aws_access_key_id=awsAccessKeyId,
                                         aws_secret_access_key=awsSecretAccessKey,
                                         region_name=regionName)
 
-    # getS3Directories
+    # Initialize loggers
+    dbHandler = databaseHandler(config['database_url'])  # Assuming config has 'database_url' key
+    step_logger = stepLogger(dbHandler)
+    audit_logger = auditLogger(dbHandler)
+
+    # Get S3 directories
     listDir = getS3Directories(daysS3)
     print(listDir)
-    # list all files available in directory
-    s3Files = listFilesInS3Directories(listDir, s3Client, bucketName)
-    #print(s3Files)
 
-    # get all file names from audit tale
-    auditFiles_query = ('select distinct file_name,s3_last_modified_date from joblog_metadata.L1_audit_data')
+    # List all files available in directories
+    s3Files = listFilesInS3Directories(listDir, s3Client, bucketName)
+
+    # Get all file names from audit table
+    auditFiles_query = ('select distinct file_name, s3_last_modified_date from joblog_metadata.L1_audit_data')
     auditFiles = pd.read_sql(auditFiles_query, dbConnection)
 
     # Get only incremental files
     incrementalFilesDf = getIncrementalFiles(s3Files, auditFiles)
-    #print(incrementalFilesDf)
 
-    # Insert increment files in data
+    # Insert incremental files into the database
     insertFilesToDb(incrementalFilesDf, s3FilesTable, session, insert)
 
-    # fetchUnprocessedFile
+    # Fetch unprocessed files
     fetchUnprocessedFile = fetchUnprocessedFiles(s3FilesTable, session, select)
-    #print(fetchUnprocessedFile)
 
-    #  download all files from S3 to local
-
+    # Download and process files from S3 to local
     localDirectoryLA = 'C:\\Users\\jvineet\\PycharmProjects\\PythonLearnings\\Data\\raw\\LA'
-
-
     processed_files = set()
 
     if isinstance(listDir, list):
         for directory in listDir:
             for file in fetchUnprocessedFile:
-
                 file_identifier = file['File_Name']  # Adjust this key based on your actual file structure
 
                 if file_identifier not in processed_files:
+                    start_time = datetime.now()
                     try:
                         downloadAndProcessFile(s3Client, bucketName, file, directory, localDirectoryLA)
                         processed_files.add(file_identifier)
+
+                        # File size check after downloading
+                        filePath = os.path.join(localDirectoryLA, file_identifier)  # Adjust the path if necessary
+                        processor = fileSizeProcessor(filePath)
+                        result = processor.processFile()
+
+                        if result == 0:  # Assuming processFile returns 0 if the file is empty
+                            audit_entry = {
+                                'exec_id': str(uuid.uuid4()),
+                                'job_name': 'ETL Process Job',
+                                'file_name': file_identifier,
+                                'start_time': start_time,
+                                'end_time': datetime.now(),
+                                'src_cnt': 0,
+                                'tgt_cnt': 0,
+                                'lkp_cnt': 0,
+                                'rej_cnt': 0,
+                                'job_status': 'Failed',  # Mark status as Failed
+                                'crt_dttm': datetime.now()
+                            }
+                        else:
+                            # Count the number of records in the file
+                            with open(filePath, 'r') as f:
+                                src_cnt = sum(1 for line in f) - 1  # Subtract 1 to ignore the header row
+
+                            audit_entry = {
+                                'exec_id': str(uuid.uuid4()),
+                                'job_name': 'ETL Process Job',
+                                'file_name': file_identifier,
+                                'start_time': start_time,
+                                'end_time': datetime.now(),
+                                'src_cnt': src_cnt,
+                                'tgt_cnt': 0,
+                                'lkp_cnt': 0,
+                                'rej_cnt': 0,
+                                'job_status': 'WIP',  # Mark status as WIP
+                                'crt_dttm': datetime.now()
+                            }
+
+                        # Log the audit entry
+                        audit_logger.logAudit(audit_entry)
+
                     except Exception as e:
                         print(f"An error occurred: {e}")
-    # file size check
-    filePath = "C:\\Users\\jvineet\\PycharmProjects\\PythonLearnings\\Data\\raw\\LA\\Hurley Medical 8.2021-7.2023.csv"  # Replace with your file path
-    
-    processor = fileSizeProcessor(filePath)
-    result = processor.processFile()
-    print(result)
+                        # Log the failure in the audit entry
+                        audit_entry = {
+                            'exec_id': str(uuid.uuid4()),
+                            'job_name': 'ETL Process Job',
+                            'file_name': file_identifier,
+                            'start_time': start_time,
+                            'end_time': datetime.now(),
+                            'src_cnt': 0,
+                            'tgt_cnt': 0,
+                            'lkp_cnt': 0,
+                            'rej_cnt': 0,
+                            'job_status': 'Failed',  # Mark status as Failed due to error
+                            'crt_dttm': datetime.now()
+                        }
+                        audit_logger.logAudit(audit_entry)
 
+    # Close the database connection
+    dbHandler.close()
