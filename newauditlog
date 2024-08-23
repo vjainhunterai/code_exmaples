@@ -1,50 +1,101 @@
-# Assuming the same classes and main structure from your main program
+import boto3
+from botocore.client import BaseClient
+import pandas as pd
+from cryptography.fernet import Fernet
+import os
+import uuid
+from sqlalchemy import create_engine, Table, Column, Integer, String, MetaData, DateTime, insert, select
+from sqlalchemy.orm import sessionmaker
+from datetime import datetime
+
+
+from src.etl import (
+    databaseHandler, stepLogger, auditLogger
+)
+
+
+
 
 if __name__ == "__main__":
-    try:
-        # Initialize the database handler and loggers
-        dbUrl = "mysql+pymysql://admin:Gpoproddb!#!@prod-db.c969yoyq9cyy.us-east-1.rds.amazonaws.com:3306/stg_tbl"
-        dbHandler = databaseHandler(dbUrl)
-        step_logger = stepLogger(dbHandler)
-        audit_logger = auditLogger(dbHandler)
-        
-        exec_id = "1234567890123456789"
-        
-        # Log a step (add debug print)
-        print("Logging ETL step...")
-        step_logger.logStep(
-            execId=exec_id,
-            jobName="ETL Job",
-            stepName="Extract Data",
-            startTime=datetime.now(),
-            endTime=datetime.now(),
-            status="Success",
-            message="Data extracted successfully"
-        )
-        print("ETL step logged.")
-        
-        # Log an audit entry (add debug print)
-        print("Logging audit entry...")
-        audit_entry = {
-            'exec_id': exec_id,
-            'job_name': "ETL Job",
-            'file_name': "data.csv",
-            'start_time': datetime.now(),
-            'end_time': datetime.now(),
-            'src_cnt': 100,
-            'tgt_cnt': 95,
-            'lkp_cnt': 5,
-            'rej_cnt': 0,
-            'job_status': "Success",
-            'crt_dttm': datetime.now()
-        }
-        audit_logger.logAudit(audit_entry)
-        print("Audit entry logged.")
-    
-    except Exception as e:
-        print(f"An error occurred in the main program: {e}")
-    
-    finally:
-        # Ensure the database connection is closed
-        print("Closing the database connection...")
-        dbHandler.close()
+    dbUrl = "mysql+pymysql://admin:Gpoproddb!#!@prod-db.c969yoyq9cyy.us-east-1.rds.amazonaws.com:3306/stg_tbl"
+    dbHandler = databaseHandler(dbUrl)
+    step_logger = stepLogger(dbHandler)
+    audit_logger = auditLogger(dbHandler)
+
+    exec_id = "1234567890123456789"
+
+    # Debugging print before logging
+    print("Logging ETL step...")
+
+    step_logger.logStep(
+        execId=exec_id,
+        jobName="ETL Job",
+        stepName="Extract Data",
+        startTime=datetime.now(),
+        endTime=datetime.now(),
+        status="Success",
+        message="Data extracted successfully"
+    )
+
+    print("ETL step logged.")
+
+    print("Logging audit entry...")
+
+    audit_entry = {
+        'exec_id': exec_id,
+        'job_name': "ETL Job",
+        'file_name': "data.csv",
+        'start_time': datetime.now(),
+        'end_time': datetime.now(),
+        'src_cnt': 100,
+        'tgt_cnt': 95,
+        'lkp_cnt': 5,
+        'rej_cnt': 0,
+        'job_status': "Success",
+        'crt_dttm': datetime.now()
+    }
+
+    audit_logger.logAudit(audit_entry)
+
+    print("Audit entry logged.")
+
+    dbHandler.close()
+
+
+C:\Users\jvineet\PycharmProjects\PythonLearnings\.venv\Scripts\python.exe C:\Users\jvineet\PycharmProjects\PythonLearnings\run_project_2308.py 
+INFO:sqlalchemy.engine.Engine:SELECT DATABASE()
+INFO:sqlalchemy.engine.Engine:[raw sql] {}
+INFO:sqlalchemy.engine.Engine:SELECT @@sql_mode
+INFO:sqlalchemy.engine.Engine:[raw sql] {}
+INFO:sqlalchemy.engine.Engine:SELECT @@lower_case_table_names
+INFO:sqlalchemy.engine.Engine:[raw sql] {}
+Creating tables if they do not exist...
+INFO:sqlalchemy.engine.Engine:BEGIN (implicit)
+INFO:sqlalchemy.engine.Engine:DESCRIBE `stg_tbl`.`etl_log_final`
+INFO:sqlalchemy.engine.Engine:[raw sql] {}
+INFO:sqlalchemy.engine.Engine:DESCRIBE `stg_tbl`.`etl_audit_final`
+INFO:sqlalchemy.engine.Engine:[raw sql] {}
+INFO:sqlalchemy.engine.Engine:COMMIT
+INFO:sqlalchemy.engine.Engine:BEGIN (implicit)
+INFO:sqlalchemy.engine.Engine:INSERT INTO etl_log_final (exec_id, job_name, step_name, start_time, end_time, status, message, timestamp) VALUES (%(exec_id)s, %(job_name)s, %(step_name)s, %(start_time)s, %(end_time)s, %(status)s, %(message)s, %(timestamp)s)
+INFO:sqlalchemy.engine.Engine:[generated in 0.00032s] {'exec_id': '1234567890123456789', 'job_name': 'ETL Job', 'step_name': 'Extract Data', 'start_time': datetime.datetime(2024, 8, 23, 7, 9, 31, 179411), 'end_time': datetime.datetime(2024, 8, 23, 7, 9, 31, 179411), 'status': 'Success', 'message': 'Data extracted successfully', 'timestamp': datetime.datetime(2024, 8, 23, 7, 9, 31, 179411)}
+INFO:sqlalchemy.engine.Engine:COMMIT
+INFO:sqlalchemy.engine.Engine:BEGIN (implicit)
+INFO:sqlalchemy.engine.Engine:INSERT INTO etl_audit_final (exec_id, job_name, file_name, start_time, end_time, src_cnt, tgt_cnt, lkp_cnt, rej_cnt, job_status, crt_dttm) VALUES (%(exec_id)s, %(job_name)s, %(file_name)s, %(start_time)s, %(end_time)s, %(src_cnt)s, %(tgt_cnt)s, %(lkp_cnt)s, %(rej_cnt)s, %(job_status)s, %(crt_dttm)s)
+INFO:sqlalchemy.engine.Engine:[generated in 0.00019s] {'exec_id': '1234567890123456789', 'job_name': 'ETL Job', 'file_name': 'data.csv', 'start_time': datetime.datetime(2024, 8, 23, 7, 9, 31, 188109), 'end_time': datetime.datetime(2024, 8, 23, 7, 9, 31, 188109), 'src_cnt': 100, 'tgt_cnt': 95, 'lkp_cnt': 5, 'rej_cnt': 0, 'job_status': 'Success', 'crt_dttm': datetime.datetime(2024, 8, 23, 7, 9, 31, 188109)}
+INFO:sqlalchemy.engine.Engine:ROLLBACK
+Initializing session...
+Logging ETL step...
+Inserting log entry: {'exec_id': '1234567890123456789', 'job_name': 'ETL Job', 'step_name': 'Extract Data', 'start_time': datetime.datetime(2024, 8, 23, 7, 9, 31, 179411), 'end_time': datetime.datetime(2024, 8, 23, 7, 9, 31, 179411), 'status': 'Success', 'message': 'Data extracted successfully', 'timestamp': datetime.datetime(2024, 8, 23, 7, 9, 31, 179411)}
+Log entry committed.
+ETL step logged.
+Logging audit entry...
+Inserting audit entry: {'exec_id': '1234567890123456789', 'job_name': 'ETL Job', 'file_name': 'data.csv', 'start_time': datetime.datetime(2024, 8, 23, 7, 9, 31, 188109), 'end_time': datetime.datetime(2024, 8, 23, 7, 9, 31, 188109), 'src_cnt': 100, 'tgt_cnt': 95, 'lkp_cnt': 5, 'rej_cnt': 0, 'job_status': 'Success', 'crt_dttm': datetime.datetime(2024, 8, 23, 7, 9, 31, 188109)}
+Error inserting audit record: (pymysql.err.IntegrityError) (1062, "Duplicate entry '1234567890123456789' for key 'etl_audit_final.PRIMARY'")
+[SQL: INSERT INTO etl_audit_final (exec_id, job_name, file_name, start_time, end_time, src_cnt, tgt_cnt, lkp_cnt, rej_cnt, job_status, crt_dttm) VALUES (%(exec_id)s, %(job_name)s, %(file_name)s, %(start_time)s, %(end_time)s, %(src_cnt)s, %(tgt_cnt)s, %(lkp_cnt)s, %(rej_cnt)s, %(job_status)s, %(crt_dttm)s)]
+[parameters: {'exec_id': '1234567890123456789', 'job_name': 'ETL Job', 'file_name': 'data.csv', 'start_time': datetime.datetime(2024, 8, 23, 7, 9, 31, 188109), 'end_time': datetime.datetime(2024, 8, 23, 7, 9, 31, 188109), 'src_cnt': 100, 'tgt_cnt': 95, 'lkp_cnt': 5, 'rej_cnt': 0, 'job_status': 'Success', 'crt_dttm': datetime.datetime(2024, 8, 23, 7, 9, 31, 188109)}]
+(Background on this error at: https://sqlalche.me/e/20/gkpj)
+Audit entry logged.
+Closing the session and connection...
+
+Process finished with exit code 0
