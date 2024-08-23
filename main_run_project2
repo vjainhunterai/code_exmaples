@@ -1,0 +1,204 @@
+import boto3
+from botocore.client import BaseClient
+import pandas as pd
+from cryptography.fernet import Fernet
+import os
+import uuid
+from sqlalchemy import create_engine, Table, Column, Integer, String, MetaData, DateTime, insert, select
+from sqlalchemy.orm import sessionmaker
+from datetime import datetime
+
+from src.utils import (
+    readEncryptedConfig,
+    readMetadata,
+    decryptData,
+    listFilesInS3,
+    createMysqlConnection,
+    executeQuery,
+    databaseHandler,
+    stepLogger,
+    auditLogger,
+    readDocumentsFromPath,
+    find_delimiter,
+    schemaValidator,
+)
+from src.etl import (
+    getS3Directories,
+    listFilesInS3Directories,
+    getIncrementalFiles,
+    insertFilesToDb,
+    fetchUnprocessedFiles,
+    downloadAndProcessFile,
+    updateFileFlag
+)
+
+from src.data_quality import (
+    fileSizeProcessor
+)
+
+if __name__ == "__main__":
+    # Initialize configuration and metadata
+    relativeExcelPath = 'C:\\Users\\jvineet\\PycharmProjects\\PythonLearnings\\Data\\metadata\\paths.xlsx'
+    config = readEncryptedConfig(relativeExcelPath)
+
+    # Read Metadata from DataBase
+    print(config)
+    host = config['host']
+    db = config['database']
+    user = config['user']
+    password = config['password']
+    dbUrl = f"mysql+pymysql://{user}:{password}@{host}/{db}"
+    port = 3306
+    (
+        dbConnection,
+        session,
+        s3FilesTable,
+        awsAccessKeyId,
+        awsSecretAccessKey
+    ) = readMetadata(config)
+
+    regionName = 'us-east-1'  # these need to be available in the database
+    bucketName = 'etlhunter'  # these need to be available in the database
+    daysS3 = 25               # these need to be available in the database
+
+    # Create S3 client
+    s3Client: BaseClient = boto3.client('s3',
+                                        aws_access_key_id=awsAccessKeyId,
+                                        aws_secret_access_key=awsSecretAccessKey,
+                                        region_name=regionName)
+
+    # Initialize loggers
+    dbHandler = databaseHandler(dbUrl)  # Assuming config has 'database_url' key
+    step_logger = stepLogger(dbHandler)
+    audit_logger = auditLogger(dbHandler)
+
+    # Generate a unique execution ID
+    exec_id = str(uuid.uuid4())
+
+    # Log step: Get S3 directories
+    start_time = datetime.now()
+    listDir = getS3Directories(daysS3)
+    step_logger.logStep(execId=exec_id, jobName="ETL Process Job", stepName="Get S3 Directories",
+                        startTime=start_time, endTime=datetime.now(), status="Success", message="S3 directories retrieved.")
+    print(listDir)
+
+    # Log step: List all files available in directories
+    start_time = datetime.now()
+    s3Files = listFilesInS3Directories(listDir, s3Client, bucketName)
+    step_logger.logStep(execId=exec_id, jobName="ETL Process Job", stepName="List S3 Files",
+                        startTime=start_time, endTime=datetime.now(), status="Success", message="Files listed from S3 directories.")
+
+    # Log step: Get all file names from audit table
+    start_time = datetime.now()
+    auditFiles_query = ('select distinct file_name, s3_last_modified_date from joblog_metadata.L1_audit_data')
+    auditFiles = pd.read_sql(auditFiles_query, dbConnection)
+    step_logger.logStep(execId=exec_id, jobName="ETL Process Job", stepName="Get Audit Files",
+                        startTime=start_time, endTime=datetime.now(), status="Success", message="Audit files retrieved.")
+
+    # Log step: Get only incremental files
+    start_time = datetime.now()
+    incrementalFilesDf = getIncrementalFiles(s3Files, auditFiles)
+    step_logger.logStep(execId=exec_id, jobName="ETL Process Job", stepName="Get Incremental Files",
+                        startTime=start_time, endTime=datetime.now(), status="Success", message="Incremental files identified.")
+
+    # Log step: Insert incremental files into the database
+    start_time = datetime.now()
+    insertFilesToDb(incrementalFilesDf, s3FilesTable, session, insert)
+    step_logger.logStep(execId=exec_id, jobName="ETL Process Job", stepName="Insert Incremental Files",
+                        startTime=start_time, endTime=datetime.now(), status="Success", message="Incremental files inserted into DB.")
+
+    # Log step: Fetch unprocessed files
+    start_time = datetime.now()
+    fetchUnprocessedFile = fetchUnprocessedFiles(s3FilesTable, session, select)
+    step_logger.logStep(execId=exec_id, jobName="ETL Process Job", stepName="Fetch Unprocessed Files",
+                        startTime=start_time, endTime=datetime.now(), status="Success", message="Unprocessed files fetched from DB.")
+
+    # Download and process files from S3 to local
+    localDirectoryLA = 'C:\\Users\\jvineet\\PycharmProjects\\PythonLearnings\\Data\\raw\\LA'
+    processed_files = set()
+
+    if isinstance(listDir, list):
+        for directory in listDir:
+            for file in fetchUnprocessedFile:
+                file_identifier = file['File_Name']  # Adjust this key based on your actual file structure
+
+                if file_identifier not in processed_files:
+                    start_time = datetime.now()
+                    try:
+                        downloadAndProcessFile(s3Client, bucketName, file, directory, localDirectoryLA)
+                        processed_files.add(file_identifier)
+
+                        # File size check after downloading
+                        filePath = os.path.join(localDirectoryLA, file_identifier)  # Adjust the path if necessary
+                        processor = fileSizeProcessor(filePath)
+                        result = processor.processFile()
+                        print(result)
+
+                        if result == "File is empty":  # Assuming processFile returns "File is empty" if the file is empty
+                            audit_entry = {
+                                'exec_id': exec_id,
+                                'job_name': 'ETL Process Job',
+                                'file_name': file_identifier,
+                                'start_time': start_time,
+                                'end_time': datetime.now(),
+                                'src_cnt': 0,
+                                'tgt_cnt': 0,
+                                'lkp_cnt': 0,
+                                'rej_cnt': 0,
+                                'job_status': 'Failed',  # Mark status as Failed
+                                'crt_dttm': datetime.now()
+                            }
+                            step_logger.logStep(execId=exec_id, jobName="ETL Process Job", stepName="Process File",
+                                                startTime=start_time, endTime=datetime.now(), status="Failed",
+                                                message=f"File {file_identifier} is empty.")
+                        else:
+                            # Count the number of records in the file
+                            with open(filePath, 'r') as f:
+                                src_cnt = sum(1 for line in f) - 1  # Subtract 1 to ignore the header row
+
+                            audit_entry = {
+                                'exec_id': exec_id,
+                                'job_name': 'ETL Process Job',
+                                'file_name': file_identifier,
+                                'start_time': start_time,
+                                'end_time': datetime.now(),
+                                'src_cnt': src_cnt,
+                                'tgt_cnt': 0,
+                                'lkp_cnt': 0,
+                                'rej_cnt': 0,
+                                'job_status': 'WIP',  # Mark status as WIP
+                                'crt_dttm': datetime.now()
+                            }
+                            step_logger.logStep(execId=exec_id, jobName="ETL Process Job", stepName="Process File",
+                                                startTime=start_time, endTime=datetime.now(), status="Success",
+                                                message=f"File {file_identifier} processed successfully with {src_cnt} records.")
+
+                        # Log the audit entry
+                        audit_logger.logAudit(audit_entry)
+
+                    except Exception as e:
+                        print(f"An error occurred: {e}")
+                        # Log the failure in the audit entry
+                        audit_entry = {
+                            'exec_id': exec_id,
+                            'job_name': 'ETL Process Job',
+                            'file_name': file_identifier,
+                            'start_time': start_time,
+                            'end_time': datetime.now(),
+                            'src_cnt': 0,
+                            'tgt_cnt': 0,
+                            'lkp_cnt': 0,
+                            'rej_cnt': 0,
+                            'job_status': 'Failed',  # Mark status as Failed due to error
+                            'crt_dttm': datetime.now()
+                        }
+                        step_logger.logStep(execId=exec_id, jobName="ETL Process Job", stepName="Process File",
+                                            startTime=start_time, endTime=datetime.now(), status="Failed",
+                                            message=f"An error occurred while processing file {file_identifier}: {e}")
+                        audit_logger.logAudit(audit_entry)
+
+    # Log step: Closing database connection
+    start_time = datetime.now()
+    dbHandler.close()
+    step_logger.logStep(execId=exec_id, jobName="ETL Process Job", stepName="Close DB Connection",
+                        startTime=start_time, endTime=datetime.now(), status="Success", message="Database connection closed.")
