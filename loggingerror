@@ -1,681 +1,117 @@
-:\Users\jvineet\PycharmProjects\PythonLearnings\.venv\Scripts\python.exe C:\Users\jvineet\PycharmProjects\PythonLearnings\run_project_2308.py 
-{'host': 'prod-db.c969yoyq9cyy.us-east-1.rds.amazonaws.com', 'database': 'stg_tbl', 'user': 'admin', 'password': 'Gpoproddb!#!', 'port': 3306}
-INFO:sqlalchemy.engine.Engine:SELECT DATABASE()
-INFO:sqlalchemy.engine.Engine:[raw sql] {}
-INFO:sqlalchemy.engine.Engine:SELECT @@sql_mode
-INFO:sqlalchemy.engine.Engine:[raw sql] {}
-INFO:sqlalchemy.engine.Engine:SELECT @@lower_case_table_names
-INFO:sqlalchemy.engine.Engine:[raw sql] {}
-INFO:sqlalchemy.engine.Engine:BEGIN (implicit)
-INFO:sqlalchemy.engine.Engine:SHOW FULL TABLES FROM `stg_tbl`
-INFO:sqlalchemy.engine.Engine:[raw sql] {}
-INFO:sqlalchemy.engine.Engine:SHOW CREATE TABLE `Commodities_update`
-INFO:sqlalchemy.engine.Engine:[raw sql] {}
-INFO:sqlalchemy.engine.Engine:SHOW CREATE TABLE `Commodities_update_new`
-INFO:sqlalchemy.engine.Engine:[raw sql] {}
-INFO:sqlalchemy.engine.Engine:SHOW CREATE TABLE `DIM_Filename_USFoods`
-INFO:sqlalchemy.engine.Engine:[raw sql] {}
-INFO:sqlalchemy.engine.Engine:SHOW CREATE TABLE `EY_AP_Data`
-INFO:sqlalchemy.engine.Engine:[raw sql] {}
-INFO:sqlalchemy.engine.Engine:SHOW CREATE TABLE `EY_AP_Data1`
-INFO:sqlalchemy.engine.Engine:[raw sql] {}
-INFO:sqlalchemy.engine.Engine:SHOW CREATE TABLE `Food_Agreement_Pricing_Structure`
-INFO:sqlalchemy.engine.Engine:[raw sql] {}
-INFO:sqlalchemy.engine.Engine:SHOW CREATE TABLE `INV_AP_Care_New_England`
-INFO:sqlalchemy.engine.Engine:[raw sql] {}
-INFO:sqlalchemy.engine.Engine:SHOW CREATE TABLE `INV_AP_Community_Hospital_and_Wellness`
-INFO:sqlalchemy.engine.Engine:[raw sql] {}
-INFO:sqlalchemy.engine.Engine:SHOW CREATE TABLE `INV_AP_Covenant_Healthcare`
-INFO:sqlalchemy.engine.Engine:[raw sql] {}
-INFO:sqlalchemy.engine.Engine:SHOW CREATE TABLE `INV_AP_Fairfield_Medical`
-INFO:sqlalchemy.engine.Engine:[raw sql] {}
-INFO:sqlalchemy.engine.Engine:SHOW CREATE TABLE `INV_AP_Goshen_Hospital`
-INFO:sqlalchemy.engine.Engine:[raw sql] {}
-INFO:sqlalchemy.engine.Engine:SHOW CREATE TABLE `INV_AP_Hendricks_Regional_Health`
-INFO:sqlalchemy.engine.Engine:[raw sql] {}
-INFO:sqlalchemy.engine.Engine:SHOW CREATE TABLE `IT_flag_update_london_270224`
-INFO:sqlalchemy.engine.Engine:[raw sql] {}
-INFO:sqlalchemy.engine.Engine:SHOW CREATE TABLE `Invoice_Data_L1`
-INFO:sqlalchemy.engine.Engine:[raw sql] {}
-INFO:sqlalchemy.engine.Engine:SHOW CREATE TABLE `Invoice_Data_L1_bhagy`
-INFO:sqlalchemy.engine.Engine:[raw sql] {}
-INFO:sqlalchemy.engine.Engine:SHOW CREATE TABLE `Invoice_Po_RMD_Spend`
-INFO:sqlalchemy.engine.Engine:[raw sql] {}
-INFO:sqlalchemy.engine.Engine:SHOW CREATE TABLE `Invoice_all`
-INFO:sqlalchemy.engine.Engine:[raw sql] {}
-INFO:sqlalchemy.engine.Engine:SHOW CREATE TABLE `Invoice_all_Care_New_England`
-INFO:sqlalchemy.engine.Engine:[raw sql] {}
-INFO:sqlalchemy.engine.Engine:SHOW CREATE TABLE `Invoice_all_Community_Hospital_and_Wellness`
-INFO:sqlalchemy.engine.Engine:[raw sql] {}
-INFO:sqlalchemy.engine.Engine:SHOW CREATE TABLE `Invoice_all_Covenant_Healthcare`
-INFO:sqlalchemy.engine.Engine:[raw sql] {}
-INFO:sqlalchemy.engine.Engine:SHOW CREATE TABLE `Invoice_all_Duke`
-INFO:sqlalchemy.engine.Engine:[raw sql] {}
-INFO:sqlalchemy.engine.Engine:SHOW CREATE TABLE `Invoice_all_Fairfield_Medical`
-INFO:sqlalchemy.engine.Engine:[raw sql] {}
-INFO:sqlalchemy.engine.Engine:SHOW CREATE TABLE `Invoice_all_Goshen_Hospital`
-INFO:sqlalchemy.engine.Engine:[raw sql] {}
-INFO:sqlalchemy.engine.Engine:SHOW CREATE TABLE `Invoice_all_Hendricks_Regional_Health`
-INFO:sqlalchemy.engine.Engine:[raw sql] {}
-INFO:sqlalchemy.engine.Engine:SHOW CREATE TABLE `Invoice_and_Line_num_amount_duplicate`
-INFO:sqlalchemy.engine.Engine:[raw sql] {}
-INFO:sqlalchemy.engine.Engine:SHOW CREATE TABLE `Invoice_and_Line_num_duplicate`
-INFO:sqlalchemy.engine.Engine:[raw sql] {}
-INFO:sqlalchemy.engine.Engine:SHOW CREATE TABLE `Invoice_and_Line_num_duplicate1`
-INFO:sqlalchemy.engine.Engine:[raw sql] {}
-INFO:sqlalchemy.engine.Engine:SHOW CREATE TABLE `Invoice_and_Line_num_duplicate2`
-INFO:sqlalchemy.engine.Engine:[raw sql] {}
-INFO:sqlalchemy.engine.Engine:SHOW CREATE TABLE `Invoice_ap_all`
-INFO:sqlalchemy.engine.Engine:[raw sql] {}
-INFO:sqlalchemy.engine.Engine:SHOW CREATE TABLE `Invoice_ap_all_Care_New_England`
-INFO:sqlalchemy.engine.Engine:[raw sql] {}
-INFO:sqlalchemy.engine.Engine:SHOW CREATE TABLE `Invoice_ap_all_Community_Hospital_and_Wellness`
-INFO:sqlalchemy.engine.Engine:[raw sql] {}
-INFO:sqlalchemy.engine.Engine:SHOW CREATE TABLE `Invoice_ap_all_Covenant_Healthcare`
-INFO:sqlalchemy.engine.Engine:[raw sql] {}
-INFO:sqlalchemy.engine.Engine:SHOW CREATE TABLE `Invoice_ap_all_Fairfield_Medical`
-INFO:sqlalchemy.engine.Engine:[raw sql] {}
-INFO:sqlalchemy.engine.Engine:SHOW CREATE TABLE `Invoice_ap_all_Goshen_Hospital`
-INFO:sqlalchemy.engine.Engine:[raw sql] {}
-INFO:sqlalchemy.engine.Engine:SHOW CREATE TABLE `Invoice_ap_all_Hendricks_Regional_Health`
-INFO:sqlalchemy.engine.Engine:[raw sql] {}
-INFO:sqlalchemy.engine.Engine:SHOW CREATE TABLE `Invoice_ap_gl_duke`
-INFO:sqlalchemy.engine.Engine:[raw sql] {}
-INFO:sqlalchemy.engine.Engine:SHOW CREATE TABLE `Invoice_key_delete`
-INFO:sqlalchemy.engine.Engine:[raw sql] {}
-INFO:sqlalchemy.engine.Engine:SHOW CREATE TABLE `Invoice_key_delete2`
-INFO:sqlalchemy.engine.Engine:[raw sql] {}
-INFO:sqlalchemy.engine.Engine:SHOW CREATE TABLE `Item_master`
-INFO:sqlalchemy.engine.Engine:[raw sql] {}
-INFO:sqlalchemy.engine.Engine:SHOW CREATE TABLE `Item_master_updated`
-INFO:sqlalchemy.engine.Engine:[raw sql] {}
-INFO:sqlalchemy.engine.Engine:SHOW CREATE TABLE `London_AP_Anomaly_InvoiceDate2023_v1`
-INFO:sqlalchemy.engine.Engine:[raw sql] {}
-INFO:sqlalchemy.engine.Engine:SHOW CREATE TABLE `London_Data_2024`
-INFO:sqlalchemy.engine.Engine:[raw sql] {}
-INFO:sqlalchemy.engine.Engine:SHOW CREATE TABLE `London_Market_Data_2024`
-INFO:sqlalchemy.engine.Engine:[raw sql] {}
-INFO:sqlalchemy.engine.Engine:SHOW CREATE TABLE `Matched_Record_Number_fuzzy`
-INFO:sqlalchemy.engine.Engine:[raw sql] {}
-INFO:sqlalchemy.engine.Engine:SHOW CREATE TABLE `Matched_Record_Number_fuzzy_2023`
-INFO:sqlalchemy.engine.Engine:[raw sql] {}
-INFO:sqlalchemy.engine.Engine:SHOW CREATE TABLE `Matched_Record_Number_fuzzy_2024`
-INFO:sqlalchemy.engine.Engine:[raw sql] {}
-INFO:sqlalchemy.engine.Engine:SHOW CREATE TABLE `Matched_Record_Number_fuzzy_2024_v1`
-INFO:sqlalchemy.engine.Engine:[raw sql] {}
-INFO:sqlalchemy.engine.Engine:SHOW CREATE TABLE `Med_Devices_153Commodities`
-INFO:sqlalchemy.engine.Engine:[raw sql] {}
-INFO:sqlalchemy.engine.Engine:SHOW CREATE TABLE `Med_Devices_153Commodities_new`
-INFO:sqlalchemy.engine.Engine:[raw sql] {}
-INFO:sqlalchemy.engine.Engine:SHOW CREATE TABLE `MemorialCare`
-INFO:sqlalchemy.engine.Engine:[raw sql] {}
-INFO:sqlalchemy.engine.Engine:SHOW CREATE TABLE `PO_EY`
-INFO:sqlalchemy.engine.Engine:[raw sql] {}
-INFO:sqlalchemy.engine.Engine:SHOW CREATE TABLE `PO_EY_rnk`
-INFO:sqlalchemy.engine.Engine:[raw sql] {}
-INFO:sqlalchemy.engine.Engine:SHOW CREATE TABLE `PRD_CLASS_CODE`
-INFO:sqlalchemy.engine.Engine:[raw sql] {}
-INFO:sqlalchemy.engine.Engine:SHOW CREATE TABLE `PRD_COMMODITY_CODE`
-INFO:sqlalchemy.engine.Engine:[raw sql] {}
-INFO:sqlalchemy.engine.Engine:SHOW CREATE TABLE `PRD_COMMODITY_CODE1`
-INFO:sqlalchemy.engine.Engine:[raw sql] {}
-INFO:sqlalchemy.engine.Engine:SHOW CREATE TABLE `PRD_FAMILY_CODE`
-INFO:sqlalchemy.engine.Engine:[raw sql] {}
-INFO:sqlalchemy.engine.Engine:SHOW CREATE TABLE `PRD_SEGMENT_CODE`
-INFO:sqlalchemy.engine.Engine:[raw sql] {}
-INFO:sqlalchemy.engine.Engine:SHOW CREATE TABLE `Premier_Dedup_08222024_v2`
-INFO:sqlalchemy.engine.Engine:[raw sql] {}
-INFO:sqlalchemy.engine.Engine:SHOW CREATE TABLE `SLU_PRODUCT`
-INFO:sqlalchemy.engine.Engine:[raw sql] {}
-INFO:sqlalchemy.engine.Engine:SHOW CREATE TABLE `Supplier_Invoices_Interna_Audit_2021_2022`
-INFO:sqlalchemy.engine.Engine:[raw sql] {}
-INFO:sqlalchemy.engine.Engine:SHOW CREATE TABLE `Supplier_Invoices_Interna_Audit_2021_2022_Hash`
-INFO:sqlalchemy.engine.Engine:[raw sql] {}
-INFO:sqlalchemy.engine.Engine:SHOW CREATE TABLE `Supplier_Invoices_Interna_Audit_2024`
-INFO:sqlalchemy.engine.Engine:[raw sql] {}
-INFO:sqlalchemy.engine.Engine:SHOW CREATE TABLE `VENDOR_KEY_it_flag`
-INFO:sqlalchemy.engine.Engine:[raw sql] {}
-INFO:sqlalchemy.engine.Engine:SHOW CREATE TABLE `Vendor_list_flags_26systems_for_uploading_oct_23`
-INFO:sqlalchemy.engine.Engine:[raw sql] {}
-INFO:sqlalchemy.engine.Engine:SHOW CREATE TABLE `Vendor_list_flags_35systems`
-INFO:sqlalchemy.engine.Engine:[raw sql] {}
-INFO:sqlalchemy.engine.Engine:SHOW CREATE TABLE `Vendor_list_flags_35systems_new`
-INFO:sqlalchemy.engine.Engine:[raw sql] {}
-INFO:sqlalchemy.engine.Engine:SHOW CREATE TABLE `a35_system_oem`
-INFO:sqlalchemy.engine.Engine:[raw sql] {}
-INFO:sqlalchemy.engine.Engine:SHOW CREATE TABLE `aes_encrypt`
-INFO:sqlalchemy.engine.Engine:[raw sql] {}
-INFO:sqlalchemy.engine.Engine:SHOW CREATE TABLE `algo1_logic1_seq1_Stage1`
-INFO:sqlalchemy.engine.Engine:[raw sql] {}
-INFO:sqlalchemy.engine.Engine:SHOW CREATE TABLE `algo1_logic1_seq1_Stage1_2221`
-INFO:sqlalchemy.engine.Engine:[raw sql] {}
-INFO:sqlalchemy.engine.Engine:SHOW CREATE TABLE `algo1_logic1_seq1_inv_final`
-INFO:sqlalchemy.engine.Engine:[raw sql] {}
-INFO:sqlalchemy.engine.Engine:SHOW CREATE TABLE `all_ey_duplicate_keys`
-INFO:sqlalchemy.engine.Engine:[raw sql] {}
-INFO:sqlalchemy.engine.Engine:SHOW CREATE TABLE `all_ey_duplicate_keys_22_file`
-INFO:sqlalchemy.engine.Engine:[raw sql] {}
-INFO:sqlalchemy.engine.Engine:SHOW CREATE TABLE `all_vendors_26_systems_ap`
-INFO:sqlalchemy.engine.Engine:[raw sql] {}
-INFO:sqlalchemy.engine.Engine:SHOW CREATE TABLE `all_vendors_26_systems_ap_baylor`
-INFO:sqlalchemy.engine.Engine:[raw sql] {}
-INFO:sqlalchemy.engine.Engine:SHOW CREATE TABLE `all_vendors_26_systems_invoice`
-INFO:sqlalchemy.engine.Engine:[raw sql] {}
-INFO:sqlalchemy.engine.Engine:SHOW CREATE TABLE `all_vendors_26_systems_invoice_baylor`
-INFO:sqlalchemy.engine.Engine:[raw sql] {}
-INFO:sqlalchemy.engine.Engine:SHOW CREATE TABLE `ap_12k_new_vendors`
-INFO:sqlalchemy.engine.Engine:[raw sql] {}
-INFO:sqlalchemy.engine.Engine:SHOW CREATE TABLE `ap_12k_new_vendors_update`
-INFO:sqlalchemy.engine.Engine:[raw sql] {}
-INFO:sqlalchemy.engine.Engine:SHOW CREATE TABLE `ap_39_new_vendors_update_new`
-INFO:sqlalchemy.engine.Engine:[raw sql] {}
-INFO:sqlalchemy.engine.Engine:SHOW CREATE TABLE `ap_gl_match_duke`
-INFO:sqlalchemy.engine.Engine:[raw sql] {}
-INFO:sqlalchemy.engine.Engine:SHOW CREATE TABLE `ap_gl_match_duke_one_tone`
-INFO:sqlalchemy.engine.Engine:[raw sql] {}
-INFO:sqlalchemy.engine.Engine:SHOW CREATE TABLE `ap_new_vendors_ba_tema`
-INFO:sqlalchemy.engine.Engine:[raw sql] {}
-INFO:sqlalchemy.engine.Engine:SHOW CREATE TABLE `ap_vendor_dedup`
-INFO:sqlalchemy.engine.Engine:[raw sql] {}
-INFO:sqlalchemy.engine.Engine:SHOW CREATE TABLE `ap_vendor_dedup_spend1`
-INFO:sqlalchemy.engine.Engine:[raw sql] {}
-INFO:sqlalchemy.engine.Engine:SHOW CREATE TABLE `ap_vendor_dedup_spend2`
-INFO:sqlalchemy.engine.Engine:[raw sql] {}
-INFO:sqlalchemy.engine.Engine:SHOW CREATE TABLE `cluster_maping_stage`
-INFO:sqlalchemy.engine.Engine:[raw sql] {}
-INFO:sqlalchemy.engine.Engine:SHOW CREATE TABLE `cluster_maping_stage1`
-INFO:sqlalchemy.engine.Engine:[raw sql] {}
-INFO:sqlalchemy.engine.Engine:SHOW CREATE TABLE `commodity_best_var_flag`
-INFO:sqlalchemy.engine.Engine:[raw sql] {}
-INFO:sqlalchemy.engine.Engine:SHOW CREATE TABLE `commodity_slu`
-INFO:sqlalchemy.engine.Engine:[raw sql] {}
-INFO:sqlalchemy.engine.Engine:SHOW CREATE TABLE `commodity_upc`
-INFO:sqlalchemy.engine.Engine:[raw sql] {}
-INFO:sqlalchemy.engine.Engine:SHOW CREATE TABLE `commodity_upc_new`
-INFO:sqlalchemy.engine.Engine:[raw sql] {}
-INFO:sqlalchemy.engine.Engine:SHOW CREATE TABLE `contract_data`
-INFO:sqlalchemy.engine.Engine:[raw sql] {}
-INFO:sqlalchemy.engine.Engine:SHOW CREATE TABLE `customer_vendor_table`
-INFO:sqlalchemy.engine.Engine:[raw sql] {}
-INFO:sqlalchemy.engine.Engine:SHOW CREATE TABLE `date_dim`
-INFO:sqlalchemy.engine.Engine:[raw sql] {}
-INFO:sqlalchemy.engine.Engine:SHOW CREATE TABLE `dedup_agu2024`
-INFO:sqlalchemy.engine.Engine:[raw sql] {}
-INFO:sqlalchemy.engine.Engine:SHOW CREATE TABLE `dedup_agu20241`
-INFO:sqlalchemy.engine.Engine:[raw sql] {}
-INFO:sqlalchemy.engine.Engine:SHOW CREATE TABLE `dedup_agu20242`
-INFO:sqlalchemy.engine.Engine:[raw sql] {}
-INFO:sqlalchemy.engine.Engine:SHOW CREATE TABLE `dedup_agu2024_v2`
-INFO:sqlalchemy.engine.Engine:[raw sql] {}
-INFO:sqlalchemy.engine.Engine:SHOW CREATE TABLE `description_data`
-INFO:sqlalchemy.engine.Engine:[raw sql] {}
-INFO:sqlalchemy.engine.Engine:SHOW CREATE TABLE `dfDetail_USFoods_Collated`
-INFO:sqlalchemy.engine.Engine:[raw sql] {}
-INFO:sqlalchemy.engine.Engine:SHOW CREATE TABLE `dfHeader_USFoods_Collated`
-INFO:sqlalchemy.engine.Engine:[raw sql] {}
-INFO:sqlalchemy.engine.Engine:SHOW CREATE TABLE `dfShipment_USFoods_Collated`
-INFO:sqlalchemy.engine.Engine:[raw sql] {}
-INFO:sqlalchemy.engine.Engine:SHOW CREATE TABLE `dim_date_2024`
-INFO:sqlalchemy.engine.Engine:[raw sql] {}
-INFO:sqlalchemy.engine.Engine:SHOW CREATE TABLE `dim_prd`
-INFO:sqlalchemy.engine.Engine:[raw sql] {}
-INFO:sqlalchemy.engine.Engine:SHOW CREATE TABLE `dim_prd_cluster`
-INFO:sqlalchemy.engine.Engine:[raw sql] {}
-INFO:sqlalchemy.engine.Engine:SHOW CREATE TABLE `dim_prd_new`
-INFO:sqlalchemy.engine.Engine:[raw sql] {}
-INFO:sqlalchemy.engine.Engine:SHOW CREATE TABLE `dim_prd_new1`
-INFO:sqlalchemy.engine.Engine:[raw sql] {}
-INFO:sqlalchemy.engine.Engine:SHOW CREATE TABLE `dim_prd_stg`
-INFO:sqlalchemy.engine.Engine:[raw sql] {}
-INFO:sqlalchemy.engine.Engine:SHOW CREATE TABLE `dim_vendor`
-INFO:sqlalchemy.engine.Engine:[raw sql] {}
-INFO:sqlalchemy.engine.Engine:SHOW CREATE TABLE `dim_vendor_delta`
-INFO:sqlalchemy.engine.Engine:[raw sql] {}
-INFO:sqlalchemy.engine.Engine:SHOW CREATE TABLE `dim_vendor_group_delta`
-INFO:sqlalchemy.engine.Engine:[raw sql] {}
-INFO:sqlalchemy.engine.Engine:SHOW CREATE TABLE `dim_vendor_list`
-INFO:sqlalchemy.engine.Engine:[raw sql] {}
-INFO:sqlalchemy.engine.Engine:SHOW CREATE TABLE `dim_vendor_list1`
-INFO:sqlalchemy.engine.Engine:[raw sql] {}
-INFO:sqlalchemy.engine.Engine:SHOW CREATE TABLE `duke_ap_category`
-INFO:sqlalchemy.engine.Engine:[raw sql] {}
-INFO:sqlalchemy.engine.Engine:SHOW CREATE TABLE `duke_invoice_category`
-INFO:sqlalchemy.engine.Engine:[raw sql] {}
-INFO:sqlalchemy.engine.Engine:SHOW CREATE TABLE `duke_oem`
-INFO:sqlalchemy.engine.Engine:[raw sql] {}
-INFO:sqlalchemy.engine.Engine:SHOW CREATE TABLE `duke_oem_1`
-INFO:sqlalchemy.engine.Engine:[raw sql] {}
-INFO:sqlalchemy.engine.Engine:SHOW CREATE TABLE `duke_slu`
-INFO:sqlalchemy.engine.Engine:[raw sql] {}
-INFO:sqlalchemy.engine.Engine:SHOW CREATE TABLE `duke_slu_new`
-INFO:sqlalchemy.engine.Engine:[raw sql] {}
-INFO:sqlalchemy.engine.Engine:SHOW CREATE TABLE `duke_source_feed`
-INFO:sqlalchemy.engine.Engine:[raw sql] {}
-INFO:sqlalchemy.engine.Engine:SHOW CREATE TABLE `duplicate_inv`
-INFO:sqlalchemy.engine.Engine:[raw sql] {}
-INFO:sqlalchemy.engine.Engine:SHOW CREATE TABLE `duplicate_inv_keys`
-INFO:sqlalchemy.engine.Engine:[raw sql] {}
-INFO:sqlalchemy.engine.Engine:SHOW CREATE TABLE `duplicate_invoices_cases1`
-INFO:sqlalchemy.engine.Engine:[raw sql] {}
-INFO:sqlalchemy.engine.Engine:SHOW CREATE TABLE `duplicate_invoices_cases2`
-INFO:sqlalchemy.engine.Engine:[raw sql] {}
-INFO:sqlalchemy.engine.Engine:SHOW CREATE TABLE `duplicate_invoices_cases3`
-INFO:sqlalchemy.engine.Engine:[raw sql] {}
-INFO:sqlalchemy.engine.Engine:SHOW CREATE TABLE `duplicate_invoices_cases_2023`
-INFO:sqlalchemy.engine.Engine:[raw sql] {}
-INFO:sqlalchemy.engine.Engine:SHOW CREATE TABLE `duplicate_invoices_cases_2024`
-INFO:sqlalchemy.engine.Engine:[raw sql] {}
-INFO:sqlalchemy.engine.Engine:SHOW CREATE TABLE `duplicate_invoices_cases_2024_1`
-INFO:sqlalchemy.engine.Engine:[raw sql] {}
-INFO:sqlalchemy.engine.Engine:SHOW CREATE TABLE `duplicate_invoices_cases_21_22`
-INFO:sqlalchemy.engine.Engine:[raw sql] {}
-INFO:sqlalchemy.engine.Engine:SHOW CREATE TABLE `duplicate_invoices_mayo`
-INFO:sqlalchemy.engine.Engine:[raw sql] {}
-INFO:sqlalchemy.engine.Engine:SHOW CREATE TABLE `duplicate_logic1_amount_thresold`
-INFO:sqlalchemy.engine.Engine:[raw sql] {}
-INFO:sqlalchemy.engine.Engine:SHOW CREATE TABLE `duplicate_logic_mayo_data`
-INFO:sqlalchemy.engine.Engine:[raw sql] {}
-INFO:sqlalchemy.engine.Engine:SHOW CREATE TABLE `duplicate_logic_stage`
-INFO:sqlalchemy.engine.Engine:[raw sql] {}
-INFO:sqlalchemy.engine.Engine:SHOW CREATE TABLE `duplicate_logic_stage10`
-INFO:sqlalchemy.engine.Engine:[raw sql] {}
-INFO:sqlalchemy.engine.Engine:SHOW CREATE TABLE `duplicate_logic_stage11`
-INFO:sqlalchemy.engine.Engine:[raw sql] {}
-INFO:sqlalchemy.engine.Engine:SHOW CREATE TABLE `duplicate_logic_stage2`
-INFO:sqlalchemy.engine.Engine:[raw sql] {}
-INFO:sqlalchemy.engine.Engine:SHOW CREATE TABLE `duplicate_logic_stage3`
-INFO:sqlalchemy.engine.Engine:[raw sql] {}
-INFO:sqlalchemy.engine.Engine:SHOW CREATE TABLE `duplicate_logic_stage4`
-INFO:sqlalchemy.engine.Engine:[raw sql] {}
-INFO:sqlalchemy.engine.Engine:SHOW CREATE TABLE `duplicate_logic_stage5`
-INFO:sqlalchemy.engine.Engine:[raw sql] {}
-INFO:sqlalchemy.engine.Engine:SHOW CREATE TABLE `duplicate_logic_stage_2024_data`
-INFO:sqlalchemy.engine.Engine:[raw sql] {}
-INFO:sqlalchemy.engine.Engine:SHOW CREATE TABLE `duplicate_logic_stage_2024_data_fuzzy`
-INFO:sqlalchemy.engine.Engine:[raw sql] {}
-INFO:sqlalchemy.engine.Engine:SHOW CREATE TABLE `duplicate_logic_stage_2024_data_updated`
-INFO:sqlalchemy.engine.Engine:[raw sql] {}
-INFO:sqlalchemy.engine.Engine:SHOW CREATE TABLE `duplicate_logic_stage_2024_data_updated1`
-INFO:sqlalchemy.engine.Engine:[raw sql] {}
-INFO:sqlalchemy.engine.Engine:SHOW CREATE TABLE `duplicate_logic_stage_22_21_data`
-INFO:sqlalchemy.engine.Engine:[raw sql] {}
-INFO:sqlalchemy.engine.Engine:SHOW CREATE TABLE `etl_audit`
-INFO:sqlalchemy.engine.Engine:[raw sql] {}
-INFO:sqlalchemy.engine.Engine:SHOW CREATE TABLE `etl_audit_final`
-INFO:sqlalchemy.engine.Engine:[raw sql] {}
-INFO:sqlalchemy.engine.Engine:SHOW CREATE TABLE `etl_audit_update`
-INFO:sqlalchemy.engine.Engine:[raw sql] {}
-INFO:sqlalchemy.engine.Engine:SHOW CREATE TABLE `etl_log`
-INFO:sqlalchemy.engine.Engine:[raw sql] {}
-INFO:sqlalchemy.engine.Engine:SHOW CREATE TABLE `etl_log_final`
-INFO:sqlalchemy.engine.Engine:[raw sql] {}
-INFO:sqlalchemy.engine.Engine:SHOW CREATE TABLE `etl_log_update`
-INFO:sqlalchemy.engine.Engine:[raw sql] {}
-INFO:sqlalchemy.engine.Engine:SHOW CREATE TABLE `exclude from IT Suppliers`
-INFO:sqlalchemy.engine.Engine:[raw sql] {}
-INFO:sqlalchemy.engine.Engine:SHOW CREATE TABLE `ey_ap_file2_6_months`
-INFO:sqlalchemy.engine.Engine:[raw sql] {}
-INFO:sqlalchemy.engine.Engine:SHOW CREATE TABLE `ey_dedup_final_270224`
-INFO:sqlalchemy.engine.Engine:[raw sql] {}
-INFO:sqlalchemy.engine.Engine:SHOW CREATE TABLE `ey_desc`
-INFO:sqlalchemy.engine.Engine:[raw sql] {}
-INFO:sqlalchemy.engine.Engine:SHOW CREATE TABLE `ey_vendor_dedup1`
-INFO:sqlalchemy.engine.Engine:[raw sql] {}
-INFO:sqlalchemy.engine.Engine:SHOW CREATE TABLE `fact_ap_details`
-INFO:sqlalchemy.engine.Engine:[raw sql] {}
-INFO:sqlalchemy.engine.Engine:SHOW CREATE TABLE `fact_ap_details_Fairfield_Medical`
-INFO:sqlalchemy.engine.Engine:[raw sql] {}
-INFO:sqlalchemy.engine.Engine:SHOW CREATE TABLE `fact_ap_details_columnbus`
-INFO:sqlalchemy.engine.Engine:[raw sql] {}
-INFO:sqlalchemy.engine.Engine:SHOW CREATE TABLE `fact_invoice_Community_Hospital_and_Wellness`
-INFO:sqlalchemy.engine.Engine:[raw sql] {}
-INFO:sqlalchemy.engine.Engine:SHOW CREATE TABLE `fact_invoice_details`
-INFO:sqlalchemy.engine.Engine:[raw sql] {}
-INFO:sqlalchemy.engine.Engine:SHOW CREATE TABLE `fact_invoice_details_duke_all_`
-INFO:sqlalchemy.engine.Engine:[raw sql] {}
-INFO:sqlalchemy.engine.Engine:SHOW CREATE TABLE `fact_invoice_details_duke_all_301023`
-INFO:sqlalchemy.engine.Engine:[raw sql] {}
-INFO:sqlalchemy.engine.Engine:SHOW CREATE TABLE `fact_invoice_details_duke_uncate`
-INFO:sqlalchemy.engine.Engine:[raw sql] {}
-INFO:sqlalchemy.engine.Engine:SHOW CREATE TABLE `final_dedup_output`
-INFO:sqlalchemy.engine.Engine:[raw sql] {}
-INFO:sqlalchemy.engine.Engine:SHOW CREATE TABLE `final_dedup_v1`
-INFO:sqlalchemy.engine.Engine:[raw sql] {}
-INFO:sqlalchemy.engine.Engine:SHOW CREATE TABLE `gl_Cleveland`
-INFO:sqlalchemy.engine.Engine:[raw sql] {}
-INFO:sqlalchemy.engine.Engine:SHOW CREATE TABLE `gl_Cleveland_onetoone`
-INFO:sqlalchemy.engine.Engine:[raw sql] {}
-INFO:sqlalchemy.engine.Engine:SHOW CREATE TABLE `gl_baylor`
-INFO:sqlalchemy.engine.Engine:[raw sql] {}
-INFO:sqlalchemy.engine.Engine:SHOW CREATE TABLE `gl_baylor_onetoone`
-INFO:sqlalchemy.engine.Engine:[raw sql] {}
-INFO:sqlalchemy.engine.Engine:SHOW CREATE TABLE `gl_duke_one_to_one`
-INFO:sqlalchemy.engine.Engine:[raw sql] {}
-INFO:sqlalchemy.engine.Engine:SHOW CREATE TABLE `hunter1x_source`
-INFO:sqlalchemy.engine.Engine:[raw sql] {}
-INFO:sqlalchemy.engine.Engine:SHOW CREATE TABLE `hunterX10_stage`
-INFO:sqlalchemy.engine.Engine:[raw sql] {}
-INFO:sqlalchemy.engine.Engine:SHOW CREATE TABLE `invhdrNameSupplier_member30`
-INFO:sqlalchemy.engine.Engine:[raw sql] {}
-INFO:sqlalchemy.engine.Engine:SHOW CREATE TABLE `invhdrNameSupplierand_dedup_member30`
-INFO:sqlalchemy.engine.Engine:[raw sql] {}
-INFO:sqlalchemy.engine.Engine:SHOW CREATE TABLE `invoice_UNQ_IN_SRC_Hash_Key`
-INFO:sqlalchemy.engine.Engine:[raw sql] {}
-INFO:sqlalchemy.engine.Engine:SHOW CREATE TABLE `invoice_audit`
-INFO:sqlalchemy.engine.Engine:[raw sql] {}
-INFO:sqlalchemy.engine.Engine:SHOW CREATE TABLE `invoice_audit_Care_New_England`
-INFO:sqlalchemy.engine.Engine:[raw sql] {}
-INFO:sqlalchemy.engine.Engine:SHOW CREATE TABLE `invoice_audit_Community_Hospital_and_Wellness`
-INFO:sqlalchemy.engine.Engine:[raw sql] {}
-INFO:sqlalchemy.engine.Engine:SHOW CREATE TABLE `invoice_audit_Covenant_Healthcare`
-INFO:sqlalchemy.engine.Engine:[raw sql] {}
-INFO:sqlalchemy.engine.Engine:SHOW CREATE TABLE `invoice_audit_Fairfield_Medical`
-INFO:sqlalchemy.engine.Engine:[raw sql] {}
-INFO:sqlalchemy.engine.Engine:SHOW CREATE TABLE `invoice_audit_Goshen_Hospital`
-INFO:sqlalchemy.engine.Engine:[raw sql] {}
-INFO:sqlalchemy.engine.Engine:SHOW CREATE TABLE `invoice_audit_Hendricks_Regional_Health`
-INFO:sqlalchemy.engine.Engine:[raw sql] {}
-INFO:sqlalchemy.engine.Engine:SHOW CREATE TABLE `invoice_ave_mnthly`
-INFO:sqlalchemy.engine.Engine:[raw sql] {}
-INFO:sqlalchemy.engine.Engine:SHOW CREATE TABLE `invoice_new_holland`
-INFO:sqlalchemy.engine.Engine:[raw sql] {}
-INFO:sqlalchemy.engine.Engine:SHOW CREATE TABLE `invoice_new_holland_l3`
-INFO:sqlalchemy.engine.Engine:[raw sql] {}
-INFO:sqlalchemy.engine.Engine:SHOW CREATE TABLE `it_falg_london`
-INFO:sqlalchemy.engine.Engine:[raw sql] {}
-INFO:sqlalchemy.engine.Engine:SHOW CREATE TABLE `l1_invoice_Data_temp`
-INFO:sqlalchemy.engine.Engine:[raw sql] {}
-INFO:sqlalchemy.engine.Engine:SHOW CREATE TABLE `l1_invoice_detail`
-INFO:sqlalchemy.engine.Engine:[raw sql] {}
-INFO:sqlalchemy.engine.Engine:SHOW CREATE TABLE `l1_metric_data`
-INFO:sqlalchemy.engine.Engine:[raw sql] {}
-INFO:sqlalchemy.engine.Engine:SHOW CREATE TABLE `l1_metric_inv_stg`
-INFO:sqlalchemy.engine.Engine:[raw sql] {}
-INFO:sqlalchemy.engine.Engine:SHOW CREATE TABLE `l1_stg_mtric_inv_active_data`
-INFO:sqlalchemy.engine.Engine:[raw sql] {}
-INFO:sqlalchemy.engine.Engine:SHOW CREATE TABLE `l1_stg_mtric_inv_duplicate_data`
-INFO:sqlalchemy.engine.Engine:[raw sql] {}
-INFO:sqlalchemy.engine.Engine:SHOW CREATE TABLE `l1_stg_small_inv_active_data`
-INFO:sqlalchemy.engine.Engine:[raw sql] {}
-INFO:sqlalchemy.engine.Engine:SHOW CREATE TABLE `l1_stg_small_inv_duplicate_data`
-INFO:sqlalchemy.engine.Engine:[raw sql] {}
-INFO:sqlalchemy.engine.Engine:SHOW CREATE TABLE `l1_temp_PO`
-INFO:sqlalchemy.engine.Engine:[raw sql] {}
-INFO:sqlalchemy.engine.Engine:SHOW CREATE TABLE `l1_temp_PO_UW_Reload1`
-INFO:sqlalchemy.engine.Engine:[raw sql] {}
-INFO:sqlalchemy.engine.Engine:SHOW CREATE TABLE `l2_ap_detail_london2_even_number_invoice_dedeup`
-INFO:sqlalchemy.engine.Engine:[raw sql] {}
-INFO:sqlalchemy.engine.Engine:SHOW CREATE TABLE `l2_ap_detail_london2_invoice_amount_dedeup`
-INFO:sqlalchemy.engine.Engine:[raw sql] {}
-INFO:sqlalchemy.engine.Engine:SHOW CREATE TABLE `l2_ap_detail_london2_invoice_amount_dedeup_hash`
-INFO:sqlalchemy.engine.Engine:[raw sql] {}
-INFO:sqlalchemy.engine.Engine:SHOW CREATE TABLE `l2_ap_detail_london2_invoice_amt_date_dedeup`
-INFO:sqlalchemy.engine.Engine:[raw sql] {}
-INFO:sqlalchemy.engine.Engine:SHOW CREATE TABLE `l2_ap_detail_london2_invoice_amt_date_dedeup_hash`
-INFO:sqlalchemy.engine.Engine:[raw sql] {}
-INFO:sqlalchemy.engine.Engine:SHOW CREATE TABLE `l2_ap_detail_london2_invoice_amt_dedeup`
-INFO:sqlalchemy.engine.Engine:[raw sql] {}
-INFO:sqlalchemy.engine.Engine:SHOW CREATE TABLE `l2_ap_detail_london2_invoice_amt_dedeup_hash`
-INFO:sqlalchemy.engine.Engine:[raw sql] {}
-INFO:sqlalchemy.engine.Engine:SHOW CREATE TABLE `l2_ap_detail_london2_invoice_dedeup`
-INFO:sqlalchemy.engine.Engine:[raw sql] {}
-INFO:sqlalchemy.engine.Engine:SHOW CREATE TABLE `l2_ap_detail_london2_invoice_dedeup_hash`
-INFO:sqlalchemy.engine.Engine:[raw sql] {}
-INFO:sqlalchemy.engine.Engine:SHOW CREATE TABLE `l2_ap_detail_london2_vendor_date_range_dedeup`
-INFO:sqlalchemy.engine.Engine:[raw sql] {}
-INFO:sqlalchemy.engine.Engine:SHOW CREATE TABLE `l2_invoice_35sys`
-INFO:sqlalchemy.engine.Engine:[raw sql] {}
-INFO:sqlalchemy.engine.Engine:SHOW CREATE TABLE `l2_invoice_detail_f_n_b`
-INFO:sqlalchemy.engine.Engine:[raw sql] {}
-INFO:sqlalchemy.engine.Engine:SHOW CREATE TABLE `l2_invoice_detail_slu`
-INFO:sqlalchemy.engine.Engine:[raw sql] {}
-INFO:sqlalchemy.engine.Engine:SHOW CREATE TABLE `l2_invoice_detail_slu_new`
-INFO:sqlalchemy.engine.Engine:[raw sql] {}
-INFO:sqlalchemy.engine.Engine:SHOW CREATE TABLE `l2_invoice_dukeuncat`
-INFO:sqlalchemy.engine.Engine:[raw sql] {}
-INFO:sqlalchemy.engine.Engine:SHOW CREATE TABLE `l2_invoice_dukeuncat_new`
-INFO:sqlalchemy.engine.Engine:[raw sql] {}
-INFO:sqlalchemy.engine.Engine:SHOW CREATE TABLE `l2_invoice_dukeuncat_new_all_301023`
-INFO:sqlalchemy.engine.Engine:[raw sql] {}
-INFO:sqlalchemy.engine.Engine:SHOW CREATE TABLE `l4_aggr_mnthly_inv`
-INFO:sqlalchemy.engine.Engine:[raw sql] {}
-INFO:sqlalchemy.engine.Engine:SHOW CREATE TABLE `london_2022file`
-INFO:sqlalchemy.engine.Engine:[raw sql] {}
-INFO:sqlalchemy.engine.Engine:SHOW CREATE TABLE `london_2023file`
-INFO:sqlalchemy.engine.Engine:[raw sql] {}
-INFO:sqlalchemy.engine.Engine:SHOW CREATE TABLE `london_invoice_extract`
-INFO:sqlalchemy.engine.Engine:[raw sql] {}
-INFO:sqlalchemy.engine.Engine:SHOW CREATE TABLE `london_invoice_extract_v2`
-INFO:sqlalchemy.engine.Engine:[raw sql] {}
-INFO:sqlalchemy.engine.Engine:SHOW CREATE TABLE `london_invoice_extract_v3`
-INFO:sqlalchemy.engine.Engine:[raw sql] {}
-INFO:sqlalchemy.engine.Engine:SHOW CREATE TABLE `london_item_desc`
-INFO:sqlalchemy.engine.Engine:[raw sql] {}
-INFO:sqlalchemy.engine.Engine:SHOW CREATE TABLE `london_vendor_thresold`
-INFO:sqlalchemy.engine.Engine:[raw sql] {}
-INFO:sqlalchemy.engine.Engine:SHOW CREATE TABLE `london_vendor_thresold1`
-INFO:sqlalchemy.engine.Engine:[raw sql] {}
-INFO:sqlalchemy.engine.Engine:SHOW CREATE TABLE `london_vendor_thresold2`
-INFO:sqlalchemy.engine.Engine:[raw sql] {}
-INFO:sqlalchemy.engine.Engine:SHOW CREATE TABLE `london_vendor_thresold_final`
-INFO:sqlalchemy.engine.Engine:[raw sql] {}
-INFO:sqlalchemy.engine.Engine:SHOW CREATE TABLE `mapping_table`
-INFO:sqlalchemy.engine.Engine:[raw sql] {}
-INFO:sqlalchemy.engine.Engine:SHOW CREATE TABLE `mapping_table1`
-INFO:sqlalchemy.engine.Engine:[raw sql] {}
-INFO:sqlalchemy.engine.Engine:SHOW CREATE TABLE `new_7_system_vendor_dedup`
-INFO:sqlalchemy.engine.Engine:[raw sql] {}
-INFO:sqlalchemy.engine.Engine:SHOW CREATE TABLE `new_7_system_vendor_dedup_update`
-INFO:sqlalchemy.engine.Engine:[raw sql] {}
-INFO:sqlalchemy.engine.Engine:SHOW CREATE TABLE `new_dedup`
-INFO:sqlalchemy.engine.Engine:[raw sql] {}
-INFO:sqlalchemy.engine.Engine:SHOW CREATE TABLE `new_dedup1`
-INFO:sqlalchemy.engine.Engine:[raw sql] {}
-INFO:sqlalchemy.engine.Engine:SHOW CREATE TABLE `new_dedup_update`
-INFO:sqlalchemy.engine.Engine:[raw sql] {}
-INFO:sqlalchemy.engine.Engine:SHOW CREATE TABLE `new_vendor_dedup_update`
-INFO:sqlalchemy.engine.Engine:[raw sql] {}
-INFO:sqlalchemy.engine.Engine:SHOW CREATE TABLE `new_vendor_dedup_update1`
-INFO:sqlalchemy.engine.Engine:[raw sql] {}
-INFO:sqlalchemy.engine.Engine:SHOW CREATE TABLE `new_vendor_dedup_update2`
-INFO:sqlalchemy.engine.Engine:[raw sql] {}
-INFO:sqlalchemy.engine.Engine:SHOW CREATE TABLE `new_vendor_it`
-INFO:sqlalchemy.engine.Engine:[raw sql] {}
-INFO:sqlalchemy.engine.Engine:SHOW CREATE TABLE `new_vendor_oct_update`
-INFO:sqlalchemy.engine.Engine:[raw sql] {}
-INFO:sqlalchemy.engine.Engine:SHOW CREATE TABLE `new_vendor_update_oct`
-INFO:sqlalchemy.engine.Engine:[raw sql] {}
-INFO:sqlalchemy.engine.Engine:SHOW CREATE TABLE `new_vendor_var`
-INFO:sqlalchemy.engine.Engine:[raw sql] {}
-INFO:sqlalchemy.engine.Engine:SHOW CREATE TABLE `oem_data`
-INFO:sqlalchemy.engine.Engine:[raw sql] {}
-INFO:sqlalchemy.engine.Engine:SHOW CREATE TABLE `po_inv_london`
-INFO:sqlalchemy.engine.Engine:[raw sql] {}
-INFO:sqlalchemy.engine.Engine:SHOW CREATE TABLE `s3_files`
-INFO:sqlalchemy.engine.Engine:[raw sql] {}
-INFO:sqlalchemy.engine.Engine:SHOW CREATE TABLE `shi_CommodityTitle`
-INFO:sqlalchemy.engine.Engine:[raw sql] {}
-INFO:sqlalchemy.engine.Engine:SHOW CREATE TABLE `similar_invoices`
-INFO:sqlalchemy.engine.Engine:[raw sql] {}
-INFO:sqlalchemy.engine.Engine:SHOW CREATE TABLE `similar_invoices_2`
-INFO:sqlalchemy.engine.Engine:[raw sql] {}
-INFO:sqlalchemy.engine.Engine:SHOW CREATE TABLE `similar_invoices_all`
-INFO:sqlalchemy.engine.Engine:[raw sql] {}
-INFO:sqlalchemy.engine.Engine:SHOW CREATE TABLE `similar_invoices_london1`
-INFO:sqlalchemy.engine.Engine:[raw sql] {}
-INFO:sqlalchemy.engine.Engine:SHOW CREATE TABLE `similar_invoices_london_2023_final`
-INFO:sqlalchemy.engine.Engine:[raw sql] {}
-INFO:sqlalchemy.engine.Engine:SHOW CREATE TABLE `similar_invoices_london_2023_new`
-INFO:sqlalchemy.engine.Engine:[raw sql] {}
-INFO:sqlalchemy.engine.Engine:SHOW CREATE TABLE `similar_invoices_london_2023_new_1`
-INFO:sqlalchemy.engine.Engine:[raw sql] {}
-INFO:sqlalchemy.engine.Engine:SHOW CREATE TABLE `similar_invoices_london_2023_seq_no`
-INFO:sqlalchemy.engine.Engine:[raw sql] {}
-INFO:sqlalchemy.engine.Engine:SHOW CREATE TABLE `similar_invoices_london_2024_seq_no`
-INFO:sqlalchemy.engine.Engine:[raw sql] {}
-INFO:sqlalchemy.engine.Engine:SHOW CREATE TABLE `similar_invoices_london_2024_v1`
-INFO:sqlalchemy.engine.Engine:[raw sql] {}
-INFO:sqlalchemy.engine.Engine:SHOW CREATE TABLE `similar_invoices_london_all`
-INFO:sqlalchemy.engine.Engine:[raw sql] {}
-INFO:sqlalchemy.engine.Engine:SHOW CREATE TABLE `similar_invoices_london_all_090724`
-INFO:sqlalchemy.engine.Engine:[raw sql] {}
-INFO:sqlalchemy.engine.Engine:SHOW CREATE TABLE `similar_invoices_london_all_2_level`
-INFO:sqlalchemy.engine.Engine:[raw sql] {}
-INFO:sqlalchemy.engine.Engine:SHOW CREATE TABLE `similar_invoices_london_all_2_level_new`
-INFO:sqlalchemy.engine.Engine:[raw sql] {}
-INFO:sqlalchemy.engine.Engine:SHOW CREATE TABLE `similar_invoices_london_all_3_level_new`
-INFO:sqlalchemy.engine.Engine:[raw sql] {}
-INFO:sqlalchemy.engine.Engine:SHOW CREATE TABLE `similar_invoices_london_all_seq_no`
-INFO:sqlalchemy.engine.Engine:[raw sql] {}
-INFO:sqlalchemy.engine.Engine:SHOW CREATE TABLE `slu_londno_old`
-INFO:sqlalchemy.engine.Engine:[raw sql] {}
-INFO:sqlalchemy.engine.Engine:SHOW CREATE TABLE `slu_londno_old2`
-INFO:sqlalchemy.engine.Engine:[raw sql] {}
-INFO:sqlalchemy.engine.Engine:SHOW CREATE TABLE `source_target_mapping`
-INFO:sqlalchemy.engine.Engine:[raw sql] {}
-INFO:sqlalchemy.engine.Engine:SHOW CREATE TABLE `spend_category_segment`
-INFO:sqlalchemy.engine.Engine:[raw sql] {}
-INFO:sqlalchemy.engine.Engine:SHOW CREATE TABLE `stg1_l1_ap_detail`
-INFO:sqlalchemy.engine.Engine:[raw sql] {}
-INFO:sqlalchemy.engine.Engine:SHOW CREATE TABLE `stg_invoice_detail`
-INFO:sqlalchemy.engine.Engine:[raw sql] {}
-INFO:sqlalchemy.engine.Engine:SHOW CREATE TABLE `stg_l1_Invoice_details`
-INFO:sqlalchemy.engine.Engine:[raw sql] {}
-INFO:sqlalchemy.engine.Engine:SHOW CREATE TABLE `stg_l1_ap_detail`
-INFO:sqlalchemy.engine.Engine:[raw sql] {}
-INFO:sqlalchemy.engine.Engine:SHOW CREATE TABLE `stg_po_detail`
-INFO:sqlalchemy.engine.Engine:[raw sql] {}
-INFO:sqlalchemy.engine.Engine:SHOW CREATE TABLE `summay_2024_data`
-INFO:sqlalchemy.engine.Engine:[raw sql] {}
-INFO:sqlalchemy.engine.Engine:SHOW CREATE TABLE `t0004_level_commodity`
-INFO:sqlalchemy.engine.Engine:[raw sql] {}
-INFO:sqlalchemy.engine.Engine:SHOW CREATE TABLE `t0004_level_commodity_new`
-INFO:sqlalchemy.engine.Engine:[raw sql] {}
-INFO:sqlalchemy.engine.Engine:SHOW CREATE TABLE `t0004_level_commodity_new1`
-INFO:sqlalchemy.engine.Engine:[raw sql] {}
-INFO:sqlalchemy.engine.Engine:SHOW CREATE TABLE `table_name`
-INFO:sqlalchemy.engine.Engine:[raw sql] {}
-INFO:sqlalchemy.engine.Engine:SHOW CREATE TABLE `tb_ap_summary`
-INFO:sqlalchemy.engine.Engine:[raw sql] {}
-INFO:sqlalchemy.engine.Engine:SHOW CREATE TABLE `tb_ap_summary_Community_Hospital_and_Wellness`
-INFO:sqlalchemy.engine.Engine:[raw sql] {}
-INFO:sqlalchemy.engine.Engine:SHOW CREATE TABLE `tb_ap_summary_Covenant_Healthcare`
-INFO:sqlalchemy.engine.Engine:[raw sql] {}
-INFO:sqlalchemy.engine.Engine:SHOW CREATE TABLE `tb_ap_summary_Fairfield_Medical`
-INFO:sqlalchemy.engine.Engine:[raw sql] {}
-INFO:sqlalchemy.engine.Engine:SHOW CREATE TABLE `tb_ap_summary_Goshen_Hospital`
-INFO:sqlalchemy.engine.Engine:[raw sql] {}
-INFO:sqlalchemy.engine.Engine:SHOW CREATE TABLE `tb_ap_summary_Hendricks_Regional_Health`
-INFO:sqlalchemy.engine.Engine:[raw sql] {}
-INFO:sqlalchemy.engine.Engine:SHOW CREATE TABLE `tb_ap_summary_care_new_england`
-INFO:sqlalchemy.engine.Engine:[raw sql] {}
-INFO:sqlalchemy.engine.Engine:SHOW CREATE TABLE `temp_PO`
-INFO:sqlalchemy.engine.Engine:[raw sql] {}
-INFO:sqlalchemy.engine.Engine:SHOW CREATE TABLE `temp_PO_UW_Relaod`
-INFO:sqlalchemy.engine.Engine:[raw sql] {}
-INFO:sqlalchemy.engine.Engine:SHOW CREATE TABLE `temp_PO_intermountain_Relaod`
-INFO:sqlalchemy.engine.Engine:[raw sql] {}
-INFO:sqlalchemy.engine.Engine:SHOW CREATE TABLE `temp_PO_rush_university`
-INFO:sqlalchemy.engine.Engine:[raw sql] {}
-INFO:sqlalchemy.engine.Engine:SHOW CREATE TABLE `temp_ap`
-INFO:sqlalchemy.engine.Engine:[raw sql] {}
-INFO:sqlalchemy.engine.Engine:SHOW CREATE TABLE `temp_ap_new_holland`
-INFO:sqlalchemy.engine.Engine:[raw sql] {}
-INFO:sqlalchemy.engine.Engine:SHOW CREATE TABLE `temp_invoice`
-INFO:sqlalchemy.engine.Engine:[raw sql] {}
-INFO:sqlalchemy.engine.Engine:SHOW CREATE TABLE `temp_invoice_CTCA_new`
-INFO:sqlalchemy.engine.Engine:[raw sql] {}
-INFO:sqlalchemy.engine.Engine:SHOW CREATE TABLE `temp_invoice_python`
-INFO:sqlalchemy.engine.Engine:[raw sql] {}
-INFO:sqlalchemy.engine.Engine:SHOW CREATE TABLE `temp_invoice_python1`
-INFO:sqlalchemy.engine.Engine:[raw sql] {}
-INFO:sqlalchemy.engine.Engine:SHOW CREATE TABLE `temp_invoice_stg`
-INFO:sqlalchemy.engine.Engine:[raw sql] {}
-INFO:sqlalchemy.engine.Engine:SHOW CREATE TABLE `temp_invoice_test_vendor`
-INFO:sqlalchemy.engine.Engine:[raw sql] {}
-INFO:sqlalchemy.engine.Engine:SHOW CREATE TABLE `umms_data_analysis`
-INFO:sqlalchemy.engine.Engine:[raw sql] {}
-INFO:sqlalchemy.engine.Engine:SHOW CREATE TABLE `umms_data_analysis_new`
-INFO:sqlalchemy.engine.Engine:[raw sql] {}
-INFO:sqlalchemy.engine.Engine:SHOW CREATE TABLE `uncategoried`
-INFO:sqlalchemy.engine.Engine:[raw sql] {}
-INFO:sqlalchemy.engine.Engine:SHOW CREATE TABLE `uncategorized_duke`
-INFO:sqlalchemy.engine.Engine:[raw sql] {}
-INFO:sqlalchemy.engine.Engine:SHOW CREATE TABLE `uncategorized_duke_updatet`
-INFO:sqlalchemy.engine.Engine:[raw sql] {}
-INFO:sqlalchemy.engine.Engine:SHOW CREATE TABLE `uncategorized_duke_updatet_desc`
-INFO:sqlalchemy.engine.Engine:[raw sql] {}
-INFO:sqlalchemy.engine.Engine:SHOW CREATE TABLE `update_flag`
-INFO:sqlalchemy.engine.Engine:[raw sql] {}
-INFO:sqlalchemy.engine.Engine:SHOW CREATE TABLE `uums_invoice`
-INFO:sqlalchemy.engine.Engine:[raw sql] {}
-INFO:sqlalchemy.engine.Engine:SHOW CREATE TABLE `vednor_it_update`
-INFO:sqlalchemy.engine.Engine:[raw sql] {}
-INFO:sqlalchemy.engine.Engine:SHOW CREATE TABLE `vednor_it_update2`
-INFO:sqlalchemy.engine.Engine:[raw sql] {}
-INFO:sqlalchemy.engine.Engine:SHOW CREATE TABLE `vendor_dedup_london`
-INFO:sqlalchemy.engine.Engine:[raw sql] {}
-INFO:sqlalchemy.engine.Engine:SHOW CREATE TABLE `vendor_dedup_v2`
-INFO:sqlalchemy.engine.Engine:[raw sql] {}
-INFO:sqlalchemy.engine.Engine:SHOW CREATE TABLE `vendor_dedup_v3`
-INFO:sqlalchemy.engine.Engine:[raw sql] {}
-INFO:sqlalchemy.engine.Engine:SHOW CREATE TABLE `vendor_it_flag_corrected`
-INFO:sqlalchemy.engine.Engine:[raw sql] {}
-INFO:sqlalchemy.engine.Engine:SHOW CREATE TABLE `vendor_master_dup`
-INFO:sqlalchemy.engine.Engine:[raw sql] {}
-INFO:sqlalchemy.engine.Engine:ROLLBACK
-INFO:sqlalchemy.engine.Engine:BEGIN (implicit)
-INFO:sqlalchemy.engine.Engine:DESCRIBE `stg_tbl`.`SELECT * FROM joblog_metadata.prod_l1_context_db;`
-INFO:sqlalchemy.engine.Engine:[raw sql] {}
-INFO:sqlalchemy.engine.Engine:SELECT * FROM joblog_metadata.prod_l1_context_db;
-INFO:sqlalchemy.engine.Engine:[raw sql] {}
-INFO:sqlalchemy.engine.Engine:ROLLBACK
-INFO:sqlalchemy.engine.Engine:SELECT DATABASE()
-INFO:sqlalchemy.engine.Engine:[raw sql] {}
-INFO:sqlalchemy.engine.Engine:SELECT @@sql_mode
-INFO:sqlalchemy.engine.Engine:[raw sql] {}
-INFO:sqlalchemy.engine.Engine:SELECT @@lower_case_table_names
-INFO:sqlalchemy.engine.Engine:[raw sql] {}
-INFO:sqlalchemy.engine.Engine:BEGIN (implicit)
-INFO:sqlalchemy.engine.Engine:DESCRIBE `stg_tbl`.`etl_log_final`
-INFO:sqlalchemy.engine.Engine:[raw sql] {}
-Creating tables if they do not exist...
-Initializing session...
-['customer_data/08_Data_Upload_August2024', 'customer_data/07_Data_Upload_July2024']
-INFO:sqlalchemy.engine.Engine:DESCRIBE `stg_tbl`.`etl_audit_final`
-INFO:sqlalchemy.engine.Engine:[raw sql] {}
-INFO:sqlalchemy.engine.Engine:COMMIT
-INFO:sqlalchemy.engine.Engine:BEGIN (implicit)
-INFO:sqlalchemy.engine.Engine:DESCRIBE `stg_tbl`.`SELECT DISTINCT file_name, s3_last_modified_date FROM joblog_metadata.L1_audit_data`
-INFO:sqlalchemy.engine.Engine:[raw sql] {}
-INFO:sqlalchemy.engine.Engine:SELECT DISTINCT file_name, s3_last_modified_date FROM joblog_metadata.L1_audit_data
-INFO:sqlalchemy.engine.Engine:[raw sql] {}
-INFO:sqlalchemy.engine.Engine:ROLLBACK
-INFO:sqlalchemy.engine.Engine:BEGIN (implicit)
-INFO:sqlalchemy.engine.Engine:INSERT INTO s3_files (`File_Name`, `Flag`, s3_load_time) VALUES (%(File_Name)s, %(Flag)s, %(s3_load_time)s)
-INFO:sqlalchemy.engine.Engine:[generated in 0.00076s] {'File_Name': 'Hurley Medical 8.2021-7.2023.csv', 'Flag': 'Y', 's3_load_time': datetime.datetime(2024, 8, 23, 8, 4, 25, 441388)}
-INFO:sqlalchemy.engine.Engine:COMMIT
-INFO:sqlalchemy.engine.Engine:BEGIN (implicit)
-INFO:sqlalchemy.engine.Engine:SELECT s3_files.`S3_ID`, s3_files.`File_Name`, s3_files.`Flag`, s3_files.s3_load_time 
-FROM s3_files 
-WHERE s3_files.`Flag` = %(Flag_1)s 
- LIMIT %(param_1)s
-INFO:sqlalchemy.engine.Engine:[generated in 0.00027s] {'Flag_1': 'Y', 'param_1': 1}
-INFO:sqlalchemy.engine.Engine:ROLLBACK
-Attempting to download from S3 path: customer_data/08_Data_Upload_August2024/Hurley Medical 8.2021-7.2023.csv
-Local file path: C:\Users\jvineet\PycharmProjects\PythonLearnings\Data\raw\LA/Hurley Medical 8.2021-7.2023.csv
-Downloaded customer_data/08_Data_Upload_August2024/Hurley Medical 8.2021-7.2023.csv to C:\Users\jvineet\PycharmProjects\PythonLearnings\Data\raw\LA/Hurley Medical 8.2021-7.2023.csv
-20251331
-Processing file...
-File processed successfully!
-Traceback (most recent call last):
-  File "C:\Users\jvineet\PycharmProjects\PythonLearnings\run_project_2308.py", line 150, in <module>
-    step_logger.logStep(exec_id='aaaaa', job_name="Process File", file_name=file_identifier, start_time=start_time, end_time=end_time, src_cnt=src_cnt, tgt_cnt=0, lkp_cnt=0, rej_cnt=0, job_status="Success", message=f"File {file_identifier} processed successfully with {src_cnt} records.")
-TypeError: logStep() got an unexpected keyword argument 'exec_id'
+from datetime import datetime
 
-During handling of the above exception, another exception occurred:
+# Initialize database handler and loggers
+db_handler = databaseHandler('mysql+pymysql://admin:Gpoproddb!#!@prod-db.c969yoyq9cyy.us-east-1.rds.amazonaws.com/joblog_metadata')
+step_logger = stepLogger(db_handler)
+audit_logger = auditLogger(db_handler)
 
-Traceback (most recent call last):
-  File "C:\Users\jvineet\PycharmProjects\PythonLearnings\run_project_2308.py", line 170, in <module>
-    step_logger.logStep(exec_id='aaaaa', job_name="Process File", file_name=file_identifier, start_time=start_time, end_time=end_time, src_cnt=0, tgt_cnt=0, lkp_cnt=0, rej_cnt=0, job_status="Failed", message=f"An error occurred while processing file {file_identifier}: {e}")
-TypeError: logStep() got an unexpected keyword argument 'exec_id'
+# Example usage
+if isinstance(listDir, list):
+    for directory in listDir:
+        for file in fetchUnprocessedFile:
+            file_identifier = file['file_name']  # Adjust this key based on your actual file structure
+
+            if file_identifier not in processed_files:
+                start_time = datetime.now()
+                try:
+                    downloadAndProcessFile(s3Client, bucketName, file, directory, localDirectoryLA)
+                    processed_files.add(file_identifier)
+
+                    # File size check after downloading
+                    filePath = os.path.join(localDirectoryLA, file_identifier)  # Adjust the path if necessary
+                    processor = fileSizeProcessor(filePath)
+                    result = processor.processFile()
+                    print(result)
+
+                    if result == "File is empty":  # Assuming processFile returns "File is empty" if the file is empty
+                        audit_entry = {
+                            'exec_id': exec_id,
+                            'job_name': 'Process File',
+                            'file_name': file_identifier,
+                            'file_date': datetime.now(),
+                            'total_rec_cnt': 0,
+                            'processed_cnt': 0,
+                            'job_status': 'Failed',  # Mark status as Failed
+                            'rejection_cnt': 0,
+                            'rejection_rsn': 'File is empty',
+                            's3_last_modified_date': datetime.now()
+                        }
+                        end_time = datetime.now()
+                        step_logger.logStep(
+                            execId='aaaaa',  # Example exec_id, replace with your actual value
+                            jobName="Process File",
+                            fileName=file_identifier,
+                            startTime=start_time,
+                            endTime=end_time,
+                            srcCnt=0,
+                            tgtCnt=0,
+                            lkpCnt=0,
+                            rejCnt=0,
+                            jobStatus="Failed"
+                        )
+                    else:
+                        # Count the number of records in the file
+                        with open(filePath, 'r') as f:
+                            src_cnt = sum(1 for line in f) - 1  # Subtract 1 to ignore the header row
+
+                        audit_entry = {
+                            'exec_id': exec_id,
+                            'job_name': 'Process File',
+                            'file_name': file_identifier,
+                            'file_date': datetime.now(),
+                            'total_rec_cnt': src_cnt,
+                            'processed_cnt': 0,
+                            'job_status': 'WIP',  # Mark status as WIP
+                            'rejection_cnt': 0,
+                            'rejection_rsn': '',
+                            's3_last_modified_date': datetime.now()
+                        }
+                        end_time = datetime.now()
+                        step_logger.logStep(
+                            execId='aaaaa',  # Example exec_id, replace with your actual value
+                            jobName="Process File",
+                            fileName=file_identifier,
+                            startTime=start_time,
+                            endTime=end_time,
+                            srcCnt=src_cnt,
+                            tgtCnt=0,
+                            lkpCnt=0,
+                            rejCnt=0,
+                            jobStatus="Success"
+                        )
+
+                    # Log the audit entry
+                    audit_logger.logAudit(audit_entry)
+
+                except Exception as e:
+                    # Log the failure in the audit entry
+                    audit_entry = {
+                        'exec_id': exec_id,
+                        'job_name': 'Process File',
+                        'file_name': file_identifier,
+                        'file_date': datetime.now(),
+                        'total_rec_cnt': 0,
+                        'processed_cnt': 0,
+                        'job_status': 'Failed',  # Mark status as Failed due to error
+                        'rejection_cnt': 0,
+                        'rejection_rsn': f'Error: {e}',
+                        's3_last_modified_date': datetime.now()
+                    }
+                    end_time = datetime.now()
+                    step_logger.logStep(
+                        execId='aaaaa',  # Example exec_id, replace with your actual value
+                        jobName="Process File",
+                        fileName=file_identifier,
+                        startTime=start_time,
+                        endTime=end_time,
+                        srcCnt=0,
+                        tgtCnt=0,
+                        lkpCnt=0,
+                        rejCnt=0,
+                        jobStatus="Failed"
+                    )
+                    audit_logger.logAudit(audit_entry)
+
+# Close database connection
+db_handler.close()
+print("Database connection closed.")
