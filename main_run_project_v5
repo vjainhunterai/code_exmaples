@@ -1,0 +1,213 @@
+from datetime import datetime
+import os
+import uuid
+import boto3
+from botocore.client import BaseClient
+import pandas as pd
+from sqlalchemy import create_engine, Table, Column, Integer, String, DateTime, MetaData, insert, select
+from sqlalchemy.orm import sessionmaker
+
+from src.utils import (
+    readEncryptedConfig,
+    readMetadata,
+    decryptData,
+    listFilesInS3,
+    createMysqlConnection,
+    executeQuery,
+    databaseHandler,
+    stepLogger,
+    auditLogger,
+    readDocumentsFromPath,
+    find_delimiter,
+    schemaValidator,
+)
+from src.etl import (
+    getS3Directories,
+    listFilesInS3Directories,
+    getIncrementalFiles,
+    insertFilesToDb,
+    fetchUnprocessedFiles,
+    downloadAndProcessFile,
+    updateFileFlag
+)
+from src.data_quality import (
+    fileSizeProcessor
+)
+
+if __name__ == "__main__":
+    # Initialize configuration and metadata
+    relativeExcelPath = 'C:\\Users\\jvineet\\PycharmProjects\\PythonLearnings\\Data\\metadata\\paths.xlsx'
+    config = readEncryptedConfig(relativeExcelPath)
+
+    # Read Metadata from DataBase
+    print(config)
+    host = config['host']
+    db = config['database']
+    user = config['user']
+    password = config['password']
+    dbUrl = f"mysql+pymysql://{user}:{password}@{host}/{db}"
+    port = 3306
+    (
+        dbConnection,
+        session,
+        s3FilesTable,
+        awsAccessKeyId,
+        awsSecretAccessKey
+    ) = readMetadata(config)
+
+    regionName = 'us-east-1'  # these need to be available in the database
+    bucketName = 'etlhunter'  # these need to be available in the database
+    daysS3 = 25               # these need to be available in the database
+
+    # Create S3 client
+    s3Client: BaseClient = boto3.client('s3',
+                                        aws_access_key_id=awsAccessKeyId,
+                                        aws_secret_access_key=awsSecretAccessKey,
+                                        region_name=regionName)
+
+    # Initialize loggers
+    dbHandler = databaseHandler(dbUrl)  # Assuming config has 'database_url' key
+    step_logger = stepLogger(dbHandler)
+    audit_logger = auditLogger(dbHandler)
+
+    # Generate a unique execution ID
+    exec_id = str(uuid.uuid4())
+
+    # Log step: Get S3 directories
+    start_time = datetime.now()
+    try:
+        listDir = getS3Directories(daysS3)
+        end_time = datetime.now()
+        step_logger.logStep(exec_id=exec_id, job_name="Get S3 Directories", file_name='', start_time=start_time, end_time=end_time, src_cnt=0, tgt_cnt=0, lkp_cnt=0, rej_cnt=0, job_status="Success")
+        print(listDir)
+    except Exception as e:
+        end_time = datetime.now()
+        step_logger.logStep(exec_id=exec_id, job_name="Get S3 Directories", file_name='', start_time=start_time, end_time=end_time, src_cnt=0, tgt_cnt=0, lkp_cnt=0, rej_cnt=0, job_status="Failed", message=f"Error: {e}")
+
+    # Log step: List all files available in directories
+    start_time = datetime.now()
+    try:
+        s3Files = listFilesInS3Directories(listDir, s3Client, bucketName)
+        end_time = datetime.now()
+        step_logger.logStep(exec_id=exec_id, job_name="List S3 Files", file_name='', start_time=start_time, end_time=end_time, src_cnt=0, tgt_cnt=0, lkp_cnt=0, rej_cnt=0, job_status="Success")
+    except Exception as e:
+        end_time = datetime.now()
+        step_logger.logStep(exec_id=exec_id, job_name="List S3 Files", file_name='', start_time=start_time, end_time=end_time, src_cnt=0, tgt_cnt=0, lkp_cnt=0, rej_cnt=0, job_status="Failed", message=f"Error: {e}")
+
+    # Log step: Get all file names from audit table
+    start_time = datetime.now()
+    try:
+        auditFiles_query = 'SELECT DISTINCT file_name, s3_last_modified_date FROM joblog_metadata.L1_audit_data'
+        auditFiles = pd.read_sql(auditFiles_query, dbConnection)
+        end_time = datetime.now()
+        step_logger.logStep(exec_id=exec_id, job_name="Get Audit Files", file_name='', start_time=start_time, end_time=end_time, src_cnt=0, tgt_cnt=0, lkp_cnt=0, rej_cnt=0, job_status="Success")
+    except Exception as e:
+        end_time = datetime.now()
+        step_logger.logStep(exec_id=exec_id, job_name="Get Audit Files", file_name='', start_time=start_time, end_time=end_time, src_cnt=0, tgt_cnt=0, lkp_cnt=0, rej_cnt=0, job_status="Failed", message=f"Error: {e}")
+
+    # Log step: Get only incremental files
+    start_time = datetime.now()
+    try:
+        incrementalFilesDf = getIncrementalFiles(s3Files, auditFiles)
+        end_time = datetime.now()
+        step_logger.logStep(exec_id=exec_id, job_name="Get Incremental Files", file_name='', start_time=start_time, end_time=end_time, src_cnt=0, tgt_cnt=0, lkp_cnt=0, rej_cnt=0, job_status="Success")
+    except Exception as e:
+        end_time = datetime.now()
+        step_logger.logStep(exec_id=exec_id, job_name="Get Incremental Files", file_name='', start_time=start_time, end_time=end_time, src_cnt=0, tgt_cnt=0, lkp_cnt=0, rej_cnt=0, job_status="Failed", message=f"Error: {e}")
+
+    # Log step: Insert incremental files into the database
+    start_time = datetime.now()
+    try:
+        insertFilesToDb(incrementalFilesDf, s3FilesTable, session, insert)
+        end_time = datetime.now()
+        step_logger.logStep(exec_id=exec_id, job_name="Insert Incremental Files", file_name='', start_time=start_time, end_time=end_time, src_cnt=0, tgt_cnt=0, lkp_cnt=0, rej_cnt=0, job_status="Success")
+    except Exception as e:
+        end_time = datetime.now()
+        step_logger.logStep(exec_id=exec_id, job_name="Insert Incremental Files", file_name='', start_time=start_time, end_time=end_time, src_cnt=0, tgt_cnt=0, lkp_cnt=0, rej_cnt=0, job_status="Failed", message=f"Error: {e}")
+
+    # Log step: Fetch unprocessed files
+    start_time = datetime.now()
+    try:
+        fetchUnprocessedFile = fetchUnprocessedFiles(s3FilesTable, session, select)
+        end_time = datetime.now()
+        step_logger.logStep(exec_id=exec_id, job_name="Fetch Unprocessed Files", file_name='', start_time=start_time, end_time=end_time, src_cnt=0, tgt_cnt=0, lkp_cnt=0, rej_cnt=0, job_status="Success")
+    except Exception as e:
+        end_time = datetime.now()
+        step_logger.logStep(exec_id=exec_id, job_name="Fetch Unprocessed Files", file_name='', start_time=start_time, end_time=end_time, src_cnt=0, tgt_cnt=0, lkp_cnt=0, rej_cnt=0, job_status="Failed", message=f"Error: {e}")
+
+    # Download and process files from S3 to local
+    localDirectoryLA = 'C:\\Users\\jvineet\\PycharmProjects\\PythonLearnings\\Data\\raw\\LA'
+    processed_files = set()
+
+    if isinstance(listDir, list):
+        for directory in listDir:
+            for file in fetchUnprocessedFile:
+                file_identifier = file['file_name']  # Adjust this key based on your actual file structure
+
+                if file_identifier not in processed_files:
+                    start_time = datetime.now()
+                    try:
+                        downloadAndProcessFile(s3Client, bucketName, file, directory, localDirectoryLA)
+                        processed_files.add(file_identifier)
+
+                        # File size check after downloading
+                        filePath = os.path.join(localDirectoryLA, file_identifier)  # Adjust the path if necessary
+                        processor = fileSizeProcessor(filePath)
+                        result = processor.processFile()
+                        print(result)
+
+                        if result == "File is empty":  # Assuming processFile returns "File is empty" if the file is empty
+                            audit_entry = {
+                                'exec_id': exec_id,
+                                'job_name': 'Process File',
+                                'file_name': file_identifier,
+                                'file_date': datetime.now(),
+                                'total_rec_cnt': 0,
+                                'processed_cnt': 0,
+                                'job_status': 'Failed',  # Mark status as Failed
+                                'rejection_cnt': 0,
+                                'rejection_rsn': 'File is empty',
+                                's3_last_modified_date': datetime.now()
+                            }
+                            end_time = datetime.now()
+                            step_logger.logStep(exec_id=exec_id, job_name="Process File", file_name=file_identifier, start_time=start_time, end_time=end_time, src_cnt=0, tgt_cnt=0, lkp_cnt=0, rej_cnt=0, job_status="Failed", message=f"File {file_identifier} is empty.")
+                        else:
+                            # Count the number of records in the file
+                            with open(filePath, 'r') as f:
+                                src_cnt = sum(1 for line in f) - 1  # Subtract 1 to ignore the header row
+
+                            audit_entry = {
+                                'exec_id': exec_id,
+                                'job_name': 'Process File',
+                                'file_name': file_identifier,
+                                'file_date': datetime.now(),
+                                'total_rec_cnt': src_cnt,
+                                'processed_cnt': 0,
+                                'job_status': 'WIP',  # Mark status as WIP
+                                'rejection_cnt': 0,
+                                'rejection_rsn': '',
+                                's3_last_modified_date': datetime.now()
+                            }
+                            end_time = datetime.now()
+                            step_logger.logStep(exec_id=exec_id, job_name="Process File", file_name=file_identifier, start_time=start_time, end_time=end_time, src_cnt=src_cnt, tgt_cnt=0, lkp_cnt=0, rej_cnt=0, job_status="Success", message=f"File {file_identifier} processed successfully with {src_cnt} records.")
+
+                        # Log the audit entry
+                        audit_logger.logAudit(audit_entry)
+
+                    except Exception as e:
+                        # Log the failure in the audit entry
+                        audit_entry = {
+                            'exec_id': exec_id,
+                            'job_name': 'Process File',
+                            'file_name': file_identifier,
+                            'file_date': datetime.now(),
+                            'total_rec_cnt': 0,
+                            'processed_cnt': 0,
+                            'job_status': 'Failed',  # Mark status as Failed due to error
+                            'rejection_cnt': 0,
+                            'rejection_rsn': f'Error: {e}',
+                            's3_last_modified_date': datetime.now()
+                        }
+                        end_time = datetime.now()
+                        step_logger.logStep(exec_id=exec_id, job_name="Process File", file_name=file_identifier, start_time=start_time, end_time=end_time, src_cnt=0, tgt_cnt=0, lkp_cnt=0, rej_cnt=0, job_status="Failed", message=f"An error occurred while processing file {file_identifier}: {e}")
+                        audit_logger.logAudit(audit_entry)
