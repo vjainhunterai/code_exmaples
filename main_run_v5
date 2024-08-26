@@ -94,7 +94,7 @@ if __name__ == '__main__':
                     processed_files.add(file_identifier)
 
                     # File size check
-                    filePath = os.path.join(localDirectoryLA, file_identifier)
+                    filePath = localDirectoryLA
                     processor = FileSizeProcessor(filePath)
                     result = processor.processFile()
 
