@@ -1,0 +1,151 @@
+import os
+import csv
+from datetime import datetime
+
+class delimiterValidator:
+    """
+    Validates rows in a delimiter-separated file and separates them into valid and invalid rows.
+    """
+
+    def __init__(self, input_file_path, expected_columns, delimiter, valid_output_file_path, rejected_output_file_path):
+        """
+        Initializes the DelimiterValidator with paths, expected column count, and delimiter.
+        """
+        self.input_file_path = input_file_path
+        self.expected_columns = expected_columns
+        self.delimiter = delimiter
+        self.valid_output_file_path = valid_output_file_path
+        self.rejected_output_file_path = rejected_output_file_path
+
+        os.makedirs(self.valid_output_file_path, exist_ok=True)
+        os.makedirs(self.rejected_output_file_path, exist_ok=True)
+
+    def validate_row(self, row: str) -> bool:
+        """
+        Validates a single row by counting delimiters outside of quoted text.
+        """
+        reader = csv.reader([row], delimiter=self.delimiter, quotechar='"')
+        try:
+            row_data = next(reader)
+        except StopIteration:
+            return False
+
+        return len(row_data) == self.expected_columns
+
+    def process_file(self, input_file_name):
+        """
+        Processes the input file, separating valid and invalid rows into separate output files.
+        Returns:
+            tuple: (file_name, total_rows, valid_rows_count, invalid_rows_count, job_status)
+        """
+        valid_rows = []
+        invalid_rows = []
+
+        input_file = os.path.join(self.input_file_path, input_file_name)
+        valid_output_file = os.path.join(self.valid_output_file_path, f"valid_{input_file_name}")
+        rejected_output_file = os.path.join(self.rejected_output_file_path, f"rejected_{input_file_name}")
+
+        if not os.path.exists(input_file):
+            raise FileNotFoundError(f"Input file not found: {input_file}")
+
+        total_rows = 0
+        valid_rows_count = 0
+        invalid_rows_count = 0
+        job_status = "Success"
+
+        try:
+            with open(input_file, 'r') as file:
+                for line in file:
+                    total_rows += 1
+                    if self.validate_row(line):
+                        valid_rows.append(line)
+                        valid_rows_count += 1
+                    else:
+                        invalid_rows.append(line)
+                        invalid_rows_count += 1
+        except IOError as e:
+            job_status = "Failed"
+            return (input_file_name, total_rows, valid_rows_count, invalid_rows_count, job_status)
+
+        try:
+            with open(valid_output_file, 'w') as valid_file:
+                valid_file.writelines(valid_rows)
+        except IOError as e:
+            job_status = "Failed"
+            return (input_file_name, total_rows, valid_rows_count, invalid_rows_count, job_status)
+
+        try:
+            with open(rejected_output_file, 'w') as rejected_file:
+                rejected_file.writelines(invalid_rows)
+        except IOError as e:
+            job_status = "Failed"
+            return (input_file_name, total_rows, valid_rows_count, invalid_rows_count, job_status)
+
+        return (input_file_name, total_rows, valid_rows_count, invalid_rows_count, job_status)
+
+
+# Example usage with step_logger integration
+try:
+    # Initialize the validator
+    validator = delimiterValidator(
+        input_file_path='C:\\Users\\jvineet\\PycharmProjects\\PythonLearnings\\Data\\processed\\LA_processed\\',
+        expected_columns=46,
+        delimiter=',',
+        valid_output_file_path='C:\\Users\\jvineet\\PycharmProjects\\PythonLearnings\\Data\\processed\\ValidFiles\\',
+        rejected_output_file_path='C:\\Users\\jvineet\\PycharmProjects\\PythonLearnings\\Data\\processed\\RejectedFiles\\'
+    )
+
+    # Track execution start time
+    start_time = datetime.now()
+
+    # Get a list of all files in the input directory
+    files = [f for f in os.listdir(validator.input_file_path) if os.path.isfile(os.path.join(validator.input_file_path, f))]
+
+    total_source_record_count = 0
+    total_target_record_count = 0
+
+    # Process each file and log the results
+    results = []
+    for file in files:
+        file_name, total_rows, valid_rows_count, invalid_rows_count, job_status = validator.process_file(file)
+        total_source_record_count += total_rows
+        total_target_record_count += valid_rows_count
+        results.append((file_name, job_status, valid_rows_count if job_status == "Success" else invalid_rows_count))
+
+    # Track execution end time
+    end_time = datetime.now()
+
+    # Log each file's status using step_logger.logStep
+    for file, status, record_count in results:
+        if status == "Success":
+            job_status = "Success"
+            tgt_cnt = record_count
+            rej_cnt = 0
+        elif status == "Failed":
+            job_status = "Failed"
+            tgt_cnt = 0
+            rej_cnt = record_count
+        else:
+            job_status = "Skipped"
+            tgt_cnt = 0
+            rej_cnt = 0
+
+        # Logging the step using step_logger.logStep
+        step_logger.logStep(
+            execId=exec_id,
+            jobName="Delimiter Validation",
+            fileName=file,
+            startTime=start_time,
+            endTime=end_time,
+            srcCnt=total_source_record_count,
+            tgtCnt=tgt_cnt,
+            lkpCnt=0,
+            rejCnt=rej_cnt,
+            jobStatus=job_status
+        )
+
+    # Clean up any resources if necessary (e.g., closing connections)
+
+except Exception as e:
+    # Handle the exception (you might want to log this in step_logger as well)
+    print(f"An error occurred: {e}")
