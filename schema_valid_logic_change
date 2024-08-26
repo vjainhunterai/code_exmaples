@@ -1,0 +1,99 @@
+import os
+import shutil
+
+def count_records_in_file(file_path, delimiter):
+    """Count the number of records in a file without using pandas."""
+    try:
+        with open(file_path, 'r', encoding='ISO-8859-1') as file:
+            return sum(1 for _ in file) - 1  # Subtract 1 to exclude header
+    except FileNotFoundError:
+        print(f"File not found: {file_path}")
+        return 0
+    except Exception as e:
+        print(f"Error reading file '{file_path}': {e}")
+        return 0
+
+def validate_directory(self, schemaTable, tableName, directory, delimiter, mappingTable, fileType, targetDirectory, rejectionDirectory):
+    """
+    Validate all files in the specified directory against the schema from the database.
+    If schemas don't match, apply schema mapping and save valid files to the target directory.
+    Files with validation failures will be moved to the rejection directory.
+    Returns a list of tuples with filenames and their validation status,
+    along with counts of source and target files.
+
+    Parameters:
+    ----------
+    schemaTable : str
+        The name of the table where schemas are stored.
+    tableName : str
+        The name of the table for which the schema is required.
+    directory : str
+        The path to the directory containing files to validate.
+    delimiter : str
+        The delimiter used in the data files.
+    mappingTable : str
+        The name of the schema mapping table.
+    fileType : str
+        The type of files being processed, used to filter the mapping table.
+    targetDirectory : str
+        The directory where valid files with the mapped schema will be saved.
+    rejectionDirectory : str
+        The directory where files that fail validation will be moved.
+
+    Returns:
+    -------
+    tuple
+        A tuple containing:
+        - A list of tuples with filenames and their validation status (1 for success, 0 for rejection, -1 for errors).
+        - Count of source files.
+        - Count of target files successfully processed.
+    """
+    # Ensure the target and rejection directories exist
+    os.makedirs(targetDirectory, exist_ok=True)
+    os.makedirs(rejectionDirectory, exist_ok=True)
+
+    results = []
+    source_file_count = 0
+    target_file_count = 0
+
+    try:
+        # Iterate over all files in the directory
+        for filename in os.listdir(directory):
+            filePath = os.path.join(directory, filename)
+
+            if os.path.isfile(filePath):
+                source_file_count += 1
+                # Count records in the source file
+                src_record_count = count_records_in_file(filePath, delimiter)
+                
+                if src_record_count == 0:
+                    results.append((filename, -1))  # Indicating an error due to no records found
+                    continue
+
+                # Determine the output file path in the target directory
+                outputFilePath = os.path.join(targetDirectory, filename)
+
+                # Validate the file
+                success, report = self.validate(schemaTable, tableName, filePath, delimiter, mappingTable, fileType, outputFilePath)
+
+                if success:
+                    target_record_count = count_records_in_file(outputFilePath, delimiter)
+                    results.append((filename, 1))
+                    target_file_count += target_record_count
+                    print(f"SUCCESS: {report}, Records Processed: {target_record_count}")
+                else:
+                    # Move the file to the rejection directory if validation fails
+                    rejectionFilePath = os.path.join(rejectionDirectory, filename)
+                    shutil.copy(filePath, rejectionFilePath)
+                    results.append((filename, 0))
+                    print(f"FAILED: {report}\nFile moved to rejection path: '{rejectionFilePath}'")
+            else:
+                print(f"Skipping '{filename}' as it is not a file.")
+                results.append((filename, -1))  # Indicating an error due to non-file entry
+
+    except FileNotFoundError:
+        print(f"Directory not found: {directory}")
+    except Exception as e:
+        print(f"Error processing directory '{directory}': {e}")
+
+    return results, source_file_count, target_file_count
