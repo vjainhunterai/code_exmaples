@@ -237,3 +237,7 @@ if __name__ == '__main__':
     # Clean up
     dbConnection.dispose()
 
+
+
+Error: [Errno 13] Permission denied: 'C:\\Users\\jvineet\\PycharmProjects\\PythonLearnings\\Data\\raw\\LA'
+
