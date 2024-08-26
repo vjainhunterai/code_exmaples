@@ -1,0 +1,3 @@
+# move file to respective folder as per file type  --AP , INVOICE and PO
+
+#Take file and move to based on filetype input search in file Name 
