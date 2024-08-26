@@ -1,0 +1,22 @@
+#File  delimiter process
+source_path = S3LA
+print(source_path)
+
+if not source_path:
+    print("No source path found.")
+else:
+    allFiles, _ = readDocumentsFromPath(source_path)
+
+if not allFiles:
+    print("No source file found.")
+else:
+    for file in allFiles:
+        doc_type = file.split(".")[-1]
+        if doc_type in ("xlsx", "xls"):
+            print(f"Source File {file} is in Excel format. Delimiter identification not required.")
+        else:
+            delimiter = find_delimiter(file, doc_type)
+            if delimiter:
+                print(f"Delimiter for {file} is '{delimiter}'")
+            else:
+                print(f"No delimiter identified for {file}.")
