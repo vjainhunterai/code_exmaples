@@ -1,0 +1,143 @@
+    # Example usage
+    if isinstance(listDir, list):
+        for directory in listDir:
+            for file in fetchUnprocessedFile:
+                file_identifier = file['File_Name']  # Adjust this key based on your actual file structure
+
+                if file_identifier not in processed_files:
+                    start_time = datetime.now()
+                    try:
+                        downloadAndProcessFile(s3Client, bucketName, file, directory, localDirectoryLA)
+                        processed_files.add(file_identifier)
+
+                        # File size check after downloading
+                        filePath = localDirectoryLA # Adjust the path if necessary
+                        processor = FileSizeProcessor(filePath)
+                        result = processor.processFile()
+
+
+
+
+                        if result[0] == 0 :  # Assuming processFile returns "File is empty" if the file is empty
+                            audit_entry = {
+                                'exec_id': exec_id,
+                                'job_name': 'L1 Data Load',
+                                'file_name': file_identifier,
+                                'file_date': datetime.now(),
+                                'total_rec_cnt': 0,
+                                'processed_cnt': 0,
+                                'job_status': 'Failed',  # Mark status as Failed
+                                'rejection_cnt': 0,
+                                'rejection_rsn': 'File is empty',
+                                's3_last_modified_date': datetime.now()
+                            }
+                            end_time = datetime.now()
+                            step_logger.logStep(
+                                execId=exec_id,  # Example exec_id, replace with your actual value
+                                jobName="File Size Check",
+                                fileName=file_identifier,
+                                startTime=start_time,
+                                endTime=end_time,
+                                srcCnt=0,
+                                tgtCnt=0,
+                                lkpCnt=0,
+                                rejCnt=0,
+                                jobStatus="Failed"
+                            )
+                        else:
+                            # Count the number of records in the file
+                            with open(filePath, 'r') as f:
+                                src_cnt = sum(1 for line in f) - 1  # Subtract 1 to ignore the header row
+
+                            audit_entry = {
+                                'exec_id': exec_id,
+                                'job_name': 'L1 Data Load',
+                                'file_name': file_identifier,
+                                'file_date': datetime.now(),
+                                'total_rec_cnt': src_cnt,
+                                'processed_cnt': 0,
+                                'job_status': 'WIP',  # Mark status as WIP
+                                'rejection_cnt': 0,
+                                'rejection_rsn': '',
+                                's3_last_modified_date': datetime.now()
+                            }
+                            end_time = datetime.now()
+                            step_logger.logStep(
+                                execId=exec_id,  # Example exec_id, replace with your actual value
+                                jobName="File Size Check",
+                                fileName=file_identifier,
+                                startTime=start_time,
+                                endTime=end_time,
+                                srcCnt=src_cnt,
+                                tgtCnt=0,
+                                lkpCnt=0,
+                                rejCnt=0,
+                                jobStatus="Success"
+                            )
+
+                        # Log the audit entry
+                        audit_logger.logAudit(audit_entry)
+
+                    except Exception as e:
+                        # Log the failure in the audit entry
+                        audit_entry = {
+                            'exec_id': exec_id,
+                            'job_name': 'L1 Data Load',
+                            'file_name': file_identifier,
+                            'file_date': datetime.now(),
+                            'total_rec_cnt': 0,
+                            'processed_cnt': 0,
+                            'job_status': 'Failed',  # Mark status as Failed due to error
+                            'rejection_cnt': 0,
+                            'rejection_rsn': f'Error: {e}',
+                            's3_last_modified_date': datetime.now()
+                        }
+                        end_time = datetime.now()
+                        step_logger.logStep(
+                            execId=exec_id,  # Example exec_id, replace with your actual value
+                            jobName="File Size Check",
+                            fileName=file_identifier,
+                            startTime=start_time,
+                            endTime=end_time,
+                            srcCnt=0,
+                            tgtCnt=0,
+                            lkpCnt=0,
+                            rejCnt=0,
+                            jobStatus="Failed"
+                        )
+                        audit_logger.logAudit(audit_entry)
+
+    # Close database connection
+    dbHandler.close()
+    print("Database connection closed.")
+
+
+# move file to respective folder as per file type  --AP , INVOICE and PO
+
+#Take file and move to based on filetype input search in file Name
+
+# Example usage:
+source_directory = 'C:\\Users\\jvineet\\PycharmProjects\\PythonLearnings\\Data\\raw\\LA'
+target_base_directory = 'C:\\Users\\jvineet\\PycharmProjects\\PythonLearnings\\Data\\processed\\processed_source'
+
+fileMover = fileMover(source_directory, target_base_directory)
+fileMover.move_files()
+
+#Schema Validation process
+# Example usage:
+# Replace these with your actual database credentials and details
+dbUrl1 = "mysql+pymysql://admin:Gpoproddb!#!@prod-db.c969yoyq9cyy.us-east-1.rds.amazonaws.com/joblog_metadata"
+tableName = 'AP'
+schemaTable = 'Table_Schema'
+mappingTable = 'mapping_table'
+fileType = 'AP'
+directory_path = 'C:\\Users\\jvineet\\PycharmProjects\\PythonLearnings\\Data\\processed\\processed_source\\AP'
+target_directory = 'C:\\Users\\jvineet\\PycharmProjects\\PythonLearnings\\Data\\processed\\processed_schema_valid\\AP'
+rejection_directory = 'C:\\Users\\jvineet\\PycharmProjects\\PythonLearnings\\Data\\processed\\processed_rejection\\AP'
+delimiter = '|'
+# Initialize the validator
+schema_validator = schemaValidator(dbUrl1)
+
+
+# Validate the file
+schema_validator.validate_directory(schemaTable, tableName, directory_path, delimiter, mappingTable, fileType, target_directory, rejection_directory)
