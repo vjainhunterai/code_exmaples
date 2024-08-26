@@ -1,0 +1,287 @@
+import pandas as pd
+from sqlalchemy import create_engine, MetaData, Table
+from sqlalchemy.orm import sessionmaker
+
+
+class schemaValidator:
+    def __init__(self, dbUrl):
+        """
+        Initialize the SchemaValidator with the database URL.
+
+        Parameters:
+        ----------
+        dbUrl : str
+            The URL for connecting to the database.
+        """
+        self.engine = create_engine(dbUrl)
+        self.Session = sessionmaker(bind=self.engine)
+        self.metadata = MetaData()
+
+    def getSchemaFromDb(self, schemaTable, tableName):
+        """
+        Retrieve the schema from the database for a given table.
+
+        Parameters:
+        ----------
+        schemaTable : str
+            The name of the table where schemas are stored.
+        tableName : str
+            The name of the table for which the schema is required.
+
+        Returns:
+        -------
+        list or None
+            A list of column names that define the schema or None if the schema is not found.
+        """
+        session = self.Session()  # Start a database session
+        try:
+            # Reflect the schema table from the database
+            schema_table = Table(schemaTable, self.metadata, autoload_with=self.engine)
+
+            # Query the schema table to get the schema for the given table name
+            query = session.query(schema_table.c.Column_name).filter_by(table_name=tableName)
+
+            # Load the result into a DataFrame
+            df_schema = pd.read_sql(query.statement, session.bind)
+
+            if not df_schema.empty:
+                # Split the schema columns by '|' if the result is not empty
+                schema = df_schema.iloc[0]['Column_name'].split('|')
+            else:
+                schema = None
+
+            return schema
+
+        except Exception as e:
+            print(f"Error fetching schema from database: {e}")
+            return None
+
+        finally:
+            session.close()  # Ensure the session is closed
+
+    def getFileHeader(self, filePath, delimiter):
+        """
+        Retrieve the header (column names) from the data file.
+
+        Parameters:
+        ----------
+        filePath : str
+            The path to the data file.
+        delimiter : str
+            The delimiter used in the data file.
+
+        Returns:
+        -------
+        list
+            A list of column names in the file header.
+        """
+        try:
+            # Read the first row of the file to get the header
+            df = pd.read_csv(filePath, delimiter=delimiter, nrows=0)
+            return df.columns.tolist()  # Return the column names as a list
+        except Exception as e:
+            print(f"Error reading file header: {e}")
+            return []
+
+    def compareSchemaAndHeader(self, schema, header):
+        """
+        Compare the file header with the schema from the database.
+
+        Parameters:
+        ----------
+        schema : list
+            The list of columns representing the expected schema.
+        header : list
+            The list of columns from the file header.
+
+        Returns:
+        -------
+        tuple
+            A tuple containing a boolean indicating if the schema matches the header,
+            and a report string with details of the comparison.
+        """
+        try:
+            if schema == header:
+                return True, "Schema matches the file header."
+            else:
+                # Convert schema and header to sets for comparison
+                schema_set = set(schema)
+                header_set = set(header)
+
+                # Determine missing and extra columns
+                missing_columns = schema_set - header_set
+                extra_columns = header_set - schema_set
+
+                # Generate a report of mismatches
+                report = "Schema does not match the file header.\n"
+                if missing_columns:
+                    report += f"Missing columns: {', '.join(missing_columns)}\n"
+                if extra_columns:
+                    report += f"Extra columns: {', '.join(extra_columns)}\n"
+
+                return False, report
+
+        except Exception as e:
+            print(f"Error comparing schema and header: {e}")
+            return False, "Error during schema comparison."
+
+    def getSchemaMapping(self, mappingTable, fileType):
+        """
+        Retrieve the schema mapping from the database for a given file type.
+
+        Parameters:
+        ----------
+        mappingTable : str
+            The name of the table where schema mappings are stored.
+        fileType : str
+            The type of file for which the schema mapping is required.
+
+        Returns:
+        -------
+        dict or None
+            A dictionary where the keys are source columns and the values are target columns,
+            or None if no mapping is found.
+        """
+        session = self.Session()  # Start a database session
+        try:
+            # Reflect the mapping table from the database
+            mapping_table = Table(mappingTable, self.metadata, autoload_with=self.engine)
+
+            # Query the mapping table to get the schema mapping for the given file type
+            query = session.query(mapping_table.c.source_column, mapping_table.c.target_column).filter_by(
+                file_type=fileType)
+
+
+            # Load the result into a DataFrame
+            df_mapping = pd.read_sql(query.statement, session.bind)
+
+            if not df_mapping.empty:
+                # Convert the DataFrame to a dictionary
+                schema_mapping = dict(zip(df_mapping['source_column'], df_mapping['target_column']))
+            else:
+                schema_mapping = None
+
+            return schema_mapping
+
+        except Exception as e:
+            print(f"Error fetching schema mapping from database: {e}")
+            return None
+
+        finally:
+            session.close()  # Ensure the session is closed
+
+    def applySchemaMapping(self, df, schemaMapping):
+        """
+        Apply the schema mapping to the DataFrame, renaming columns accordingly.
+
+        Parameters:
+        ----------
+        df : pandas.DataFrame
+            The DataFrame whose columns need to be renamed.
+        schemaMapping : dict
+            A dictionary where the keys are source columns and the values are target columns.
+
+        Returns:
+        -------
+        pandas.DataFrame
+            The DataFrame with renamed columns according to the schema mapping.
+        """
+        try:
+            # Rename the columns using the schema mapping
+            df = df.rename(columns=schemaMapping)
+            return df
+
+        except Exception as e:
+            print(f"Error applying schema mapping: {e}")
+            return df
+
+    def validate(self, schemaTable, tableName, filePath, delimiter, mappingTable, fileType, outputFilePath):
+        """
+        Validate the file header against the schema from the database.
+        If they don't match, apply schema mapping and create a new file with the mapped schema.
+
+        Parameters:
+        ----------
+        schemaTable : str
+            The name of the table where schemas are stored.
+        tableName : str
+            The name of the table for which the schema is required.
+        filePath : str
+            The path to the data file.
+        delimiter : str
+            The delimiter used in the data file.
+        mappingTable : str
+            The name of the schema mapping table.
+        fileType : str
+            The type of file being processed, used to filter the mapping table.
+        outputFilePath : str
+            The path where the output file with the mapped schema will be saved.
+
+        Returns:
+        -------
+        str
+            A report indicating the result of the validation and any further actions taken.
+        """
+        try:
+            # Step 1: Get schema from the database
+            schema = self.getSchemaFromDb(schemaTable, tableName)
+            if not schema:
+                return f"No schema found for table '{tableName}'."
+
+            # Step 2: Get the file header
+            header = self.getFileHeader(filePath, delimiter)
+            if not header:
+                return "Failed to read the file header."
+
+            # Step 3: Compare schema with file header
+            report = self.compareSchemaAndHeader(schema, header)
+            print(report)
+
+            # Step 4: If schema matches, skip further processing
+            if "matches" in report:
+                return "Schema matches the file header. No further schema mapping is needed."
+
+            # Step 5: If schema does not match, proceed with schema mapping
+            session = self.Session()
+            try:
+                # Fetch the target columns based on the fileType from the mapping table
+                mapping_table = Table(mappingTable, self.metadata, autoload_with=self.engine)
+
+                query = session.query(mapping_table.c.target_column).filter_by(file_type=fileType)
+                df_mapping = pd.read_sql(query.statement, session.bind)
+
+
+                # Extract the target columns as a list
+                if not df_mapping.empty:
+                    columnNames = df_mapping['target_column'].tolist()
+
+                else:
+                    return f"No mappings found for file type '{fileType}'."
+
+                # Step 6: Read the data file with the defined data types as `str` and mapped columns
+                df = pd.read_csv(filePath, delimiter=delimiter, dtype=str)
+
+
+                # Rename the DataFrame columns based on the schema mapping
+                source_to_target_mapping = {source: target for source, target in zip(header, columnNames)}
+
+
+                df = df.rename(columns=source_to_target_mapping)
+
+
+
+                # Step 7: Write the DataFrame to a new file with the target columns as the header
+                df.to_csv(outputFilePath, sep=delimiter, index=False, columns=columnNames)
+
+                return f"Schema mapping applied. New file saved to '{outputFilePath}'."
+
+            except Exception as e:
+                print(f"Error during schema mapping: {e}")
+                return "Error during schema mapping."
+
+            finally:
+                session.close()
+
+        except Exception as e:
+            print(f"Error in validation process: {e}")
+            return "Validation process encountered an error."
