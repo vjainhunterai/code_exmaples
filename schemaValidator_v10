@@ -1,0 +1,166 @@
+import os
+import shutil
+import pandas as pd
+from sqlalchemy import create_engine, MetaData, Table
+from sqlalchemy.orm import sessionmaker
+from datetime import datetime
+
+class schemaValidator:
+    def __init__(self, dbUrl):
+        self.engine = create_engine(dbUrl)
+        self.Session = sessionmaker(bind=self.engine)
+        self.metadata = MetaData()
+
+    def getSchemaFromDb(self, schemaTable, tableName):
+        session = self.Session()
+        try:
+            schema_table = Table(schemaTable, self.metadata, autoload_with=self.engine)
+            query = session.query(schema_table.c.Column_name).filter_by(table_name=tableName)
+            df_schema = pd.read_sql(query.statement, session.bind)
+            if not df_schema.empty:
+                schema = df_schema.iloc[0]['Column_name'].split('|')
+            else:
+                schema = None
+            return schema
+        except Exception as e:
+            print(f"Error fetching schema from database: {e}")
+            return None
+        finally:
+            session.close()
+
+    def getFileHeader(self, filePath, delimiter):
+        try:
+            df = pd.read_csv(filePath, delimiter=delimiter, nrows=0)
+            return df.columns.tolist()
+        except Exception as e:
+            print(f"Error reading file header: {e}")
+            return []
+
+    def compareSchemaAndHeader(self, schema, header):
+        try:
+            if schema == header:
+                return True, "Schema matches the file header."
+            else:
+                schema_set = set(schema)
+                header_set = set(header)
+                missing_columns = schema_set - header_set
+                extra_columns = header_set - schema_set
+                report = "Schema does not match the file header.\n"
+                if missing_columns:
+                    report += f"Missing columns: {', '.join(missing_columns)}\n"
+                if extra_columns:
+                    report += f"Extra columns: {', '.join(extra_columns)}\n"
+                return False, report
+        except Exception as e:
+            print(f"Error comparing schema and header: {e}")
+            return False, "Error during schema comparison."
+
+    def getSchemaMapping(self, mappingTable, fileType):
+        session = self.Session()
+        try:
+            mapping_table = Table(mappingTable, self.metadata, autoload_with=self.engine)
+            query = session.query(mapping_table.c.source_column, mapping_table.c.target_column).filter_by(file_type=fileType)
+            df_mapping = pd.read_sql(query.statement, session.bind)
+            if not df_mapping.empty:
+                schema_mapping = dict(zip(df_mapping['source_column'], df_mapping['target_column']))
+            else:
+                schema_mapping = None
+            return schema_mapping
+        except Exception as e:
+            print(f"Error fetching schema mapping from database: {e}")
+            return None
+        finally:
+            session.close()
+
+    def applySchemaMapping(self, df, schemaMapping):
+        try:
+            df = df.rename(columns=schemaMapping)
+            return df
+        except Exception as e:
+            print(f"Error applying schema mapping: {e}")
+            return df
+
+    def validate(self, schemaTable, tableName, filePath, delimiter, mappingTable, fileType, outputFilePath):
+        try:
+            schema = self.getSchemaFromDb(schemaTable, tableName)
+            if not schema:
+                return False, "No schema found for table '{}'.".format(tableName)
+
+            header = self.getFileHeader(filePath, delimiter)
+            if not header:
+                return False, "Failed to read the file header."
+
+            is_match, report = self.compareSchemaAndHeader(schema, header)
+            if is_match:
+                # Count the number of records in the source file (excluding the header)
+                src_record_count = sum(1 for _ in open(filePath)) - 1
+                return True, "Schema matches the file header.", src_record_count
+
+            session = self.Session()
+            try:
+                mapping_table = Table(mappingTable, self.metadata, autoload_with=self.engine)
+                query = session.query(mapping_table.c.target_column).filter_by(file_type=fileType)
+                df_mapping = pd.read_sql(query.statement, session.bind)
+                if not df_mapping.empty:
+                    columnNames = df_mapping['target_column'].tolist()
+                else:
+                    return False, "No mappings found for file type '{}'.".format(fileType)
+
+                df = pd.read_csv(filePath, delimiter=delimiter, dtype=str)
+                source_to_target_mapping = {source: target for source, target in zip(header, columnNames)}
+                df = df.rename(columns=source_to_target_mapping)
+
+                # Write the DataFrame to the output file with the target columns as the header
+                df.to_csv(outputFilePath, sep=delimiter, index=False, columns=columnNames)
+
+                # Count the number of records in the target file (excluding the header)
+                tgt_record_count = df.shape[0]
+
+                return True, "Schema mapping applied. New file saved to '{}'.".format(outputFilePath), tgt_record_count
+
+            except Exception as e:
+                print(f"Error during schema mapping: {e}")
+                return False, "Error during schema mapping.", 0
+            finally:
+                session.close()
+
+        except Exception as e:
+            print(f"Error in validation process: {e}")
+            return False, "Validation process encountered an error.", 0
+
+    def validate_directory(self, schemaTable, tableName, directory, delimiter, mappingTable, fileType, targetDirectory, rejectionDirectory):
+        os.makedirs(targetDirectory, exist_ok=True)
+        os.makedirs(rejectionDirectory, exist_ok=True)
+
+        results = []
+        total_source_record_count = 0
+        total_target_record_count = 0
+
+        for filename in os.listdir(directory):
+            filePath = os.path.join(directory, filename)
+
+            if os.path.isfile(filePath):
+                outputFilePath = os.path.join(targetDirectory, filename)
+
+                try:
+                    success, report, record_count = self.validate(schemaTable, tableName, filePath, delimiter, mappingTable, fileType, outputFilePath)
+
+                    if success:
+                        total_target_record_count += record_count
+                        results.append((filename, 1, record_count))  # 1 indicates success
+                    else:
+                        rejectionFilePath = os.path.join(rejectionDirectory, filename)
+                        shutil.copy(filePath, rejectionFilePath)
+                        results.append((filename, 0, 0))  # 0 indicates failure
+
+                    total_source_record_count += record_count
+
+                except Exception as e:
+                    results.append((filename, -1, 0))  # -1 indicates error
+                    print(f"Error processing file '{filename}': {e}")
+            else:
+                results.append((filename, -2, 0))  # -2 indicates non-file
+
+        return results, total_source_record_count, total_target_record_count
+
+
