@@ -1,0 +1,107 @@
+import pandas as pd
+import sqlalchemy as sa
+
+class DataProfiler:
+
+    def __init__(self,filepath,separator="|",db_url='mysql+pymysql://babu:Gpohealth!#!@dev-db-test.c969yoyq9cyy.us-east-1.rds.amazonaws.com/metadata'):
+        self.filepath=filepath
+        self.separator=separator
+        self.df=pd.read_csv(self.filepath,delimiter=self.separator)
+        self.engine=sa.create_engine(db_url)
+
+    def data_profiling(self):
+        column_info = pd.DataFrame({
+            "Column Name": self.df.columns,
+            "Data Type":self. df.dtypes.astype(str),
+            "Is Nullable": self.df.isnull().any().map({True: 'Yes', False: 'No'})
+        })
+        return column_info
+
+    def profile_data(self,date_col,spend_col,vendor_col):
+        # Convert the column to datetime
+        self.df[date_col] = pd.to_datetime(self.df[date_col], errors='coerce')
+        total_rows = len(self.df)
+        # Total Number of columns
+        total_columns = len(self.df.columns)
+        # Distinct dates count
+        distinct_dates = self.df[date_col].nunique()
+
+        # Convert the column to datetime
+        year_month_period= self.df[date_col].dt.to_period("M")
+        # Total Number of Months
+        total_months = year_month_period.nunique()
+        # Max YearMonth
+        max_yearmonth = year_month_period.max()
+        # Min YearMonth
+        min_yearmonth =year_month_period.min()
+
+        # No of years
+        no_of_years = max_yearmonth.year - min_yearmonth.year + 1
+        # Total Spend
+        total_spend =self. df[spend_col].sum()
+        # Distance Vendors count
+        distinct_vendors = self.df[vendor_col].nunique()
+        # Create a DataFrame with column information
+
+        result_df = pd.DataFrame({
+            "Total_Number_of_rows": [total_rows],
+            "Total_Number_of_columns": [total_columns],
+            "Distinct_dates_count": [distinct_dates],
+            "Total_Number_of_Months": [total_months],
+            "max_YearMonth": [max_yearmonth],
+            "Min_YearMonth": [min_yearmonth],
+            "No_of_Years": [no_of_years],
+            "Total_spend_amount": [total_spend],
+            "Distinct_Vendors_count": [distinct_vendors]
+        })
+        return result_df
+    def data_quality_metrics(self,date_col,spend_col,vendor_col,po_num_col):
+        date_null_count =self. df[date_col].isnull().sum()
+        spend_null_count = self.df[spend_col].isnull().sum()
+        vendor_null_count =self. df[vendor_col].isnull().sum()
+        po_null_count =self. df[po_num_col].isnull().sum()
+
+        date_unique_count =self. df[date_col].nunique()
+        spend_unique_count =self. df[spend_col].nunique()
+        vendor_unique_count = self.df[vendor_col].nunique()
+        po_unique_count = self.df[po_num_col].nunique()
+
+        result_df = pd.DataFrame({
+            "column_name": [date_col, spend_col, vendor_col, po_num_col],
+            "null_count": [date_null_count, spend_null_count, vendor_null_count, po_null_count],
+            "unique_count": [date_unique_count, spend_unique_count, vendor_unique_count, po_unique_count]
+        })
+        return result_df
+    def store_in_db(self,df,table_name):
+        df.to_sql(table_name,con=self.engine,if_exists='replace',index=False)
+        print(f"Data stored in MySQL tables sucessfully.")
+
+    def run_all_profiles(self,date_col, spend_col, vendor_col, po_num_col):
+        column_info=self.data_profiling()
+        data_profile=self.profile_data()
+        data_quality=self.data_quality_metrics()
+
+        # Store each DataFramed in the MySQL database
+        self.store_in_db(column_info,'MetaData2')
+        self.store_in_db(data_profile,'DtaProfiling_test2')
+        self.store_in_db(data_quality,'ColumnMetrics2')
+
+        return{
+            "Column_info":column_info,
+            "data_profile":data_profile,
+            "data_quality":data_quality
+        }
+if __name__=="__main__":
+    #Replace with your actual MySQL connection string
+    db_url='mysql+pymysql://babu:Gpohealth!#!@dev-db-test.c969yoyq9cyy.us-east-1.rds.amazonaws.com/metadata'
+    profiler=DataProfiler('D:\\Babu\\test.csv',db_url=db_url)
+
+    date_col='POST_DATE_YEAR_MM_SKEY'
+    spend_col='HCO_DISTRBTN_AMT'
+    vendor_col='HCO_VNDR_NM'
+    po_num_col='HCO_PO_NBR'
+
+    results= profiler.run_all_profiles(date_col, spend_col, vendor_col, po_num_col)
+    print(results)
+    print("Sucessfully loaded all tables")
+
