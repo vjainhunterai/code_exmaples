@@ -81,48 +81,47 @@ class schemaValidator:
             return df
 
     def validate(self, schemaTable, tableName, filePath, delimiter, mappingTable, fileType, outputFilePath):
+    try:
+        schema = self.getSchemaFromDb(schemaTable, tableName)
+        if not schema:
+            return False, f"No schema found for table '{tableName}'.", 0
+
+        header = self.getFileHeader(filePath, delimiter)
+        if not header:
+            return False, "Failed to read the file header.", 0
+
+        is_match, report = self.compareSchemaAndHeader(schema, header)
+        if not is_match:
+            return False, report, 0
+
+        # Skip reading the full file to avoid tokenizing errors
+        # Only proceed with the mapping if header matches
+        session = self.Session()
         try:
-            schema = self.getSchemaFromDb(schemaTable, tableName)
-            if not schema:
-                return False, "No schema found for table '{}'.".format(tableName)
+            mapping_table = Table(mappingTable, self.metadata, autoload_with=self.engine)
+            query = session.query(mapping_table.c.target_column).filter_by(file_type=fileType)
+            df_mapping = pd.read_sql(query.statement, session.bind)
+            if not df_mapping.empty:
+                columnNames = df_mapping['target_column'].tolist()
+            else:
+                return False, f"No mappings found for file type '{fileType}'.", 0
 
-            header = self.getFileHeader(filePath, delimiter)
-            if not header:
-                return False, "Failed to read the file header."
+            # Only rename columns based on the header
+            source_to_target_mapping = {source: target for source, target in zip(header, columnNames)}
 
-            is_match, report = self.compareSchemaAndHeader(schema, header)
-            if not is_match:
-                return False, report
+            # Write an empty DataFrame with the mapped columns to the output file
+            pd.DataFrame(columns=columnNames).to_csv(outputFilePath, sep=delimiter, index=False)
 
-            # Skip reading the full file to avoid tokenizing errors
-            # Only proceed with the mapping if header matches
-            session = self.Session()
-            try:
-                mapping_table = Table(mappingTable, self.metadata, autoload_with=self.engine)
-                query = session.query(mapping_table.c.target_column).filter_by(file_type=fileType)
-                df_mapping = pd.read_sql(query.statement, session.bind)
-                if not df_mapping.empty:
-                    columnNames = df_mapping['target_column'].tolist()
-                else:
-                    return False, "No mappings found for file type '{}'.".format(fileType)
-
-                # Only rename columns based on the header
-                source_to_target_mapping = {source: target for source, target in zip(header, columnNames)}
-
-                # Write an empty DataFrame with the mapped columns to the output file
-                pd.DataFrame(columns=columnNames).to_csv(outputFilePath, sep=delimiter, index=False)
-
-                return True, "Schema mapping applied. Empty file with correct header saved to '{}'.".format(outputFilePath), 0
-
-            except Exception as e:
-                print(f"Error during schema mapping: {e}")
-                return False, "Error during schema mapping.", 0
-            finally:
-                session.close()
+            return True, f"Schema mapping applied. Empty file with correct header saved to '{outputFilePath}'.", 0
 
         except Exception as e:
-            print(f"Error in validation process: {e}")
-            return False, "Validation process encountered an error.", 0
+            return False, f"Error during schema mapping: {e}", 0
+        finally:
+            session.close()
+
+    except Exception as e:
+        return False, f"Error in validation process: {e}", 0
+
 
     def validate_directory(self, schemaTable, tableName, directory, delimiter, mappingTable, fileType, targetDirectory, rejectionDirectory):
         os.makedirs(targetDirectory, exist_ok=True)
@@ -161,33 +160,22 @@ class schemaValidator:
 
 
 ===========================
-
-
 # Validate schema for each file
-    dbUrl1 = "mysql+pymysql://admin:Gpoproddb!#!@prod-db.c969yoyq9cyy.us-east-1.rds.amazonaws.com/joblog_metadata"
-    tableName = 'AP'
-    schemaTable = 'Table_Schema'
-    mappingTable = 'mapping_table'
-    fileType = 'AP'
-    directory_path = 'C:\\Users\\jvineet\\PycharmProjects\\PythonLearnings\\Data\\processed\\processed_source\\AP'
-    target_directory = 'C:\\Users\\jvineet\\PycharmProjects\\PythonLearnings\\Data\\processed\\processed_schema_valid\\AP'
-    rejection_directory = 'C:\\Users\\jvineet\\PycharmProjects\\PythonLearnings\\Data\\processed\\processed_rejection\\AP'
+dbUrl1 = "mysql+pymysql://admin:Gpoproddb!#!@prod-db.c969yoyq9cyy.us-east-1.rds.amazonaws.com/joblog_metadata"
+tableName = 'AP'
+schemaTable = 'Table_Schema'
+mappingTable = 'mapping_table'
+fileType = 'AP'
+directory_path = 'C:\\Users\\jvineet\\PycharmProjects\\PythonLearnings\\Data\\processed\\processed_source\\AP'
+target_directory = 'C:\\Users\\jvineet\\PycharmProjects\\PythonLearnings\\Data\\processed\\processed_schema_valid\\AP'
+rejection_directory = 'C:\\Users\\jvineet\\PycharmProjects\\PythonLearnings\\Data\\processed\\processed_rejection\\AP'
 
+schema_validator = schemaValidator(dbUrl1)
+start_time = datetime.now()
+results, total_source_record_count, total_target_record_count = schema_validator.validate_directory(
+    schemaTable, tableName, directory_path, delimiter, mappingTable, fileType, target_directory, rejection_directory
+)
+end_time = datetime.now()
 
-    schema_validator = schemaValidator(dbUrl1)
-    start_time = datetime.now()
-    results, total_source_record_count, total_target_record_count = schema_validator.validate_directory(
-        schemaTable, tableName, directory_path, delimiter, mappingTable, fileType, target_directory, rejection_directory
-    )
-    end_time = datetime.now()
-
-
-
-
-
-
-Delimiter for C:\Users\jvineet\PycharmProjects\PythonLearnings\Data\raw\LA\Community_Hospital_and_Wellness_110923_ap.txt is '|'
-Moved 'Community_Hospital_and_Wellness_110923_ap.txt' to 'C:\Users\jvineet\PycharmProjects\PythonLearnings\Data\processed\processed_source\AP\Community_Hospital_and_Wellness_110923_ap.txt'
-Error processing file 'Community_Hospital_and_Wellness_110923_ap.txt': not enough values to unpack (expected 3, got 2)
-
-
+# Print or log your results
+print(f"Validation completed in {end_time - start_time}")
