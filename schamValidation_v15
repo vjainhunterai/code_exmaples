@@ -1,0 +1,178 @@
+import os
+import shutil
+import pandas as pd
+from sqlalchemy import create_engine, MetaData, Table
+from sqlalchemy.orm import sessionmaker
+from datetime import datetime
+
+# Class for handling header validation
+class HeaderValidator:
+    def __init__(self, dbUrl):
+        self.engine = create_engine(dbUrl)
+        self.Session = sessionmaker(bind=self.engine)
+        self.metadata = MetaData()
+
+    def getSchemaFromDb(self, schemaTable, tableName):
+        session = self.Session()
+        try:
+            schema_table = Table(schemaTable, self.metadata, autoload_with=self.engine)
+            query = session.query(schema_table.c.Column_name).filter_by(table_name=tableName)
+            df_schema = pd.read_sql(query.statement, session.bind)
+            if not df_schema.empty:
+                schema = df_schema.iloc[0]['Column_name'].split('|')
+            else:
+                schema = None
+            return schema
+        except Exception as e:
+            print(f"Error fetching schema from database: {e}")
+            return None
+        finally:
+            session.close()
+
+    def getFileHeader(self, filePath, delimiter):
+        try:
+            df = pd.read_csv(filePath, delimiter=delimiter, nrows=0)
+            return df.columns.tolist()
+        except Exception as e:
+            print(f"Error reading file header: {e}")
+            return []
+
+    def validateHeader(self, schemaTable, tableName, filePath, delimiter):
+        schema = self.getSchemaFromDb(schemaTable, tableName)
+        if not schema:
+            return False, f"No schema found for table '{tableName}'."
+
+        header = self.getFileHeader(filePath, delimiter)
+        if not header:
+            return False, "Failed to read the file header."
+
+        is_match, report = self.compareSchemaAndHeader(schema, header)
+        return is_match, report
+
+    def compareSchemaAndHeader(self, schema, header):
+        try:
+            if schema == header:
+                return True, "Schema matches the file header."
+            else:
+                schema_set = set(schema)
+                header_set = set(header)
+                missing_columns = schema_set - header_set
+                extra_columns = header_set - schema_set
+                report = "Schema does not match the file header.\n"
+                if missing_columns:
+                    report += f"Missing columns: {', '.join(missing_columns)}\n"
+                if extra_columns:
+                    report += f"Extra columns: {', '.join(extra_columns)}\n"
+                return False, report
+        except Exception as e:
+            print(f"Error comparing schema and header: {e}")
+            return False, "Error during schema comparison."
+
+# Class for handling schema mapping
+class SchemaMapper:
+    def __init__(self, dbUrl):
+        self.engine = create_engine(dbUrl)
+        self.Session = sessionmaker(bind=self.engine)
+        self.metadata = MetaData()
+
+    def getSchemaMapping(self, mappingTable, fileType):
+        session = self.Session()
+        try:
+            mapping_table = Table(mappingTable, self.metadata, autoload_with=self.engine)
+            query = session.query(mapping_table.c.source_column, mapping_table.c.target_column).filter_by(file_type=fileType)
+            df_mapping = pd.read_sql(query.statement, session.bind)
+            if not df_mapping.empty:
+                schema_mapping = dict(zip(df_mapping['source_column'], df_mapping['target_column']))
+            else:
+                schema_mapping = None
+            return schema_mapping
+        except Exception as e:
+            print(f"Error fetching schema mapping from database: {e}")
+            return None
+        finally:
+            session.close()
+
+    def applySchemaMapping(self, filePath, delimiter, schemaMapping, outputFilePath):
+        try:
+            df = pd.read_csv(filePath, delimiter=delimiter, dtype=str)
+            df = self.applySchemaMappingToDf(df, schemaMapping)
+
+            df.to_csv(outputFilePath, sep=delimiter, index=False, columns=schemaMapping.values())
+            tgt_record_count = df.shape[0]
+            return True, f"Schema mapping applied. New file saved to '{outputFilePath}'.", tgt_record_count
+
+        except Exception as e:
+            print(f"Error during schema mapping: {e}")
+            return False, f"Error during schema mapping: {e}", 0
+
+    def applySchemaMappingToDf(self, df, schemaMapping):
+        try:
+            df = df.rename(columns=schemaMapping)
+            return df
+        except Exception as e:
+            print(f"Error applying schema mapping: {e}")
+            return df
+
+# Main program logic
+def main():
+    # Database URL and other parameters
+    dbUrl1 = "mysql+pymysql://admin:Gpoproddb!#!@prod-db.c969yoyq9cyy.us-east-1.rds.amazonaws.com/joblog_metadata"
+    tableName = 'AP'
+    schemaTable = 'Table_Schema'
+    mappingTable = 'mapping_table'
+    fileType = 'AP'
+    directory_path = 'C:\\Users\\jvineet\\PycharmProjects\\PythonLearnings\\Data\\processed\\processed_source\\AP'
+    target_directory = 'C:\\Users\\jvineet\\PycharmProjects\\PythonLearnings\\Data\\processed\\processed_schema_valid\\AP'
+    rejection_directory = 'C:\\Users\\jvineet\\PycharmProjects\\PythonLearnings\\Data\\processed\\processed_rejection\\AP'
+    delimiter = '|'  # Set your delimiter
+
+    # Initialize the validators
+    header_validator = HeaderValidator(dbUrl1)
+    schema_mapper = SchemaMapper(dbUrl1)
+
+    # Process each file in the directory
+    os.makedirs(target_directory, exist_ok=True)
+    os.makedirs(rejection_directory, exist_ok=True)
+
+    start_time = datetime.now()
+    results = []
+    for filename in os.listdir(directory_path):
+        filePath = os.path.join(directory_path, filename)
+
+        if os.path.isfile(filePath):
+            # Step 1: Validate the header
+            is_valid, validation_report = header_validator.validateHeader(schemaTable, tableName, filePath, delimiter)
+            if not is_valid:
+                # If header validation fails, attempt to apply schema mapping
+                schema_mapping = schema_mapper.getSchemaMapping(mappingTable, fileType)
+                if schema_mapping:
+                    outputFilePath = os.path.join(target_directory, filename)
+                    success, mapping_report, record_count = schema_mapper.applySchemaMapping(filePath, delimiter, schema_mapping, outputFilePath)
+                    if success:
+                        results.append((filename, "Mapping Applied", record_count))
+                    else:
+                        rejectionFilePath = os.path.join(rejection_directory, filename)
+                        shutil.copy(filePath, rejectionFilePath)
+                        results.append((filename, "Mapping Failed", 0))
+                else:
+                    rejectionFilePath = os.path.join(rejection_directory, filename)
+                    shutil.copy(filePath, rejectionFilePath)
+                    results.append((filename, "Validation and Mapping Failed", 0))
+                    print(f"Header validation and schema mapping failed for file '{filename}': {validation_report}")
+            else:
+                # If header validation succeeds, skip schema mapping
+                results.append((filename, "Validation Passed", 0))
+
+        else:
+            results.append((filename, "Not a file", 0))
+
+    end_time = datetime.now()
+
+    # Print or log your results
+    print(f"Validation completed in {end_time - start_time}")
+    print("Results:")
+    for filename, status, count in results:
+        print(f"File: {filename}, Status: {status}, Record Count: {count}")
+
+if __name__ == "__main__":
+    main()
