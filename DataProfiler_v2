@@ -1,0 +1,217 @@
+import pandas as pd
+import sqlalchemy as sa
+from typing import Dict, Any
+
+class DataProfiler:
+    """
+    A class to perform data profiling, quality metrics calculation, and store the results in a database.
+
+    Attributes:
+    -----------
+    filepath : str
+        Path to the CSV file.
+    separator : str
+        The delimiter used in the CSV file.
+    db_url : str
+        The database connection URL.
+
+    Methods:
+    --------
+    data_profiling() -> pd.DataFrame:
+        Generates a DataFrame with column names, data types, and nullability information.
+        
+    profile_data(date_col: str, spend_col: str, vendor_col: str) -> pd.DataFrame:
+        Performs data profiling, such as counting distinct dates, months, years, and calculating the total spend.
+        
+    data_quality_metrics(date_col: str, spend_col: str, vendor_col: str, po_num_col: str) -> pd.DataFrame:
+        Calculates data quality metrics like null counts and unique counts for specific columns.
+        
+    store_in_db(df: pd.DataFrame, table_name: str) -> None:
+        Stores the given DataFrame into a MySQL table.
+        
+    run_all_profiles(date_col: str, spend_col: str, vendor_col: str, po_num_col: str) -> Dict[str, pd.DataFrame]:
+        Runs all profiling and quality metric functions, and stores the results in a database.
+    """
+
+    def __init__(self, filepath: str, separator: str = "|", db_url: str = ''):
+        """
+        Constructs necessary attributes for the DataProfiler object.
+
+        Parameters:
+        -----------
+        filepath : str
+            Path to the CSV file.
+        separator : str, optional
+            The delimiter used in the CSV file, default is '|'.
+        db_url : str, optional
+            The database connection URL.
+        """
+        self.filepath = filepath
+        self.separator = separator
+        self.df = pd.read_csv(self.filepath, delimiter=self.separator)
+        self.engine = sa.create_engine(db_url) if db_url else None
+
+    def data_profiling(self) -> pd.DataFrame:
+        """
+        Generate a DataFrame with column names, data types, and nullability information.
+
+        Returns:
+        --------
+        pd.DataFrame
+            DataFrame containing column information.
+        """
+        column_info = pd.DataFrame({
+            "Column Name": self.df.columns,
+            "Data Type": self.df.dtypes.astype(str),
+            "Is Nullable": self.df.isnull().any().map({True: 'Yes', False: 'No'})
+        })
+        return column_info
+
+    def profile_data(self, date_col: str, spend_col: str, vendor_col: str) -> pd.DataFrame:
+        """
+        Perform data profiling including distinct dates, months, years, and total spend.
+
+        Parameters:
+        -----------
+        date_col : str
+            Column name for the date.
+        spend_col : str
+            Column name for spend.
+        vendor_col : str
+            Column name for vendor.
+
+        Returns:
+        --------
+        pd.DataFrame
+            DataFrame with profiling information.
+        """
+        self.df[date_col] = pd.to_datetime(self.df[date_col], errors='coerce')
+        total_rows = len(self.df)
+        total_columns = len(self.df.columns)
+        distinct_dates = self.df[date_col].nunique()
+        
+        year_month_period = self.df[date_col].dt.to_period("M")
+        total_months = year_month_period.nunique()
+        max_yearmonth = year_month_period.max()
+        min_yearmonth = year_month_period.min()
+        
+        no_of_years = max_yearmonth.year - min_yearmonth.year + 1
+        total_spend = self.df[spend_col].sum()
+        distinct_vendors = self.df[vendor_col].nunique()
+
+        result_df = pd.DataFrame({
+            "Total_Number_of_rows": [total_rows],
+            "Total_Number_of_columns": [total_columns],
+            "Distinct_dates_count": [distinct_dates],
+            "Total_Number_of_Months": [total_months],
+            "Max_YearMonth": [max_yearmonth],
+            "Min_YearMonth": [min_yearmonth],
+            "No_of_Years": [no_of_years],
+            "Total_spend_amount": [total_spend],
+            "Distinct_Vendors_count": [distinct_vendors]
+        })
+        return result_df
+
+    def data_quality_metrics(self, date_col: str, spend_col: str, vendor_col: str, po_num_col: str) -> pd.DataFrame:
+        """
+        Calculate data quality metrics including null counts and unique counts.
+
+        Parameters:
+        -----------
+        date_col : str
+            Column name for the date.
+        spend_col : str
+            Column name for spend.
+        vendor_col : str
+            Column name for vendor.
+        po_num_col : str
+            Column name for purchase order number.
+
+        Returns:
+        --------
+        pd.DataFrame
+            DataFrame with data quality metrics.
+        """
+        date_null_count = self.df[date_col].isnull().sum()
+        spend_null_count = self.df[spend_col].isnull().sum()
+        vendor_null_count = self.df[vendor_col].isnull().sum()
+        po_null_count = self.df[po_num_col].isnull().sum()
+
+        date_unique_count = self.df[date_col].nunique()
+        spend_unique_count = self.df[spend_col].nunique()
+        vendor_unique_count = self.df[vendor_col].nunique()
+        po_unique_count = self.df[po_num_col].nunique()
+
+        result_df = pd.DataFrame({
+            "column_name": [date_col, spend_col, vendor_col, po_num_col],
+            "null_count": [date_null_count, spend_null_count, vendor_null_count, po_null_count],
+            "unique_count": [date_unique_count, spend_unique_count, vendor_unique_count, po_unique_count]
+        })
+        return result_df
+
+    def store_in_db(self, df: pd.DataFrame, table_name: str) -> None:
+        """
+        Store a DataFrame in a MySQL table.
+
+        Parameters:
+        -----------
+        df : pd.DataFrame
+            The DataFrame to store.
+        table_name : str
+            The name of the table where the data will be stored.
+        """
+        if self.engine:
+            df.to_sql(table_name, con=self.engine, if_exists='replace', index=False)
+            print(f"Data stored in MySQL table '{table_name}' successfully.")
+        else:
+            print("Database engine is not initialized.")
+
+    def run_all_profiles(self, date_col: str, spend_col: str, vendor_col: str, po_num_col: str) -> Dict[str, pd.DataFrame]:
+        """
+        Run all profiling and quality metric calculations, and store the results in the database.
+
+        Parameters:
+        -----------
+        date_col : str
+            Column name for the date.
+        spend_col : str
+            Column name for spend.
+        vendor_col : str
+            Column name for vendor.
+        po_num_col : str
+            Column name for purchase order number.
+
+        Returns:
+        --------
+        Dict[str, pd.DataFrame]
+            Dictionary with DataFrames for column info, data profile, and data quality metrics.
+        """
+        column_info = self.data_profiling()
+        data_profile = self.profile_data(date_col, spend_col, vendor_col)
+        data_quality = self.data_quality_metrics(date_col, spend_col, vendor_col, po_num_col)
+
+        # Store each DataFrame in the MySQL database
+        self.store_in_db(column_info, 'MetaData2')
+        self.store_in_db(data_profile, 'DtaProfiling_test2')
+        self.store_in_db(data_quality, 'ColumnMetrics2')
+
+        return {
+            "Column_info": column_info,
+            "Data_profile": data_profile,
+            "Data_quality": data_quality
+        }
+
+if __name__ == "__main__":
+    # Replace with your actual MySQL connection string
+    db_url = 'mysql+pymysql://user:password@host/dbname'
+    separator = "|"
+    profiler = DataProfiler(filepath='D:\\Babu\\test.csv', separator=separator, db_url=db_url)
+
+    date_col = 'POST_DATE_YEAR_MM_SKEY'
+    spend_col = 'HCO_DISTRBTN_AMT'
+    vendor_col = 'HCO_VNDR_NM'
+    po_num_col = 'HCO_PO_NBR'
+
+    results = profiler.run_all_profiles(date_col, spend_col, vendor_col, po_num_col)
+    print(results)
+    print("Successfully loaded all tables")
