@@ -164,3 +164,10 @@ class schemaValidator:
         return results, total_source_record_count, total_target_record_count
 
 
+
+=======================
+
+
+Error during schema mapping: Error tokenizing data. C error: Expected 31 fields in line 3, saw 34
+
+
