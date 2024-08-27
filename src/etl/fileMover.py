@@ -1,0 +1,48 @@
+import os
+import shutil
+
+
+class fileMover:
+    def __init__(self, source_dir, target_base_dir):
+        self.source_dir = source_dir
+        self.target_base_dir = target_base_dir
+
+    def identify_file_type(self, filename):
+        """Identify the type of the file based on its name."""
+        filename_lower = filename.lower()
+
+        if 'ap' in filename_lower:
+            return 'AP'
+        elif 'invoice' in filename_lower or 'inv' in filename_lower:
+            return 'INVOICE'
+        elif 'po' in filename_lower:
+            return 'PO'
+        else:
+            return None
+
+    def move_file(self, file_path, file_type):
+        """Move the file to the target directory based on its type."""
+        target_dir = os.path.join(self.target_base_dir, file_type)
+        os.makedirs(target_dir, exist_ok=True)  # Ensure the directory exists
+        destination_path = os.path.join(target_dir, os.path.basename(file_path))
+
+        try:
+            shutil.move(file_path, destination_path)
+            print(f"Moved '{os.path.basename(file_path)}' to '{destination_path}'")
+        except Exception as e:
+            print(f"Error moving file '{file_path}': {e}")
+
+    def move_files(self):
+        """Move files from the source directory to respective folders based on file type."""
+        for filename in os.listdir(self.source_dir):
+            file_path = os.path.join(self.source_dir, filename)
+
+            if os.path.isfile(file_path):
+                file_type = self.identify_file_type(filename)
+
+                if file_type:
+                    self.move_file(file_path, file_type)
+                else:
+                    print(f"File '{filename}' does not match any known type. Skipping.")
+
+

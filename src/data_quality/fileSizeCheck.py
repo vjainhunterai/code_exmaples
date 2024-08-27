@@ -1,0 +1,61 @@
+import os
+
+class FileSizeProcessor:
+    """
+    A class to process files in a directory based on their size.
+
+    Attributes:
+        dir_path (str): The path to the directory containing the files to be processed.
+    """
+
+    def __init__(self, dir_path):
+        """
+        Initializes the FileSizeProcessor with the directory path.
+
+        Args:
+            dir_path (str): The path to the directory containing the files to be processed.
+        """
+        self.dir_path = dir_path
+
+    def checkFileSize(self, file_path):
+        """
+        Checks the file size and returns either 0 or the actual size.
+
+        Args:
+            file_path (str): The path to the file to be checked.
+
+        Returns:
+            int: 0 if the file size is less than 500 KB, otherwise the actual file size in bytes.
+        """
+        file_size = os.path.getsize(file_path)
+        return file_size if file_size > 500 * 1024 else 0  # Return 0 if size < 500 KB, else return actual size
+
+    def processFile(self):
+        """
+        Processes all files in the directory and returns their sizes.
+
+        Returns:
+            list: A list of file sizes (0 if the file is less than 500 KB).
+        """
+        results = []
+        for file_name in os.listdir(self.dir_path):
+            file_path = os.path.join(self.dir_path, file_name)
+            if os.path.isfile(file_path):  # Ensure it's a file
+                file_size = self.checkFileSize(file_path)
+                results.append(file_size)
+        return results
+
+
+"""
+# Example usage
+if __name__ == "__main__":
+    dir_path = "C:\\Users\\jvineet\\PycharmProjects\\PythonLearnings\\Data\\raw\\LA"  # Replace with your directory path
+    processor = FileSizeProcessor(dir_path)
+    results = processor.processFile()
+    for size in results:
+        print(size)  # Prints the size in bytes or 0 if the file is less than 500 KB
+
+"""
+
+
+
