@@ -1,0 +1,115 @@
+import os
+import shutil
+import pandas as pd
+from sqlalchemy import create_engine, MetaData, Table
+from sqlalchemy.orm import sessionmaker
+from datetime import datetime
+
+# Class for handling schema validation
+class SchemaValidator:
+    def __init__(self, dbUrl):
+        self.engine = create_engine(dbUrl)
+        self.Session = sessionmaker(bind=self.engine)
+        self.metadata = MetaData()
+
+    def getSchemaFromDb(self, schemaTable, tableName):
+        session = self.Session()
+        try:
+            schema_table = Table(schemaTable, self.metadata, autoload_with=self.engine)
+            query = session.query(schema_table.c.Column_name).filter_by(table_name=tableName)
+            df_schema = pd.read_sql(query.statement, session.bind)
+            if not df_schema.empty:
+                schema = df_schema.iloc[0]['Column_name'].split('|')
+            else:
+                schema = None
+            return schema
+        except Exception as e:
+            print(f"Error fetching schema from database: {e}")
+            return None
+        finally:
+            session.close()
+
+    def getFileHeader(self, filePath, delimiter):
+        try:
+            df = pd.read_csv(filePath, delimiter=delimiter, nrows=0)
+            return df.columns.tolist()
+        except Exception as e:
+            print(f"Error reading file header: {e}")
+            return []
+
+    def validateSchema(self, schemaTable, tableName, filePath, delimiter):
+        schema = self.getSchemaFromDb(schemaTable, tableName)
+        if not schema:
+            return False, f"No schema found for table '{tableName}'."
+
+        header = self.getFileHeader(filePath, delimiter)
+        if not header:
+            return False, "Failed to read the file header."
+
+        is_match, report = self.compareSchemaAndHeader(schema, header)
+        return is_match, report
+
+    def compareSchemaAndHeader(self, schema, header):
+        try:
+            if schema == header:
+                return True, "Schema matches the file header."
+            else:
+                schema_set = set(schema)
+                header_set = set(header)
+                missing_columns = schema_set - header_set
+                extra_columns = header_set - schema_set
+                report = "Schema does not match the file header.\n"
+                if missing_columns:
+                    report += f"Missing columns: {', '.join(missing_columns)}\n"
+                if extra_columns:
+                    report += f"Extra columns: {', '.join(extra_columns)}\n"
+                return False, report
+        except Exception as e:
+            print(f"Error comparing schema and header: {e}")
+            return False, "Error during schema comparison."
+
+# Main program logic
+def main():
+    # Database URL and other parameters
+    dbUrl1 = "mysql+pymysql://admin:Gpoproddb!#!@prod-db.c969yoyq9cyy.us-east-1.rds.amazonaws.com/joblog_metadata"
+    tableName = 'AP'
+    schemaTable = 'Table_Schema'
+    directory_path = 'C:\\Users\\jvineet\\PycharmProjects\\PythonLearnings\\Data\\processed\\processed_source\\AP'
+    rejection_directory = 'C:\\Users\\jvineet\\PycharmProjects\\PythonLearnings\\Data\\processed\\processed_rejection\\AP'
+    delimiter = '|'  # Set your delimiter
+
+    # Initialize the schema validator
+    schema_validator = SchemaValidator(dbUrl1)
+
+    # Process each file in the directory
+    os.makedirs(rejection_directory, exist_ok=True)
+
+    start_time = datetime.now()
+    results = []
+    for filename in os.listdir(directory_path):
+        filePath = os.path.join(directory_path, filename)
+
+        if os.path.isfile(filePath):
+            # Validate the schema
+            is_valid, validation_report = schema_validator.validateSchema(schemaTable, tableName, filePath, delimiter)
+            if is_valid:
+                results.append((filename, "Validation Passed"))
+            else:
+                rejectionFilePath = os.path.join(rejection_directory, filename)
+                shutil.copy(filePath, rejectionFilePath)
+                results.append((filename, "Validation Failed"))
+                print(f"Schema validation failed for file '{filename}': {validation_report}")
+
+        else:
+            results.append((filename, "Not a file"))
+
+    end_time = datetime.now()
+
+    # Print or log your results
+    print(f"Validation completed in {end_time - start_time}")
+    print("Results:")
+    for filename, status in results:
+        print(f"File: {filename}, Status: {status}")
+
+if __name__ == "__main__":
+    main()
