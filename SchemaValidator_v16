@@ -68,9 +68,7 @@ class SchemaValidator:
             print(f"Error comparing schema and header: {e}")
             return False, "Error during schema comparison."
 
-# Main program logic
-def main():
-    # Database URL and other parameters
+# Database URL and other parameters
     dbUrl1 = "mysql+pymysql://admin:Gpoproddb!#!@prod-db.c969yoyq9cyy.us-east-1.rds.amazonaws.com/joblog_metadata"
     tableName = 'AP'
     schemaTable = 'Table_Schema'
@@ -85,6 +83,7 @@ def main():
     schema_validator = SchemaValidator(dbUrl1)
 
     # Process each file in the directory
+    os.makedirs(target_directory, exist_ok=True)
     os.makedirs(rejection_directory, exist_ok=True)
 
     start_time = datetime.now()
@@ -102,10 +101,12 @@ def main():
             # Validate the schema
             is_valid, validation_report = schema_validator.validateSchema(schemaTable, tableName, filePath, delimiter)
             if is_valid:
+                # Move file to target directory
+                shutil.move(filePath, os.path.join(target_directory, filename))
                 results.append((filename, 1, source_record_count))  # 1 indicates success
             else:
-                rejectionFilePath = os.path.join(rejection_directory, filename)
-                shutil.copy(filePath, rejectionFilePath)
+                # Move file to rejection directory
+                shutil.move(filePath, os.path.join(rejection_directory, filename))
                 results.append((filename, 0, source_record_count))  # 0 indicates failure
                 print(f"Schema validation failed for file '{filename}': {validation_report}")
         else:
@@ -144,13 +145,3 @@ def main():
             rejCnt=rej_cnt,
             jobStatus=job_status
         )
-
-    # Print or log your results
-    print(f"Validation completed in {end_time - start_time}")
-    print("Results:")
-    for filename, status in results:
-        status_str = "Success" if status == 1 else "Failed" if status == 0 else "Skipped"
-        print(f"File: {filename}, Status: {status_str}")
-
-if __name__ == "__main__":
-    main()
