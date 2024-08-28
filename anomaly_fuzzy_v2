@@ -1,0 +1,159 @@
+import pandas as pd
+from IPython.core.interactiveshell import InteractiveShell  # noqa
+InteractiveShell.ast_node_interactivity = "all"  # noqa
+import numpy as np
+import pymysql
+import time
+from sqlalchemy import create_engine
+import Levenshtein
+from fuzzywuzzy import fuzz
+from doublemetaphone import doublemetaphone
+from tqdm import tqdm  # Import tqdm for progress bar
+
+def readSystemsFromDataBase_L3(tableName):
+    dbConn = pymysql.connect(host="prod-db.c969yoyq9cyy.us-east-1.rds.amazonaws.com",
+                             database="stg_tbl",
+                             user="admin",
+                             password="Gpoproddb!#!")
+    dbCursor = dbConn.cursor()
+
+    dummy = dbCursor.execute("DESCRIBE " + tableName + ";")
+    tableInvMaster = dbCursor.fetchall()
+    tableInvMasterKey = [value[0] for value in tableInvMaster]
+
+    query = '''
+   SELECT  distinct Inv_No_supplier AS Supplier_Invoice_Number, 
+                    Pay_Amount2 AS Extended_Amount, 
+                    supp_no_dedup,
+                    Invoice_Amount,
+                    Chq_No
+    FROM stg_tbl.`duplicate_invoices_cases_2024`
+   ;
+    '''
+    dummy = dbCursor.execute(query)
+    tableInvMasterData = dbCursor.fetchall()
+
+    df = pd.DataFrame(tableInvMasterData)
+
+    if not df.empty:
+        df.columns = ["Supplier_Invoice_Number", "Extended_Amount", "supp_no_dedup", "Invoice_Amount", "Chq_No"]
+
+    return df
+
+def writeResultsToDatabase(results, tableName):
+    dbConn = pymysql.connect(host="prod-db.c969yoyq9cyy.us-east-1.rds.amazonaws.com",
+                             database="stg_tbl",
+                             user="admin",
+                             password="Gpoproddb!#!")
+    dbCursor = dbConn.cursor()
+
+    create_table_query = f"""
+    CREATE TABLE IF NOT EXISTS {tableName} (
+        inv1 VARCHAR(255),
+        inv2 VARCHAR(255),
+        extended_amount FLOAT,
+        supp_no_dedup VARCHAR(255),
+        algorithms_used VARCHAR(255)
+    );
+    """
+    dbCursor.execute(create_table_query)
+
+    insert_query = f"INSERT INTO {tableName} (inv1, inv2, extended_amount, supp_no_dedup, algorithms_used) VALUES (%s, %s, %s, %s, %s)"
+    dbCursor.executemany(insert_query, results)
+
+    dbConn.commit()
+    dbCursor.close()
+    dbConn.close()
+
+df = readSystemsFromDataBase_L3("dim_vendor")
+df.shape
+df.head()
+
+grouped = df.groupby(['Extended_Amount', 'supp_no_dedup']).apply(lambda x: x.sort_values('Supplier_Invoice_Number')).reset_index(drop=True)
+
+def find_similar_invoices(df):
+    similar_invoices = []
+    total_groups = len(df.groupby(['Extended_Amount', 'supp_no_dedup']))
+    group_progress = tqdm(total=total_groups, desc="Processing Groups")
+
+    for (amount, supp_no_dedup), group in df.groupby(['Extended_Amount', 'supp_no_dedup']):
+        invoices = group['Supplier_Invoice_Number'].tolist()
+        amounts = group['Invoice_Amount'].tolist()
+        chq_nos = group['Chq_No'].tolist()
+
+        for i in range(len(invoices) - 1):
+            for j in range(i + 1, len(invoices)):
+                if amounts[i] == amounts[j] and chq_nos[i] != chq_nos[j]:  # Check Invoice_Amount and Chq_No
+                    similar, algorithms = are_similar(invoices[i], invoices[j], thresholds)
+                    if similar:
+                        similar_invoices.append((invoices[i], invoices[j], amount, supp_no_dedup, algorithms))
+        group_progress.update(1)
+    group_progress.close()
+    return similar_invoices
+
+def are_similar_levenshtein(inv1, inv2, threshold):
+    if inv1 is None or inv2 is None:
+        return False
+
+    inv1 = inv1.lstrip('0')
+    inv2 = inv2.lstrip('0')
+
+    distance = Levenshtein.distance(inv1, inv2)
+    return distance <= threshold
+
+def are_similar_fuzzy(inv1, inv2, threshold):
+    if inv1 is None or inv2 is None:
+        return False
+
+    inv1 = inv1.lstrip('0')
+    inv2 = inv2.lstrip('0')
+
+    similarity = fuzz.ratio(inv1, inv2)
+    return similarity >= threshold
+
+def are_similar_soundex(inv1, inv2):
+    if inv1 is None or inv2 is None:
+        return False
+
+    inv1 = inv1.lstrip('0')
+    inv2 = inv2.lstrip('0')
+
+    soundex1 = doublemetaphone(inv1)
+    soundex2 = doublemetaphone(inv2)
+
+    return soundex1 == soundex2
+
+def are_similar(inv1, inv2, thresholds):
+    results = []
+    algorithms = []
+
+    length_threshold = 5 if len(inv1) > 10 and len(inv2) > 10 else 3
+
+    if are_similar_levenshtein(inv1, inv2, threshold=length_threshold):
+        results.append(True)
+        algorithms.append('Levenshtein')
+    else:
+        results.append(False)
+
+    if are_similar_fuzzy(inv1, inv2, threshold=length_threshold):
+        results.append(True)
+        algorithms.append('Fuzzy')
+    else:
+        results.append(False)
+
+    if are_similar_soundex(inv1, inv2):
+        results.append(True)
+        algorithms.append('Soundex')
+    else:
+        results.append(False)
+
+    return results.count(True) > 1, ', '.join(algorithms)
+
+thresholds = {
+    'levenshtein': 3,
+    'fuzzy': 98,
+    'thlength': 3
+}
+
+similar_invoices = find_similar_invoices(grouped)
+writeResultsToDatabase(similar_invoices, "similar_invoices_london_2024_v1")
