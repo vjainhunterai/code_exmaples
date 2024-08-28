@@ -68,8 +68,8 @@ class SchemaValidator:
             print(f"Error comparing schema and header: {e}")
             return False, "Error during schema comparison."
 
-    # Main program logic
-
+# Main program logic
+def main():
     # Database URL and other parameters
     dbUrl1 = "mysql+pymysql://admin:Gpoproddb!#!@prod-db.c969yoyq9cyy.us-east-1.rds.amazonaws.com/joblog_metadata"
     tableName = 'AP'
@@ -77,6 +77,8 @@ class SchemaValidator:
     directory_path = 'C:\\Users\\jvineet\\PycharmProjects\\PythonLearnings\\Data\\processed\\processed_source\\AP'
     rejection_directory = 'C:\\Users\\jvineet\\PycharmProjects\\PythonLearnings\\Data\\processed\\processed_rejection\\AP'
     delimiter = '|'  # Set your delimiter
+    exec_id = "your_execution_id"  # Assume this is provided
+    step_logger = "your_step_logger_instance"  # Assume this is an initialized instance of your logger
 
     # Initialize the schema validator
     schema_validator = SchemaValidator(dbUrl1)
@@ -85,31 +87,32 @@ class SchemaValidator:
     os.makedirs(rejection_directory, exist_ok=True)
 
     start_time = datetime.now()
+    total_source_record_count = 0
     results = []
+
     for filename in os.listdir(directory_path):
         filePath = os.path.join(directory_path, filename)
 
         if os.path.isfile(filePath):
+            # Calculate the source record count (excluding header)
+            source_record_count = sum(1 for _ in open(filePath)) - 1
+            total_source_record_count += source_record_count
+
             # Validate the schema
             is_valid, validation_report = schema_validator.validateSchema(schemaTable, tableName, filePath, delimiter)
             if is_valid:
-                results.append((filename, "Validation Passed"))
+                results.append((filename, 1, source_record_count))  # 1 indicates success
             else:
                 rejectionFilePath = os.path.join(rejection_directory, filename)
                 shutil.copy(filePath, rejectionFilePath)
-                results.append((filename, "Validation Failed"))
+                results.append((filename, 0, source_record_count))  # 0 indicates failure
                 print(f"Schema validation failed for file '{filename}': {validation_report}")
-
         else:
-            results.append((filename, "Not a file"))
+            results.append((filename, -2, 0))  # -2 indicates non-file
 
     end_time = datetime.now()
 
-    # Print or log your results
-    print(f"Validation completed in {end_time - start_time}")
-    print("Results:")
-    for filename, status in results:
-        print(f"File: {filename}, Status: {status}")
+    # Logging the results using step_logger
     for file, status, record_count in results:
         if status == 1:
             job_status = "Success"
@@ -140,3 +143,13 @@ class SchemaValidator:
             rejCnt=rej_cnt,
             jobStatus=job_status
         )
+
+    # Print or log your results
+    print(f"Validation completed in {end_time - start_time}")
+    print("Results:")
+    for filename, status in results:
+        status_str = "Success" if status == 1 else "Failed" if status == 0 else "Skipped"
+        print(f"File: {filename}, Status: {status_str}")
+
+if __name__ == "__main__":
+    main()
