@@ -1,0 +1,193 @@
+import os
+import pandas as pd
+from sqlalchemy import create_engine, text
+from sqlalchemy.orm import sessionmaker
+from datetime import datetime
+from cryptography.hazmat.primitives import hashes
+from cryptography.hazmat.backends import default_backend
+from cryptography.hazmat.primitives import hmac
+
+class dataLoader:
+    """
+    A class to load data from files into a database table with added metadata and hash keys.
+
+    Attributes:
+        file_type (str): Type of files to load (e.g., 'csv').
+        table_name (str): Name of the database table to load data into.
+        directory_path (str): Path to the directory containing the files.
+        delimiter (str): Delimiter used in the files.
+        db_uri (str): Database URI for SQLAlchemy engine.
+        load_user (str): User responsible for the load process.
+        engine (sqlalchemy.engine.Engine): SQLAlchemy engine instance.
+        Session (sqlalchemy.orm.session.Session): SQLAlchemy sessionmaker bound to the engine.
+        job_results (list): List of dictionaries containing results for each file processed.
+    """
+
+    def __init__(self, file_type, table_name, directory_path, delimiter, db_uri, load_user):
+        """
+        Initializes the dataLoader with necessary attributes.
+
+        Parameters:
+            file_type (str): Type of files to load (e.g., 'csv').
+            table_name (str): Name of the database table to load data into.
+            directory_path (str): Path to the directory containing the files.
+            delimiter (str): Delimiter used in the files.
+            db_uri (str): Database URI for SQLAlchemy engine.
+            load_user (str): User responsible for the load process.
+        """
+        self.file_type = file_type.lower()
+        self.table_name = table_name
+        self.directory_path = directory_path
+        self.delimiter = delimiter
+        self.db_uri = db_uri
+        self.load_user = load_user
+        self.engine = create_engine(db_uri)
+        self.Session = sessionmaker(bind=self.engine)
+        self.job_results = []  # To store results of each file processing
+
+    def load_data(self):
+        """
+        Loads data from files in the specified directory into the database table.
+
+        Processes each file by reading its content, adding a hash key and metadata,
+        and then inserting the data into the specified database table.
+        Tracks and stores the results of each file processing in `job_results`.
+        """
+        # List all files in the directory that match the specified file type
+        files = [f for f in os.listdir(self.directory_path) if self.file_type in f.lower()]
+        
+        # Process each file individually
+        for file in files:
+            file_path = os.path.join(self.directory_path, file)
+            try:
+                data = self._read_file(file_path)
+                if data is not None:
+                    processed_count = len(data)  # Number of records in the source file
+                    data = self._add_hash_key(data)
+                    data = self._add_metadata(data)
+                    rows_inserted = self._insert_data(data)
+                    
+                    # Store the result of processing this file
+                    self.job_results.append({
+                        'file_name': file,
+                        'source_records_count': processed_count,
+                        'records_loaded': rows_inserted,
+                        'status': 'Completed' if rows_inserted > 0 else 'Failed'
+                    })
+                else:
+                    # If reading file failed, mark it as failed
+                    self.job_results.append({
+                        'file_name': file,
+                        'source_records_count': 0,
+                        'records_loaded': 0,
+                        'status': 'Failed'
+                    })
+            except Exception as e:
+                # Catch any exceptions during file processing and record as failed
+                print(f"Error processing file {file}: {e}")
+                self.job_results.append({
+                    'file_name': file,
+                    'source_records_count': 0,
+                    'records_loaded': 0,
+                    'status': f'Failed: {e}'
+                })
+
+    def _read_file(self, file_path):
+        """
+        Reads a file into a Pandas DataFrame.
+
+        Parameters:
+            file_path (str): The path to the file to be read.
+
+        Returns:
+            DataFrame: The data read from the file.
+            None: If an error occurs during file reading.
+        """
+        try:
+            return pd.read_csv(file_path, delimiter=self.delimiter)
+        except Exception as e:
+            print(f"Error reading file {file_path}: {e}")
+            return None
+
+    def _add_hash_key(self, data):
+        """
+        Adds a hash key to each row in the DataFrame.
+
+        The hash key is generated by concatenating all column values of a row and hashing the result.
+
+        Parameters:
+            data (DataFrame): The data to which the hash key is to be added.
+
+        Returns:
+            DataFrame: The data with an additional 'hash_key' column.
+        """
+        def hash_row(row):
+            # Concatenate all column values of a row into a single string
+            concatenated = ''.join(str(row[col]) for col in data.columns)
+            
+            # Create a SHA256 HMAC hash of the concatenated string
+            digest = hmac.HMAC(b'secret_key', hashes.SHA256(), backend=default_backend())
+            digest.update(concatenated.encode('utf-8'))
+            return digest.finalize().hex()
+
+        # Insert the 'hash_key' column at the beginning of the DataFrame
+        data.insert(0, 'hash_key', data.apply(hash_row, axis=1))
+        return data
+
+    def _add_metadata(self, data):
+        """
+        Adds metadata columns ('load_user' and 'load_date') to the DataFrame.
+
+        Parameters:
+            data (DataFrame): The data to which metadata is to be added.
+
+        Returns:
+            DataFrame: The data with additional metadata columns.
+        """
+        data['load_user'] = self.load_user
+        data['load_date'] = datetime.now()
+        return data
+
+    def _insert_data(self, data):
+        """
+        Inserts the DataFrame into the database table.
+
+        Parameters:
+            data (DataFrame): The data to be inserted into the database.
+
+        Returns:
+            int: The total number of records in the table after insertion.
+        """
+        try:
+            with self.engine.begin() as connection:
+                # Insert data into the specified table, append if it already exists
+                data.to_sql(self.table_name, con=connection, if_exists='append', index=False)
+                
+                # Get the total number of records in the table after insertion
+                result = connection.execute(text(f"SELECT COUNT(*) FROM {self.table_name}"))
+                return result.scalar()
+        except Exception as e:
+            print(f"Error inserting data into {self.table_name}: {e}")
+            return 0
+
+    def close(self):
+        """
+        Disposes of the SQLAlchemy engine and returns the job results.
+
+        Returns:
+            list: A list of dictionaries, each containing the results for a file processed.
+        """
+        self.engine.dispose()
+        return self.job_results
+
+
+
+############################
+
+loader = dataLoader('csv', 'your_table', '/path/to/files', ',', 'sqlite:///your_database.db', 'user_name')
+loader.load_data()
+job_summary = loader.close()
+
+for job in job_summary:
+    print(f"File: {job['file_name']}, Source Records: {job['source_records_count']}, "
+          f"Records Loaded: {job['records_loaded']}, Status: {job['status']}")
