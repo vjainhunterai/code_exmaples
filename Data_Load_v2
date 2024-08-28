@@ -60,8 +60,28 @@ class DataLoader:
     def close(self):
         self.engine.dispose()
 
-# Example usage
-# db_uri = "mysql+pymysql://username:password@host:port/database_name"
-# loader = DataLoader(file_type='ap', table_name='target_table', directory_path='/path/to/files', delimiter=',', db_uri=db_uri, load_user='admin')
-# loader.load_data()
-# loader.close()
+ # Example usage
+    db_uri = "mysql+pymysql://admin:Gpoproddb!#!@prod-db.c969yoyq9cyy.us-east-1.rds.amazonaws.com/joblog_metadata"
+    file_type = 'AP'
+    table_name = 'target_table'
+    directory_path = 'C:\\Users\\jvineet\\PycharmProjects\\PythonLearnings\\Data\\processed\\processed_valid\\AP'
+    delimiter = '|'
+    db_uri = db_uri
+    load_user = 'admin'
+    loader = dataLoader(file_type=file_type, table_name=table_name, directory_path=directory_path, delimiter=delimiter,
+                        db_uri=db_uri, load_user='admin')
+    loader.load_data()
+    loader.close()
+    end_time = datetime.now()
+    db_handler = databaseHandler('mysql+pymysql://admin:Gpoproddb!#!@prod-db.c969yoyq9cyy.us-east-1.rds.amazonaws.com/joblog_metadata')
+    audit_logger = auditLogger(db_handler)
+    # Update an existing audit entry
+    updated_values = {
+        'job_status': 'Completed',
+        'processed_cnt': 100,
+        'rejection_rsn': invalid_rows_count  # Clear rejection reason if processing was successful
+    }
+    audit_logger.updateAudit(exec_id, updated_values)
+
+
+
