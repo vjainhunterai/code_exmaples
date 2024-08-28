@@ -75,6 +75,7 @@ def main():
     tableName = 'AP'
     schemaTable = 'Table_Schema'
     directory_path = 'C:\\Users\\jvineet\\PycharmProjects\\PythonLearnings\\Data\\processed\\processed_source\\AP'
+    target_directory = 'C:\\Users\\jvineet\\PycharmProjects\\PythonLearnings\\Data\\processed\\processed_schema_valid\\AP'
     rejection_directory = 'C:\\Users\\jvineet\\PycharmProjects\\PythonLearnings\\Data\\processed\\processed_rejection\\AP'
     delimiter = '|'  # Set your delimiter
     exec_id = "your_execution_id"  # Assume this is provided
