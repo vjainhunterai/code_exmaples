@@ -68,8 +68,8 @@ class SchemaValidator:
             print(f"Error comparing schema and header: {e}")
             return False, "Error during schema comparison."
 
-# Main program logic
-def main():
+    # Main program logic
+
     # Database URL and other parameters
     dbUrl1 = "mysql+pymysql://admin:Gpoproddb!#!@prod-db.c969yoyq9cyy.us-east-1.rds.amazonaws.com/joblog_metadata"
     tableName = 'AP'
@@ -110,6 +110,33 @@ def main():
     print("Results:")
     for filename, status in results:
         print(f"File: {filename}, Status: {status}")
+    for file, status, record_count in results:
+        if status == 1:
+            job_status = "Success"
+            tgt_cnt = record_count
+            rej_cnt = 0
+        elif status == 0:
+            job_status = "Failed"
+            tgt_cnt = 0
+            rej_cnt = record_count
+        elif status == -1:
+            job_status = "Error"
+            tgt_cnt = 0
+            rej_cnt = 0
+        else:
+            job_status = "Skipped"
+            tgt_cnt = 0
+            rej_cnt = 0
 
-if __name__ == "__main__":
-    main()
+        step_logger.logStep(
+            execId=exec_id,
+            jobName="Schema Validation",
+            fileName=file,
+            startTime=start_time,
+            endTime=end_time,
+            srcCnt=total_source_record_count,
+            tgtCnt=tgt_cnt,
+            lkpCnt=0,
+            rejCnt=rej_cnt,
+            jobStatus=job_status
+        )
