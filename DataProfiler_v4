@@ -1,0 +1,203 @@
+import os
+import pandas as pd
+import sqlalchemy as sa
+from typing import Dict, Optional
+
+class DataProfiler:
+    """
+    A class for profiling and analyzing data from delimited files.
+    """
+
+    def __init__(self, filepath: str, file_type: str, separator: str = "|", db_url: str = ''):
+        """
+        Initializes the DataProfiler with file path, type, separator, and optional database URL.
+        """
+        self.filepath = filepath
+        self.file_type = file_type
+        self.separator = separator
+        self.df = pd.read_csv(self.filepath, delimiter=self.separator)
+        self.engine = sa.create_engine(db_url) if db_url else None
+
+        # Load column mappings from the database
+        self.column_mapping = self.load_column_mappings()
+
+    def load_column_mappings(self) -> Dict[str, Dict[str, str]]:
+        """
+        Loads column mappings from the `profile_metadata` table in the database.
+
+        Returns:
+            Dict[str, Dict[str, str]]: A dictionary containing column mappings for different file types.
+        """
+        if not self.engine:
+            raise ValueError("Database engine is not initialized.")
+        
+        query = """
+        SELECT file_type, column_name, column_value
+        FROM profile_metadata
+        """
+        with self.engine.connect() as connection:
+            result = connection.execute(query)
+            rows = result.fetchall()
+
+        # Process the query result into a dictionary
+        column_mapping = {}
+        for row in rows:
+            file_type, column_name, column_value = row
+            if file_type not in column_mapping:
+                column_mapping[file_type] = {}
+            column_mapping[file_type][column_name] = column_value
+
+        return column_mapping
+
+    def data_profiling(self) -> pd.DataFrame:
+        """
+        Profiles the data to get information about column names, data types, and nullability.
+        """
+        column_info = pd.DataFrame({
+            "Column Name": self.df.columns,
+            "Data Type": self.df.dtypes.astype(str),
+            "Is Nullable": self.df.isnull().any().map({True: 'Yes', False: 'No'})
+        })
+        return column_info
+
+    def profile_data(self) -> pd.DataFrame:
+        """
+        Profiles the data based on the file type to get statistics such as total rows, distinct dates,
+        total spend amount, etc.
+        """
+        if self.file_type not in self.column_mapping:
+            raise ValueError(f"Unsupported file type: {self.file_type}")
+
+        columns = self.column_mapping[self.file_type]
+        self.df[columns['date_col']] = pd.to_datetime(self.df[columns['date_col']], errors='coerce')
+        
+        total_rows = len(self.df)
+        total_columns = len(self.df.columns)
+        distinct_dates = self.df[columns['date_col']].nunique()
+        
+        year_month_period = self.df[columns['date_col']].dt.to_period("M")
+        total_months = year_month_period.nunique()
+        max_yearmonth = year_month_period.max()
+        min_yearmonth = year_month_period.min()
+        
+        no_of_years = max_yearmonth.year - min_yearmonth.year + 1
+        total_spend = self.df[columns['spend_col']].sum()
+        distinct_vendors = self.df[columns['vendor_col']].nunique()
+
+        result_df = pd.DataFrame({
+            "Total_Number_of_rows": [total_rows],
+            "Total_Number_of_columns": [total_columns],
+            "Distinct_dates_count": [distinct_dates],
+            "Total_Number_of_Months": [total_months],
+            "Max_YearMonth": [max_yearmonth],
+            "Min_YearMonth": [min_yearmonth],
+            "No_of_Years": [no_of_years],
+            "Total_spend_amount": [total_spend],
+            "Distinct_Vendors_count": [distinct_vendors]
+        })
+        return result_df
+
+    def data_quality_metrics(self) -> pd.DataFrame:
+        """
+        Computes data quality metrics including null counts and unique counts for columns.
+        """
+        if self.file_type not in self.column_mapping:
+            raise ValueError(f"Unsupported file type: {self.file_type}")
+
+        columns = self.column_mapping[self.file_type]
+        
+        metrics = {
+            "column_name": [],
+            "null_count": [],
+            "unique_count": []
+        }
+
+        for col_name in columns.values():
+            metrics["column_name"].append(col_name)
+            metrics["null_count"].append(self.df[col_name].isnull().sum())
+            metrics["unique_count"].append(self.df[col_name].nunique())
+
+        result_df = pd.DataFrame(metrics)
+        return result_df
+
+    def store_in_db(self, df: pd.DataFrame, table_name: str) -> None:
+        """
+        Stores a DataFrame in the specified database table.
+        """
+        if self.engine:
+            df.to_sql(table_name, con=self.engine, if_exists='replace', index=False)
+            print(f"Data stored in MySQL table '{table_name}' successfully.")
+        else:
+            print("Database engine is not initialized.")
+
+    def run_all_profiles(self) -> Dict[str, pd.DataFrame]:
+        """
+        Runs all profiling methods and stores the results in the database.
+        """
+        column_info = self.data_profiling()
+        data_profile = self.profile_data()
+        data_quality = self.data_quality_metrics()
+
+        # Store profiling results in the database
+        self.store_in_db(column_info, f'MetaData_{self.file_type}')
+        self.store_in_db(data_profile, f'DtaProfiling_{self.file_type}')
+        self.store_in_db(data_quality, f'ColumnMetrics_{self.file_type}')
+
+        return {
+            "Column_info": column_info,
+            "Data_profile": data_profile,
+            "Data_quality": data_quality
+        }
+
+def process_directory(directory_path: str, file_type: str, delimiter: str, db_url: str) -> None:
+    """
+    Processes all files in a given directory based on the file type and delimiter.
+
+    Args:
+        directory_path (str): The path to the directory containing files.
+        file_type (str): The type of file to process ('AP', 'PO', or 'Invoice').
+        delimiter (str): The delimiter used in the files.
+        db_url (str): The database URL for storing results.
+
+    Returns:
+        None
+    """
+    if not os.path.isdir(directory_path):
+        print(f"Directory not found: {directory_path}")
+        return
+
+    files = [f for f in os.listdir(directory_path) if os.path.isfile(os.path.join(directory_path, f))]
+    if not files:
+        print(f"No files found in directory: {directory_path}")
+        return
+
+    for file_name in files:
+        file_path = os.path.join(directory_path, file_name)
+        print(f"Processing file: {file_path}")
+        try:
+            # Initialize DataProfiler class with file path, file type, delimiter, and database URL
+            profiler = DataProfiler(filepath=file_path, file_type=file_type, separator=delimiter, db_url=db_url)
+            
+            # Run all profiling methods
+            results = profiler.run_all_profiles()
+            
+            print(f"Successfully processed file: {file_path}")
+            print(results)
+        except FileNotFoundError:
+            print(f"File not found: {file_path}")
+        except pd.errors.EmptyDataError:
+            print(f"File is empty: {file_path}")
+        except ValueError as ve:
+            print(f"Value error for file {file_path}: {ve}")
+        except Exception as e:
+            print(f"An error occurred while processing file {file_path}: {e}")
+
+if __name__ == "__main__":
+    # Define your directory path, file type, delimiter, and database URL
+    directory_path = 'D:\\YourDirectoryPath'  # Update with your directory path
+    file_type = 'AP'  # Change to 'PO' or 'Invoice' as needed
+    delimiter = '|'  # Update if needed
+    db_url = 'mysql+pymysql://user:password@host/dbname'  # Update with your database URL
+
+    # Process files in the directory
+    process_directory(directory_path, file_type, delimiter, db_url)
