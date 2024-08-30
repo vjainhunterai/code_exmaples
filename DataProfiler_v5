@@ -206,3 +206,15 @@ if __name__ == "__main__":
 
     # Process files in the directory
     process_directory(directory_path, file_type, delimiter, db_url)
+    step_logger.logStep(
+            execId=exec_id,
+            jobName="Table Data Load",
+            fileName=File,
+            startTime=start_time,
+            endTime=end_time,
+            srcCnt=Source_Records,
+            tgtCnt=Records_Loaded,
+            lkpCnt=0,
+            rejCnt=Source_Records - Records_Loaded,
+            jobStatus=Status
+        )
