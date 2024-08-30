@@ -145,9 +145,9 @@ class DataProfiler:
         }
 
 
-def process_directory(directory_path: str, file_type: str, delimiter: str, db_url: str) -> None:
+def process_directory(directory_path: str, file_type: str, delimiter: str, db_url: str) -> Dict[str, Dict[str, Optional[int]]]:
     """
-    Processes all files in a given directory based on the file type and delimiter, and logs the steps.
+    Processes all files in a given directory based on the file type and delimiter, and returns profiling results.
 
     Args:
         directory_path (str): The path to the directory containing files.
@@ -156,16 +156,18 @@ def process_directory(directory_path: str, file_type: str, delimiter: str, db_ur
         db_url (str): The database URL for storing results.
 
     Returns:
-        None
+        Dict[str, Dict[str, Optional[int]]]: A dictionary with profiling results for each file.
     """
+    results = {}
+    
     if not os.path.isdir(directory_path):
         print(f"Directory not found: {directory_path}")
-        return
+        return results
 
     files = [f for f in os.listdir(directory_path) if os.path.isfile(os.path.join(directory_path, f))]
     if not files:
         print(f"No files found in directory: {directory_path}")
-        return
+        return results
 
     for file_name in files:
         file_path = os.path.join(directory_path, file_name)
@@ -177,19 +179,8 @@ def process_directory(directory_path: str, file_type: str, delimiter: str, db_ur
             # Run all profiling methods and get the return values for logging
             profile_results = profiler.run_all_profiles()
 
-            # Log the profiling steps
-            step_logger.logStep(
-                execId="YourExecId",  # Replace with your execution ID
-                jobName="Table Data Load",
-                fileName=profile_results["file_name"],
-                startTime=profile_results["start_time"],
-                endTime=profile_results["end_time"],
-                srcCnt=profile_results["source_count"],
-                tgtCnt=profile_results["target_count"],
-                lkpCnt=0,
-                rejCnt=profile_results["rejection_count"],
-                jobStatus=profile_results["job_status"]
-            )
+            # Store profiling results in the dictionary
+            results[file_name] = profile_results
 
             print(f"Successfully processed and logged file: {file_path}")
         except FileNotFoundError:
@@ -200,6 +191,8 @@ def process_directory(directory_path: str, file_type: str, delimiter: str, db_ur
             print(f"Value error for file {file_path}: {ve}")
         except Exception as e:
             print(f"An error occurred while processing file {file_path}: {e}")
+    
+    return results
 
 
 if __name__ == "__main__":
@@ -209,5 +202,20 @@ if __name__ == "__main__":
     delimiter = '|'  # Update if needed
     db_url = "mysql+pymysql://admin:Gpoproddb!#!@prod-db.c969yoyq9cyy.us-east-1.rds.amazonaws.com/joblog_metadata"  # Update with your database URL
 
-    # Process files in the directory
-    process_directory(directory_path, file_type, delimiter, db_url)
+    # Process files in the directory and get profiling results
+    profiling_results = process_directory(directory_path, file_type, delimiter, db_url)
+
+    # Log the profiling results
+    for file_name, results in profiling_results.items():
+        step_logger.logStep(
+            execId="YourExecId",  # Replace with your execution ID
+            jobName="Table Data Load",
+            fileName=results["file_name"],
+            startTime=results["start_time"],
+            endTime=results["end_time"],
+            srcCnt=results["source_count"],
+            tgtCnt=results["target_count"],
+            lkpCnt=0,
+            rejCnt=results["rejection_count"],
+            jobStatus=results["job_status"]
+        )
