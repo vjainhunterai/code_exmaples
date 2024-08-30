@@ -1,6 +1,7 @@
 import os
 import pandas as pd
 import sqlalchemy as sa
+from sqlalchemy import text
 from typing import Dict, Optional
 
 
@@ -32,10 +33,11 @@ class DataProfiler:
         if not self.engine:
             raise ValueError("Database engine is not initialized.")
 
-        query = """
+        query = text("""
         SELECT file_type, column_name, column_value
         FROM profile_metadata
-        """
+        """)
+        
         with self.engine.connect() as connection:
             result = connection.execute(query)
             rows = result.fetchall()
@@ -204,13 +206,3 @@ if __name__ == "__main__":
 
     # Process files in the directory
     process_directory(directory_path, file_type, delimiter, db_url)
-
-
-
-#####################
-
-C:\Users\jvineet\PycharmProjects\PythonLearnings\.venv\Scripts\python.exe C:\Users\jvineet\Documents\Github2\dev_python\dev_python\src\data_profiling\dataProfiler.py 
-Processing file: C:\Users\jvineet\PycharmProjects\PythonLearnings\Data\processed\processed_valid\AP\valid_Community_Hospital_and_Wellness_110923_ap.txt
-An error occurred while processing file C:\Users\jvineet\PycharmProjects\PythonLearnings\Data\processed\processed_valid\AP\valid_Community_Hospital_and_Wellness_110923_ap.txt: Not an executable object: '\n        SELECT file_type, column_name, column_value\n        FROM profile_metadata\n        '
-
-Process finished with exit code 0
