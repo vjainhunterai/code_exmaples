@@ -1,1 +1,43 @@
 gcc glibc-devel make ncurses-devel openssl-devel autoconf
+
+
+#
+
+[ec2-user@ip-172-31-18-166 ~]$ sudo yum install -y erlang
+Loaded plugins: extras_suggestions, langpacks, priorities, update-motd
+Existing lock /var/run/yum.pid: another copy is running as pid 2121.
+Another app is currently holding the yum lock; waiting for it to exit...
+  The other application is: yum
+    Memory : 374 M RSS (601 MB VSZ)
+    Started: Fri Aug 30 12:05:59 2024 - 00:08 ago
+    State  : Running, pid: 2121
+Another app is currently holding the yum lock; waiting for it to exit...
+  The other application is: yum
+    Memory : 374 M RSS (601 MB VSZ)
+    Started: Fri Aug 30 12:05:59 2024 - 00:10 ago
+    State  : Running, pid: 2121
+230 packages excluded due to repository priority protections
+Resolving Dependencies
+--> Running transaction check
+---> Package erlang.x86_64 0:26.2.5.2-1.el9 will be installed
+--> Processing Dependency: libc.so.6(GLIBC_2.34)(64bit) for package: erlang-26.2.5.2-1.el9.x86_64
+--> Processing Dependency: libz.so.1(ZLIB_1.2.7.1)(64bit) for package: erlang-26.2.5.2-1.el9.x86_64
+--> Processing Dependency: libstdc++.so.6(GLIBCXX_3.4.29)(64bit) for package: erlang-26.2.5.2-1.el9.x86_64
+--> Processing Dependency: libm.so.6(GLIBC_2.29)(64bit) for package: erlang-26.2.5.2-1.el9.x86_64
+--> Processing Dependency: libcrypto.so.3(OPENSSL_3.0.0)(64bit) for package: erlang-26.2.5.2-1.el9.x86_64
+--> Processing Dependency: libcrypto.so.3()(64bit) for package: erlang-26.2.5.2-1.el9.x86_64
+--> Finished Dependency Resolution
+Error: Package: erlang-26.2.5.2-1.el9.x86_64 (modern-erlang)
+           Requires: libcrypto.so.3(OPENSSL_3.0.0)(64bit)
+Error: Package: erlang-26.2.5.2-1.el9.x86_64 (modern-erlang)
+           Requires: libm.so.6(GLIBC_2.29)(64bit)
+Error: Package: erlang-26.2.5.2-1.el9.x86_64 (modern-erlang)
+           Requires: libstdc++.so.6(GLIBCXX_3.4.29)(64bit)
+Error: Package: erlang-26.2.5.2-1.el9.x86_64 (modern-erlang)
+           Requires: libcrypto.so.3()(64bit)
+Error: Package: erlang-26.2.5.2-1.el9.x86_64 (modern-erlang)
+           Requires: libz.so.1(ZLIB_1.2.7.1)(64bit)
+Error: Package: erlang-26.2.5.2-1.el9.x86_64 (modern-erlang)
+           Requires: libc.so.6(GLIBC_2.34)(64bit)
+ You could try using --skip-broken to work around the problem
+ You could try running: rpm -Va --nofiles --nodigest
