@@ -37,6 +37,21 @@ Error: Package: erlang-26.2.5.2-1.el9.x86_64 (modern-erlang)
            Requires: libcrypto.so.3()(64bit)
 Error: Package: erlang-26.2.5.2-1.el9.x86_64 (modern-erlang)
            Requires: libz.so.1(ZLIB_1.2.7.1)(64bit)
+
+
+
+sudo amazon-linux-extras install epel -y
+
+
+sudo yum install openssl-libs -y
+
+sudo yum install -y erlang --skip-broken
+
+sudo yum search erlang
+
+
+sudo kill 2121
+
 Error: Package: erlang-26.2.5.2-1.el9.x86_64 (modern-erlang)
            Requires: libc.so.6(GLIBC_2.34)(64bit)
  You could try using --skip-broken to work around the problem
