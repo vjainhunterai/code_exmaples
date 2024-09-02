@@ -1,3 +1,21 @@
 we have executed below command Install Python3 package manager: sudo yum install python3-pip
 Install Apache Airflow: sudo pip3 install apache-airflow
 Install Amazon provider for Apache Airflow: sudo pip3 install apache-airflow-providers-amazon  --how to understand if all went well
+
+
+--------------------
+
+
+[ec2-user@ip-172-31-18-166 ~]$ airflow webserver
+Traceback (most recent call last):
+  File "/usr/local/bin/airflow", line 5, in <module>
+    from airflow.__main__ import main
+  File "/usr/local/lib/python3.7/site-packages/airflow/__init__.py", line 52, in <module>
+    from airflow import configuration
+  File "/usr/local/lib/python3.7/site-packages/airflow/configuration.py", line 1815, in <module>
+    conf.validate()
+  File "/usr/local/lib/python3.7/site-packages/airflow/configuration.py", line 358, in validate
+    self._validate_sqlite3_version()
+  File "/usr/local/lib/python3.7/site-packages/airflow/configuration.py", line 465, in _validate_sqlite3_version
+    f"error: SQLite C library too old (< {min_sqlite_version_str}). "
+airflow.exceptions.AirflowConfigException: error: SQLite C library too old (< 3.15.0). See https://airflow.apache.org/docs/apache-airflow/2.6.3/howto/set-up-database.html#setting-up-a-sqlite-database
