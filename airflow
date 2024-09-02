@@ -19,3 +19,35 @@ Traceback (most recent call last):
   File "/usr/local/lib/python3.7/site-packages/airflow/configuration.py", line 465, in _validate_sqlite3_version
     f"error: SQLite C library too old (< {min_sqlite_version_str}). "
 airflow.exceptions.AirflowConfigException: error: SQLite C library too old (< 3.15.0). See https://airflow.apache.org/docs/apache-airflow/2.6.3/howto/set-up-database.html#setting-up-a-sqlite-database
+
+
+------------windows installation ------------
+
+python -m venv airflow_env
+airflow_env\Scripts\activate
+
+
+
+pip install apache-airflow
+
+
+pip install apache-airflow[postgres,mysql,google]
+
+
+airflow db init
+
+
+airflow users create \
+    --username admin \
+    --firstname Admin \
+    --lastname User \
+    --role Admin \
+    --email admin@example.com
+
+
+airflow webserver --port 8080
+
+
+airflow scheduler
+
+
