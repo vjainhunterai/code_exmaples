@@ -1,0 +1,3 @@
+we have executed below command Install Python3 package manager: sudo yum install python3-pip
+Install Apache Airflow: sudo pip3 install apache-airflow
+Install Amazon provider for Apache Airflow: sudo pip3 install apache-airflow-providers-amazon  --how to understand if all went well
