@@ -85,5 +85,25 @@ pip install "apache-airflow==${AIRFLOW_VERSION}" --constraint "${CONSTRAINT_URL}
 
 airflow db init
 
++++++++++++mysql setup +++++++++
+
+sudo apt-get install -y mysql-client libmysqlclient-dev
+pip install mysqlclient
+
+
+nano ~/airflow/airflow.cfg
+
+
+sql_alchemy_conn = mysql+mysqlclient://<username>:<password>@<endpoint>:<port>/<dbname>
+
+
+airflow db init
+
+
+airflow webserver --port 8080
+airflow scheduler
+
+
+
 
 
