@@ -129,3 +129,30 @@ airflow scheduler
 
 
 
+=====
+
+sudo apt-get install python3-mysql-client
+
+
+
+
+(airflow_venv) ubuntu@i-0f425bb12c09f2af3:~$ airflow db init
+Traceback (most recent call last):
+  File "/home/ubuntu/airflow_venv/bin/airflow", line 5, in <module>
+    from airflow.__main__ import main
+  File "/home/ubuntu/airflow_venv/lib/python3.10/site-packages/airflow/__init__.py", line 69, in <module>
+    settings.initialize()
+  File "/home/ubuntu/airflow_venv/lib/python3.10/site-packages/airflow/settings.py", line 529, in initialize
+    configure_orm()
+  File "/home/ubuntu/airflow_venv/lib/python3.10/site-packages/airflow/settings.py", line 222, in configure_orm
+    engine = create_engine(SQL_ALCHEMY_CONN, connect_args=connect_args, **engine_args)
+  File "<string>", line 2, in create_engine
+  File "/home/ubuntu/airflow_venv/lib/python3.10/site-packages/sqlalchemy/util/deprecations.py", line 375, in warned
+    return fn(*args, **kwargs)
+  File "/home/ubuntu/airflow_venv/lib/python3.10/site-packages/sqlalchemy/engine/create.py", line 518, in create_engine
+    entrypoint = u._get_entrypoint()
+  File "/home/ubuntu/airflow_venv/lib/python3.10/site-packages/sqlalchemy/engine/url.py", line 662, in _get_entrypoint
+    cls = registry.load(name)
+  File "/home/ubuntu/airflow_venv/lib/python3.10/site-packages/sqlalchemy/util/langhelpers.py", line 343, in load
+    raise exc.NoSuchModuleError(
+sqlalchemy.exc.NoSuchModuleError: Can't load plugin: sqlalchemy.dialects:mysql.mysqlclient
