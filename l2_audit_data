@@ -1,0 +1,18 @@
+CREATE TABLE `l2_audit_data` (
+  `Job_ID` varchar(250) DEFAULT NULL,
+  `Job_Name` varchar(250) DEFAULT NULL,
+  `Customer_Name` varchar(500) DEFAULT NULL,
+  `Flow_Type` varchar(250) DEFAULT NULL,
+  `Operation_type` varchar(120) DEFAULT NULL,
+  `Source_Count` int DEFAULT NULL,
+  `Target_count` int DEFAULT NULL,
+  `New_rcrd_count` int DEFAULT NULL,
+  `update_rcrd_count` int DEFAULT NULL,
+  `Start_Time` datetime DEFAULT NULL,
+  `End_Time` datetime DEFAULT NULL,
+  `Status` varchar(250) DEFAULT NULL,
+  `Insert_By` varchar(250) DEFAULT NULL,
+  `Error_desc` varchar(500) DEFAULT NULL,
+  `L1_load_date` date DEFAULT NULL,
+  `L2_load_date` datetime DEFAULT NULL
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
