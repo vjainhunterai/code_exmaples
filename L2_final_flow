@@ -1,3 +1,69 @@
+from datetime import datetime
+from sqlalchemy import create_engine, Table, Column, Integer, String, MetaData, DateTime, Date
+from sqlalchemy.orm import sessionmaker
+
+class databaseHandler:
+    def __init__(self, dbUrl):
+        self.engine = create_engine(dbUrl)
+        self.connection = self.engine.connect()
+        self.metadata = MetaData()
+
+        print("Creating tables if they do not exist...")
+
+        # New table
+        self.l2AuditTable = Table('l2_audit_data', self.metadata,
+                                  Column('Job_ID', String(250)),
+                                  Column('Job_Name', String(250)),
+                                  Column('Customer_Name', String(500)),
+                                  Column('Flow_Type', String(250)),
+                                  Column('Operation_type', String(120)),
+                                  Column('Source_Count', Integer),
+                                  Column('Target_count', Integer),
+                                  Column('New_rcrd_count', Integer),
+                                  Column('update_rcrd_count', Integer),
+                                  Column('Start_Time', DateTime),
+                                  Column('End_Time', DateTime),
+                                  Column('Status', String(250)),
+                                  Column('Insert_By', String(250)),
+                                  Column('Error_desc', String(500)),
+                                  Column('L1_load_date', Date),
+                                  Column('L2_load_date', DateTime))
+
+        self.metadata.create_all(self.engine)  # Create tables
+
+        print("Initializing session...")
+        Session = sessionmaker(bind=self.engine)
+        self.session = Session()
+
+    def insertL2AuditEntry(self, l2AuditEntry):
+        try:
+            print(f"Inserting L2 audit entry: {l2AuditEntry}")
+            ins = self.l2AuditTable.insert().values(l2AuditEntry)
+            self.session.execute(ins)
+            self.session.commit()
+            print("L2 audit entry committed.")
+        except Exception as e:
+            print(f"Error inserting L2 audit record: {e}")
+            self.session.rollback()
+
+    def updateL2AuditEntry(self, job_id, updated_values):
+        try:
+            print(f"Updating L2 audit entry for job_id: {job_id} with values: {updated_values}")
+            upd = self.l2AuditTable.update().where(self.l2AuditTable.c.Job_ID == job_id).values(updated_values)
+            self.session.execute(upd)
+            self.session.commit()
+            print("L2 audit entry updated.")
+        except Exception as e:
+            print(f"Error updating L2 audit record: {e}")
+            self.session.rollback()
+
+    def close(self):
+        print("Closing the session and connection...")
+        self.session.close()
+        self.connection.close()
+
+
+
 import pandas as pd
 from sqlalchemy import create_engine, text
 from sqlalchemy.orm import sessionmaker
