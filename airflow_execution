@@ -1,0 +1,124 @@
+airflow db init
+airflow webserver --port 8080
+airflow scheduler
+
+a. Locate or set the DAGs folder:
+By default, Airflow's DAGs folder is located at:
+
+~/airflow/dags
+
+
+nano ~/airflow/dags/data_engineering_job.py
+
+
+from airflow import DAG
+from airflow.operators.bash_operator import BashOperator
+from airflow.operators.python_operator import PythonOperator
+from datetime import datetime, timedelta
+import subprocess
+
+# Default arguments for the DAG
+default_args = {
+    'owner': 'airflow',
+    'depends_on_past': False,
+    'start_date': datetime(2024, 1, 1),
+    'email_on_failure': False,
+    'email_on_retry': False,
+    'retries': 1,
+    'retry_delay': timedelta(minutes=5),
+}
+
+# Initialize the DAG
+dag = DAG(
+    'data_engineering_job',
+    default_args=default_args,
+    description='Pull code from GitHub and execute the main data engineering job',
+    schedule_interval=timedelta(days=1),
+)
+
+# Step 1: Clone GitHub repository
+clone_repo = BashOperator(
+    task_id='clone_repo',
+    bash_command="""
+    if [ ! -d "/path/to/your/dags/repo" ]; then 
+        git clone https://github.com/your-username/your-repo-name.git /path/to/your/dags/repo;
+    fi
+    """,
+    dag=dag,
+)
+
+# Step 2: Pull the latest code if repo already exists
+pull_latest_code = BashOperator(
+    task_id='pull_latest_code',
+    bash_command='cd /path/to/your/dags/repo && git pull',
+    dag=dag,
+)
+
+# Step 3: Execute the main Python script for data engineering job
+def run_data_engineering_job():
+    try:
+        subprocess.run(["python3", "/path/to/your/dags/repo/main.py"], check=True)
+        print("Data engineering job executed successfully.")
+    except subprocess.CalledProcessError as e:
+        print(f"Error while running data engineering job: {e}")
+        raise
+
+execute_main_job = PythonOperator(
+    task_id='execute_main_job',
+    python_callable=run_data_engineering_job,
+    dag=dag,
+)
+
+# Define task dependencies
+clone_repo >> pull_latest_code >> execute_main_job
+
+
+#############################################3
+
+
+c. Replace Paths:
+Replace /path/to/your/dags/repo with the actual path where the repository should be cloned on your system.
+Replace https://github.com/your-username/your-repo-name.git with your GitHub repository URL.
+Ensure the repository contains the main.py script or modify the python3 command to match your job file.
+3. Restart Airflow:
+Once the DAG is placed in the dags folder, restart the Airflow scheduler to ensure the new DAG is loaded.
+
+bash
+Copy code
+airflow scheduler
+4. Access Airflow Web UI:
+Go to the Airflow Web UI at http://localhost:8080, and you should see the data_engineering_job DAG listed. You can trigger the DAG manually from the web interface or wait for it to run as per the schedule.
+
+Next Steps:
+a. Would you like to configure notifications or email alerts for task failures in this DAG? 
+b. Do you want help configuring SSH keys or access tokens if you're working with a private GitHub repository?
+
+Restart Airflow:
+Once the DAG is placed in the dags folder, restart the Airflow scheduler to ensure the new DAG is loaded.
+airflow scheduler
+
+
+Access Airflow Web UI:
+Go to the Airflow Web UI at http://localhost:8080, and you should see the data_engineering_job DAG listed.
+
+You can trigger the DAG manually from the web interface or wait for it to run as per the schedule.
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
