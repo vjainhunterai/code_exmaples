@@ -1,0 +1,258 @@
+import pandas as pd
+from sqlalchemy import create_engine, text
+from sqlalchemy.orm import sessionmaker
+from sqlalchemy.exc import SQLAlchemyError
+import time
+import os
+
+start_time=time.time()
+trigger_by=os.getlogin()
+Job_Name="L2_Load"
+Flow_Type="Direct"
+
+print("start_time: ",start_time)
+print("trigger_by: ",trigger_by)
+print("Job_Name: ",Job_Name)
+print("Flow_Type",Flow_Type)
+
+
+def create_connection():
+    """
+    Establishes a connection to the MySQL database using SQLAlchemy and returns a session and engine.
+
+    Returns:
+        session (sqlalchemy.orm.session.Session): A session bound to the database engine.
+        engine (sqlalchemy.engine.Engine): The engine object representing the database connection.
+    """
+    try:
+        engine = create_engine(
+            'mysql+mysqlconnector://test:Gpohealth!#!@dev-db-test.c969yoyq9cyy.us-east-1.rds.amazonaws.com/stg_tbl')
+        Session = sessionmaker(bind=engine)
+        print("Database connection established.")
+        return Session(), engine
+    except SQLAlchemyError as e:
+        print(f"Error creating database connection: {e}")
+        raise
+
+
+def read_metadata(l2MetadataTable, l2metadb, engine):
+    """
+    Reads metadata from the specified table in the database and returns it as a dictionary.
+
+    Args:
+        l2MetadataTable (str): The name of the metadata table.
+        l2metadb (str): The name of the database containing the metadata table.
+        engine (sqlalchemy.engine.Engine): The database engine.
+
+    Returns:
+        dict: A dictionary where the keys are from the 'key' column and the values are from the 'value' column.
+    """
+    try:
+        l2_metaquery = f"SELECT * FROM {l2metadb}.{l2MetadataTable}"
+        df_metadata = pd.read_sql_query(l2_metaquery, engine)
+        print("Metadata successfully retrieved from the database.")
+        return df_metadata.set_index('key')['value'].to_dict()
+    except SQLAlchemyError as e:
+        print(f"Error reading metadata: {e}")
+        raise
+
+
+def fetch_all_sql_queries(session, query_meta_table, ctxArea):
+    """
+    Fetches all SQL queries from the metadata table, ordered by sequence number.
+
+    Args:
+        session (sqlalchemy.orm.session.Session): The session to execute the query.
+        query_meta_table (str): The name of the query metadata table.
+        ctxArea (str): The context area to filter the queries.
+
+    Returns:
+        list: A list of SQL queries ordered by the context key.
+    """
+    try:
+        result = session.execute(
+            text(f"SELECT ctxval,remarks FROM {query_meta_table} WHERE ctxarea='{ctxArea}' ORDER BY ctxkey"))
+        print("SQL queries successfully fetched from the metadata table.")
+        return result.fetchall()
+    except SQLAlchemyError as e:
+        print(f"Error fetching SQL queries: {e}")
+        raise
+
+
+def read_l1_inv_table(l1InvTable, l1dbname, engine):
+    """
+    Reads distinct customer names and load dates from the L1 Invoice table.
+
+    Args:
+        l1InvTable (str): The name of the L1 Invoice table.
+        l1dbname (str): The name of the database containing the L1 Invoice table.
+        engine (sqlalchemy.engine.Engine): The database engine.
+
+    Returns:
+        pd.DataFrame: A DataFrame containing distinct customer names and load dates.
+    """
+    try:
+        query = f"SELECT DISTINCT invhdrNameCustomer AS Customer_Name, load_date AS L1_load_date FROM {l1dbname}.{l1InvTable} limit 1"
+        df = pd.read_sql_query(query, engine)
+        print("L1 Invoice table data successfully retrieved.")
+        return df
+    except SQLAlchemyError as e:
+        print(f"Error reading L1 Invoice table: {e}")
+        raise
+
+
+def read_l2_audit_table(l2AuditTable, l2dbname, engine):
+    """
+    Reads distinct customer names and load dates from the L2 Audit table.
+
+    Args:
+        l2AuditTable (str): The name of the L2 Audit table.
+        l2dbname (str): The name of the database containing the L2 Audit table.
+        engine (sqlalchemy.engine.Engine): The database engine.
+
+    Returns:
+        pd.DataFrame: A DataFrame containing distinct customer names and load dates.
+    """
+    try:
+        query = f"SELECT DISTINCT Customer_Name, L1_load_date FROM {l2dbname}.{l2AuditTable}"
+        df = pd.read_sql_query(query, engine)
+        print("L2 Audit table data successfully retrieved.")
+        return df
+    except SQLAlchemyError as e:
+        print(f"Error reading L2 Audit table: {e}")
+        raise
+
+
+def delta_cust_details(df1, df2):
+    """
+    Calculates the delta (difference) between two DataFrames based on customer names and load dates.
+
+    Args:
+        df1 (pd.DataFrame): The first DataFrame containing customer names and load dates.
+        df2 (pd.DataFrame): The second DataFrame containing customer names and load dates.
+
+    Returns:
+        pd.DataFrame: A DataFrame containing rows present in df1 but not in df2.
+    """
+    try:
+        merge_df = df1.merge(df2, on=['Customer_Name', 'L1_load_date'], how='left', indicator=True)
+        delta_df = merge_df[merge_df['_merge'] == 'left_only'].drop(columns=['_merge'])
+        print("Delta between L1 and L2 data successfully calculated.")
+        return delta_df
+    except Exception as e:
+        print(f"Error calculating delta: {e}")
+        raise
+
+
+def execute_sql(session, sql_query, variables=None):
+    """
+    Executes a given SQL query using the provided session, with optional variables for substitution.
+
+    Args:
+        session (sqlalchemy.orm.session.Session): The session to execute the query.
+        sql_query (str): The SQL query to execute.
+        variables (dict, optional): A dictionary of variables to substitute into the SQL query.
+    """
+    try:
+        query = text(sql_query)
+        session.execute(query, variables or {})
+        session.commit()
+        #print(f"Executed SQL query: {sql_query}")
+        return 'SUCCESS', None
+    except SQLAlchemyError as e:
+        session.rollback()
+        error_mesg=str(e)
+        #print(f"Error executing SQL query: {e}")
+        return 'FAIL',error_mesg
+
+def l2Audit_cnt(srcDb,targetDb,srcTable,targetTable,Customer_Name,LoadDate,engine):
+    src_qury=f"select count(*) from {srcDb}.{srcTable} where invhdrNameCustomer='{Customer_Name}' and load_date='{LoadDate}'"
+    tsrc_cnt= pd.read_sql_query(src_qury,engine)
+    src_cnt = tsrc_cnt.iloc[0, 0]
+    trgt_qury= f"select count(*) from {targetDb}.{targetTable} where invhdrNameCustomer='{Customer_Name}' and load_date='{LoadDate}'"
+    ttrgt_cnt = pd.read_sql_query(src_qury,engine)
+    trgt_cnt = ttrgt_cnt.iloc[0, 0]
+    return src_cnt,trgt_cnt
+
+
+def l2Execution():
+    """
+    Main execution function that coordinates reading metadata, fetching SQL queries, calculating deltas,
+    and executing the queries for each set of variables.
+    """
+    try:
+        # Create database session and engine
+        session, engine = create_connection()
+
+        # Reading parameters from the metadata table
+        l2MetadataTable = "prod_context_l2_l3_python"
+        meta_db_name = "stg_tbl"
+        meta_l2_keys = read_metadata(l2MetadataTable, meta_db_name, engine)
+        #print(meta_l2_keys)
+
+        # Extract relevant parameters from the metadata
+        l1InvTable = meta_l2_keys["L1_Inv_Table"]
+        l2AuditTable = meta_l2_keys["L2_Audit_Table"]
+        l1db_name = meta_l2_keys["L1_server_DB"]
+        l2_auditdb = meta_l2_keys["L2_Audit_Db"]
+        srcDb= meta_l2_keys["L1_server_DB"]
+        targetDb= meta_l2_keys["L2_Server_Database"]
+        targetTable= meta_l2_keys["L2_Inv_Table"]
+        query_meta_table = meta_l2_keys["L2_Query_Metadata"]
+        ctxArea = meta_l2_keys["L2_ctxarea"]
+        #srcDb, targetDb, srcTable, targetTable, Customer_Name, LoadDate
+
+        # Fetch all SQL queries in the correct order
+        sql_queries = fetch_all_sql_queries(session, query_meta_table, ctxArea)
+        #print(f"Fetched SQL Queries: {sql_queries}")
+
+        # Read data from L1 Invoice and L2 Audit tables
+        df1 = read_l1_inv_table(l1InvTable, l1db_name, engine)
+        #print(df1)
+        df2 = read_l2_audit_table(l2AuditTable, l2_auditdb, engine)
+
+        # Calculate the delta between L1 and L2 data
+        df_delta = delta_cust_details(df1, df2)
+        #print(df_delta)
+
+        # For each set of variables in the delta DataFrame, execute the SQL queries
+        for index, row in df_delta.iterrows():
+            variables = {
+                "context_customer": row['Customer_Name'],
+                "context_l1_date": row['L1_load_date']
+            }
+            customer_name=variables['context_customer']
+            L1_load_date = variables['context_l1_date']
+            #print(f"Variables for execution: {variables}")+
+            print("customer name:", customer_name)
+            print("L1_load_date:", L1_load_date)
+
+            # Execute each SQL query with the current variable set
+            for sql_row in sql_queries:
+                sql_query = sql_row[0]  # Extract the SQL query from the row
+                operation_type= sql_row[1] # Extract operation type from row
+                print("Operation Type:",operation_type)
+                # Determine which variables are needed by this query
+                required_variables = {key: variables[key] for key in variables if f":{key}" in sql_query}
+                #print(f"Executing SQL with variables: {required_variables}")
+                Source_Count,Target_count= l2Audit_cnt(srcDb,targetDb,l1InvTable,targetTable,customer_name,L1_load_date,engine)
+
+                print("src cnt:",Source_Count)
+                print("trgt cnt:",Target_count)
+
+
+
+                # Execute the SQL query
+                execute_sql(session, sql_query, required_variables)
+
+        # Close the session after execution
+        session.close()
+        print("Database session closed.")
+
+    except Exception as e:
+        #print(f"Error in main execution: {e}")
+        raise
+
+
+if __name__ == "__main__":
+    l2Execution()
