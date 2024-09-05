@@ -1,0 +1,10 @@
+# Step 1: Clone GitHub repository using Personal Access Token
+clone_repo = BashOperator(
+    task_id='clone_repo',
+    bash_command="""
+    if [ ! -d "/path/to/your/dags/repo" ]; then
+        git clone https://<your-username>:<your-access-token>@github.com/your-username/data-engineering-job.git /path/to/your/dags/repo;
+    fi
+    """,
+    dag=dag,
+)
