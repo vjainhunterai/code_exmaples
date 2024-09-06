@@ -1,0 +1,26 @@
+
+import pandas as pd
+from sqlalchemy import create_engine
+
+table_name = 'USC_Transaction_Detail_Report_12M_April24-July24_from_Vizient'
+
+# Create a connection to the MySQL database
+engine = create_engine(f'mysql+mysqlconnector://admin:Gpoproddb!#!@prod-db.c969yoyq9cyy.us-east-1.rds.amazonaws.com:3306/temp_london_usc')
+
+# Read CSV file into a pandas DataFrame
+csv_file_path = 'X:\\Vineet\\EY\C\ustomer_London_California\\09_Data_Upload_September2024\\7. USC Transaction Detail Report 12M April24-July24 from Vizient (1).csv'
+df = pd.read_csv(csv_file_path, delimiter = '|', encoding = ISO-8859-1)
+
+# Load DataFrame into the MySQL table
+# If the table doesn't exist, it will be created
+df.to_sql(name=table_name, con=engine,  index=False)
+
+print("Data loaded successfully!")
+
+
+File "C:\Users\jvineet\AppData\Local\Temp\2\ipykernel_11440\4011500671.py", line 10
+    csv_file_path = 'X:\\Vineet\\EY\C\ustomer_London_California\\09_Data_Upload_September2024\\7. USC Transaction Detail Report 12M April24-July24 from Vizient (1).csv'
+                   ^
+SyntaxError: (unicode error) 'unicodeescape' codec can't decode bytes in position 16-17: truncated \uXXXX escape
+
+
