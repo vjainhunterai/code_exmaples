@@ -1,0 +1,223 @@
+from datetime import datetime
+from sqlalchemy import create_engine, Table, Column, Integer, String, MetaData, DateTime, Date, text
+from sqlalchemy.orm import sessionmaker
+import pandas as pd
+from sqlalchemy.exc import SQLAlchemyError
+import os
+import time
+
+class databaseHandler:
+    def __init__(self, dbUrl):
+        self.engine = create_engine(dbUrl)
+        self.connection = self.engine.connect()
+        self.metadata = MetaData()
+
+        print("Creating tables if they do not exist...")
+
+        # L2 Audit Table
+        self.l2AuditTable = Table('l2_audit_data', self.metadata,
+                                  Column('Job_ID', String(250)),
+                                  Column('Job_Name', String(250)),
+                                  Column('Customer_Name', String(500)),
+                                  Column('Flow_Type', String(250)),
+                                  Column('Operation_type', String(120)),
+                                  Column('Source_Count', Integer),
+                                  Column('Target_count', Integer),
+                                  Column('New_rcrd_count', Integer),
+                                  Column('update_rcrd_count', Integer),
+                                  Column('Start_Time', DateTime),
+                                  Column('End_Time', DateTime),
+                                  Column('Status', String(250)),
+                                  Column('Insert_By', String(250)),
+                                  Column('Error_desc', String(500)),
+                                  Column('L1_load_date', Date),
+                                  Column('L2_load_date', DateTime))
+
+        self.metadata.create_all(self.engine)  # Create tables
+
+        print("Initializing session...")
+        Session = sessionmaker(bind=self.engine)
+        self.session = Session()
+
+    def insertL2AuditEntry(self, l2AuditEntry):
+        try:
+            print(f"Inserting L2 audit entry: {l2AuditEntry}")
+            ins = self.l2AuditTable.insert().values(l2AuditEntry)
+            self.session.execute(ins)
+            self.session.commit()
+            print("L2 audit entry committed.")
+        except Exception as e:
+            print(f"Error inserting L2 audit record: {e}")
+            self.session.rollback()
+
+    def close(self):
+        print("Closing the session and connection...")
+        self.session.close()
+        self.connection.close()
+
+
+# Integration of l2Execution with databaseHandler
+def create_connection(dbUrl):
+    """
+    Reusing the databaseHandler class for connection handling.
+    """
+    try:
+        db_handler = databaseHandler(dbUrl)
+        print("Database connection established.")
+        return db_handler
+    except SQLAlchemyError as e:
+        print(f"Error creating database connection: {e}")
+        raise
+
+def read_metadata(l2MetadataTable, l2metadb, engine):
+    try:
+        l2_metaquery = f"SELECT * FROM {l2metadb}.{l2MetadataTable}"
+        df_metadata = pd.read_sql_query(l2_metaquery, engine)
+        print("Metadata successfully retrieved from the database.")
+        return df_metadata.set_index('key')['value'].to_dict()
+    except SQLAlchemyError as e:
+        print(f"Error reading metadata: {e}")
+        raise
+
+def fetch_all_sql_queries(session, query_meta_table, ctxArea):
+    try:
+        result = session.execute(
+            text(f"SELECT ctxval,remarks FROM {query_meta_table} WHERE ctxarea='{ctxArea}' ORDER BY ctxkey"))
+        print("SQL queries successfully fetched from the metadata table.")
+        return result.fetchall()
+    except SQLAlchemyError as e:
+        print(f"Error fetching SQL queries: {e}")
+        raise
+
+def read_l1_inv_table(l1InvTable, l1dbname, engine):
+    try:
+        query = f"SELECT DISTINCT invhdrNameCustomer AS Customer_Name, load_date AS L1_load_date FROM {l1dbname}.{l1InvTable} limit 1"
+        df = pd.read_sql_query(query, engine)
+        print("L1 Invoice table data successfully retrieved.")
+        return df
+    except SQLAlchemyError as e:
+        print(f"Error reading L1 Invoice table: {e}")
+        raise
+
+def read_l2_audit_table(l2AuditTable, l2dbname, engine):
+    try:
+        query = f"SELECT DISTINCT Customer_Name, L1_load_date FROM {l2dbname}.{l2AuditTable}"
+        df = pd.read_sql_query(query, engine)
+        print("L2 Audit table data successfully retrieved.")
+        return df
+    except SQLAlchemyError as e:
+        print(f"Error reading L2 Audit table: {e}")
+        raise
+
+def delta_cust_details(df1, df2):
+    try:
+        merge_df = df1.merge(df2, on=['Customer_Name', 'L1_load_date'], how='left', indicator=True)
+        delta_df = merge_df[merge_df['_merge'] == 'left_only'].drop(columns=['_merge'])
+        print("Delta between L1 and L2 data successfully calculated.")
+        return delta_df
+    except Exception as e:
+        print(f"Error calculating delta: {e}")
+        raise
+
+def l2Audit_cnt(srcDb, targetDb, srcTable, targetTable, Customer_Name, LoadDate, engine):
+    src_qury = f"SELECT count(*) FROM {srcDb}.{srcTable} WHERE invhdrNameCustomer='{Customer_Name}' and load_date='{LoadDate}'"
+    tsrc_cnt = pd.read_sql_query(src_qury, engine)
+    src_cnt = tsrc_cnt.iloc[0, 0]
+    trgt_qury = f"SELECT count(*) FROM {targetDb}.{targetTable} WHERE invhdrNameCustomer='{Customer_Name}' and load_date='{LoadDate}'"
+    ttrgt_cnt = pd.read_sql_query(trgt_qury, engine)
+    trgt_cnt = ttrgt_cnt.iloc[0, 0]
+    return src_cnt, trgt_cnt
+
+def execute_sql(session, sql_query, variables=None):
+    try:
+        query = text(sql_query)
+        session.execute(query, variables or {})
+        session.commit()
+        return 'SUCCESS', None
+    except SQLAlchemyError as e:
+        session.rollback()
+        error_mesg = str(e)
+        return 'FAIL', error_mesg
+
+def l2Execution():
+    """
+    Main execution function that integrates the database handler and SQL operations.
+    """
+    try:
+        # Create database session using the handler
+        dbUrl = 'mysql+mysqlconnector://test:Gpohealth!#!@dev-db-test.c969yoyq9cyy.us-east-1.rds.amazonaws.com/stg_tbl'
+        db_handler = create_connection(dbUrl)
+
+        # Reading metadata and other parameters
+        l2MetadataTable = "prod_context_l2_l3_python"
+        meta_db_name = "stg_tbl"
+        meta_l2_keys = read_metadata(l2MetadataTable, meta_db_name, db_handler.engine)
+
+        l1InvTable = meta_l2_keys["L1_Inv_Table"]
+        l2AuditTable = meta_l2_keys["L2_Audit_Table"]
+        l1db_name = meta_l2_keys["L1_server_DB"]
+        l2_auditdb = meta_l2_keys["L2_Audit_Db"]
+        srcDb = meta_l2_keys["L1_server_DB"]
+        targetDb = meta_l2_keys["L2_Server_Database"]
+        targetTable = meta_l2_keys["L2_Inv_Table"]
+        query_meta_table = meta_l2_keys["L2_Query_Metadata"]
+        ctxArea = meta_l2_keys["L2_ctxarea"]
+
+        # Fetch all SQL queries
+        sql_queries = fetch_all_sql_queries(db_handler.session, query_meta_table, ctxArea)
+
+        # Read data from L1 Invoice and L2 Audit tables
+        df1 = read_l1_inv_table(l1InvTable, l1db_name, db_handler.engine)
+        df2 = read_l2_audit_table(l2AuditTable, l2_auditdb, db_handler.engine)
+
+        # Calculate delta
+        df_delta = delta_cust_details(df1, df2)
+
+        # For each set of variables in delta, execute the SQL queries
+        for index, row in df_delta.iterrows():
+            variables = {
+                "context_customer": row['Customer_Name'],
+                "context_l1_date": row['L1_load_date']
+            }
+            customer_name = variables['context_customer']
+            L1_load_date = variables['context_l1_date']
+
+            # Get source and target counts
+            Source_Count, Target_count = l2Audit_cnt(srcDb, targetDb, l1InvTable, targetTable, customer_name, L1_load_date, db_handler.engine)
+
+            # Insert L2 audit entry after each query execution
+            audit_entry = {
+                'Job_ID': "1234",  # Example, can be dynamic
+                'Job_Name': "L2_Load",
+                'Customer_Name': customer_name,
+                'Flow_Type': "Direct",
+                'Operation_type': "L2_Audit",
+                'Source_Count': Source_Count,
+                'Target_count': Target_count,
+                'New_rcrd_count': 0,  # Example, this can be dynamic based on query result
+                'update_rcrd_count': 0,  # Example, this can be dynamic based on query result
+                'Start_Time': datetime.now(),
+                'End_Time': datetime.now(),
+                'Status': "SUCCESS",
+                'Insert_By': os.getlogin(),
+                'Error_desc': "",
+                'L1_load_date': L1_load_date,
+                'L2_load_date': datetime.now()
+            }
+            db_handler.insertL2AuditEntry(audit_entry)
+
+            # Execute each SQL query
+            for sql_row in sql_queries:
+                sql_query = sql_row[0]  # SQL query
+                execute_sql(db_handler.session, sql_query, variables)
+
+        # Close the database connection after execution
+        db_handler.close()
+
+    except Exception as e:
+        print(f"Error in main execution: {e}")
+        raise
+
+
+if __name__ == "__main__":
+    l2Execution()
