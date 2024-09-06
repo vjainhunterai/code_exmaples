@@ -8,3 +8,9 @@ clone_repo = BashOperator(
     """,
     dag=dag,
 )
+
+
+
+/home/ubuntu/dev_python/src/l2Code_etl
+
+l2Job.py
