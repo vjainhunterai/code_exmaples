@@ -221,3 +221,8 @@ def l2Execution():
 
 if __name__ == "__main__":
     l2Execution()
+
+
+
+Inserting L2 audit entry: {'Job_ID': '1234', 'Job_Name': 'L2_Load', 'Customer_Name': 'Duke University Health System', 'Flow_Type': 'Direct', 'Operation_type': 'L2_Audit', 'Source_Count': 100, 'Target_count': 100, 'New_rcrd_count': 0, 'update_rcrd_count': 0, 'Start_Time': datetime.datetime(2024, 9, 6, 6, 4, 37, 796587), 'End_Time': datetime.datetime(2024, 9, 6, 6, 4, 37, 796587), 'Status': 'SUCCESS', 'Insert_By': 'jvineet', 'Error_desc': '', 'L1_load_date': datetime.date(2022, 6, 30), 'L2_load_date': datetime.datetime(2024, 9, 6, 6, 4, 37, 796587)}
+Error inserting L2 audit record: Python type numpy.int64 cannot be converted
