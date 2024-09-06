@@ -30,3 +30,23 @@ sudo docker-compose up -d
 http://your-ec2-public-ip:8585
 
 
+ubuntu@i-0f425bb12c09f2af3:~/OpenMetadata/docker/docker-compose-quickstart$ docker compose up -d
+[+] Running 0/15
+ ⠿ openmetadata-server Error                                                                                                                                                                                  0.7s
+ ⠿ ingestion Error                                                                                                                                                                                            0.7s
+ ⠿ execute-migrate-all Error                                                                                                                                                                                  0.7s
+ ⠿ mysql Error                                                                                                                                                                                                0.7s
+ ⠧ elasticsearch Pulling                                                                                                                                                                                      0.7s
+   ⠸ f9175e7b73a4 Downloading [================>                                  ]  10.49MB/31.8MB                                                                                                           0.3s
+   ⠸ e7294c716d1c Download complete                                                                                                                                                                           0.3s
+   ⠸ fb9041eefb1e Download complete                                                                                                                                                                           0.3s
+   ⠸ 89732bc75041 Download complete                                                                                                                                                                           0.3s
+   ⠸ 1c2d91e42f0a Waiting                                                                                                                                                                                     0.3s
+   ⠸ 77d0edd0b6c4 Waiting                                                                                                                                                                                     0.3s
+   ⠸ 43cd41297455 Waiting                                                                                                                                                                                     0.3s
+   ⠸ 97454a393139 Waiting                                                                                                                                                                                     0.3s
+   ⠸ d26c8b72b5e9 Waiting                                                                                                                                                                                     0.3s
+   ⠸ 321f35bf0eb1 Waiting                                                                                                                                                                                     0.3s
+Error response from daemon: manifest for docker.getcollate.io/openmetadata/server:1.5.0-SNAPSHOT not found: manifest unknown: manifest unknown
+
+
