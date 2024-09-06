@@ -1,0 +1,32 @@
+https://docs.open-metadata.org/latest/quick-start/local-docker-deployment
+
+
+
+======================
+
+
+sudo apt update && sudo apt upgrade -y
+
+
+sudo apt install docker.io -y
+
+
+sudo systemctl start docker
+sudo systemctl enable docker
+
+
+sudo apt install docker-compose -y
+
+
+git clone https://github.com/open-metadata/OpenMetadata.git
+cd OpenMetadata
+
+cd docker/local
+
+
+sudo docker-compose up -d
+
+
+http://your-ec2-public-ip:8585
+
+
