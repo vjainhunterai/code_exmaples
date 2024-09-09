@@ -4,13 +4,13 @@
       "name": "sales_data",
       "description": "Container for sales data",
       "tags": ["sales", "data"],
-      "location": "s3://etlhunter/sales_data/"
+      "location": "s3://etlhunter/etlhunter/customer_data/"
     },
     {
       "name": "customer_data",
       "description": "Container for customer data",
       "tags": ["customer", "data"],
-      "location": "s3://etlhunter/customers/customer_data/"
+      "location": "s3://etlhunter/customer_data/"
     }
   ]
 }
