@@ -35,3 +35,30 @@ e55a9721122e
 [2024-09-09T07:36:08.791+0000] {local_task_job_runner.py:240} INFO - Task exited with return code 0
 [2024-09-09T07:36:08.814+0000] {taskinstance.py:3498} INFO - 0 downstream tasks scheduled from follow-on schedule check
 [2024-09-09T07:36:08.815+0000] {local_task_job_runner.py:222} INFO - ::endgroup::
+
+
+++++++++++++++++
+
+
+{
+  "metadata": {
+    "name": "Your S3 Dataset",
+    "description": "Metadata for files in S3 bucket",
+    "tags": ["s3", "data", "dataset"],
+    "owner": "team_name"
+  },
+  "schema": {
+    "fields": [
+      {
+        "name": "field1",
+        "type": "string"
+      },
+      {
+        "name": "field2",
+        "type": "integer"
+      }
+    ]
+  }
+}
+
+
