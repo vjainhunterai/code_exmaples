@@ -1,15 +1,14 @@
 {
-    "Version": "2012-10-17",
-    "Statement": [
-        {
-            "Effect": "Allow",
-            "Action": [
-                "s3:GetObject"
-            ],
-            "Resource": [
-                "arn:aws:s3:::etlhunter",
-                "arn:aws:s3:::etlhunter/*"
-            ]
-        }
-    ]
+  "data": [
+    {
+      "name": "sales_data",
+      "description": "Sales data for the 2021 fiscal year",
+      "path": "s3://my-bucket/sales/2021/"
+    },
+    {
+      "name": "customer_profiles",
+      "description": "Detailed customer profile information",
+      "path": "s3://my-bucket/customers/profiles/"
+    }
+  ]
 }
