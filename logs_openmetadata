@@ -162,5 +162,86 @@ metadata
 [2024-09-09T08:06:26.625+0000] {local_task_job_runner.py:222} INFO - ::endgroup::
 
 
++++++++++++++++++++++++++++
+
+
+e55a9721122e
+*** Found local files:
+***   * /opt/airflow/logs/dag_id=5be51295-3c29-433b-8ba9-8c4653955b26/run_id=manual__2024-09-09T11:27:33+00:00/task_id=ingestion_task/attempt=1.log
+[2024-09-09T11:27:34.736+0000] {local_task_job_runner.py:120} INFO - ::group::Pre task execution logs
+[2024-09-09T11:27:34.763+0000] {taskinstance.py:2076} INFO - Dependencies all met for dep_context=non-requeueable deps ti=<TaskInstance: 5be51295-3c29-433b-8ba9-8c4653955b26.ingestion_task manual__2024-09-09T11:27:33+00:00 [queued]>
+[2024-09-09T11:27:34.772+0000] {taskinstance.py:2076} INFO - Dependencies all met for dep_context=requeueable deps ti=<TaskInstance: 5be51295-3c29-433b-8ba9-8c4653955b26.ingestion_task manual__2024-09-09T11:27:33+00:00 [queued]>
+[2024-09-09T11:27:34.772+0000] {taskinstance.py:2306} INFO - Starting attempt 1 of 1
+[2024-09-09T11:27:34.792+0000] {taskinstance.py:2330} INFO - Executing <Task(CustomPythonOperator): ingestion_task> on 2024-09-09 11:27:33+00:00
+[2024-09-09T11:27:34.801+0000] {standard_task_runner.py:63} INFO - Started process 29948 to run task
+[2024-09-09T11:27:34.807+0000] {standard_task_runner.py:90} INFO - Running: ['airflow', 'tasks', 'run', '5be51295-3c29-433b-8ba9-8c4653955b26', 'ingestion_task', 'manual__2024-09-09T11:27:33+00:00', '--job-id', '19', '--raw', '--subdir', 'DAGS_FOLDER/5be51295-3c29-433b-8ba9-8c4653955b26.py', '--cfg-path', '/tmp/tmplne0etpa']
+[2024-09-09T11:27:34.807+0000] {standard_task_runner.py:91} INFO - Job 19: Subtask ingestion_task
+[2024-09-09T11:27:34.853+0000] {task_command.py:426} INFO - Running <TaskInstance: 5be51295-3c29-433b-8ba9-8c4653955b26.ingestion_task manual__2024-09-09T11:27:33+00:00 [running]> on host e55a9721122e
+[2024-09-09T11:27:34.944+0000] {taskinstance.py:2648} INFO - Exporting env vars: AIRFLOW_CTX_DAG_OWNER='admin' AIRFLOW_CTX_DAG_ID='5be51295-3c29-433b-8ba9-8c4653955b26' AIRFLOW_CTX_TASK_ID='ingestion_task' AIRFLOW_CTX_EXECUTION_DATE='2024-09-09T11:27:33+00:00' AIRFLOW_CTX_TRY_NUMBER='1' AIRFLOW_CTX_DAG_RUN_ID='manual__2024-09-09T11:27:33+00:00'
+[2024-09-09T11:27:34.945+0000] {taskinstance.py:430} INFO - ::endgroup::
+[2024-09-09T11:27:34.975+0000] {server_mixin.py:74} INFO - OpenMetadata client running with Server version [1.5.2] and Client version [1.5.2.0]
+[2024-09-09T11:27:35.090+0000] {ingestion_pipeline_mixin.py:52} DEBUG - Created Pipeline Status for pipeline OpenMetadata-S3.5be51295-3c29-433b-8ba9-8c4653955b26: runId='30ad3b62-e710-4566-ae7e-8970f5058a33' pipelineState=<PipelineState.running: 'running'> startDate=Timestamp(root=1725881254964) timestamp=Timestamp(root=1725881254964) endDate=None status=None
+[2024-09-09T11:27:35.200+0000] {aws_client.py:147} INFO - Getting AWS client for service [s3]
+[2024-09-09T11:27:35.294+0000] {aws_client.py:147} INFO - Getting AWS client for service [cloudwatch]
+[2024-09-09T11:27:35.664+0000] {test_connections.py:221} INFO - Test connection results:
+[2024-09-09T11:27:35.664+0000] {test_connections.py:222} INFO - failed=[] success=["'ListBuckets': Pass", "'GetMetrics': Pass"] warning=[]
+[2024-09-09T11:27:35.665+0000] {metadata.py:69} DEBUG - Source type:s3,<class 'metadata.ingestion.source.storage.s3.metadata.S3Source'> configured
+[2024-09-09T11:27:35.665+0000] {metadata.py:71} DEBUG - Source type:s3,<class 'metadata.ingestion.source.storage.s3.metadata.S3Source'>  prepared
+[2024-09-09T11:27:36.421+0000] {metadata.py:80} DEBUG - Sink type:metadata-rest, <class 'metadata.ingestion.sink.metadata_rest.MetadataRestSink'> configured
+[2024-09-09T11:27:36.422+0000] {topology_runner.py:166} DEBUG - Processing node producer='get_services' stages=[NodeStage(type_=<class 'metadata.generated.schema.entity.services.storageService.StorageService'>, processor='yield_create_request_objectstore_service', nullable=False, must_return=True, overwrite=False, consumer=None, context='objectstore_service', store_all_in_context=False, clear_context=False, store_fqn=False, cache_entities=True, use_cache=False)] children=['container'] post_process=['mark_containers_as_deleted'] threads=False
+[2024-09-09T11:27:36.422+0000] {topology_runner.py:231} DEBUG - Processing stage: type_=<class 'metadata.generated.schema.entity.services.storageService.StorageService'> processor='yield_create_request_objectstore_service' nullable=False must_return=True overwrite=False consumer=None context='objectstore_service' store_all_in_context=False clear_context=False store_fqn=False cache_entities=True use_cache=False
+[2024-09-09T11:27:36.466+0000] {topology_runner.py:166} DEBUG - Processing node producer='get_containers' stages=[NodeStage(type_=<class 'metadata.ingestion.models.ometa_classification.OMetaTagAndClassification'>, processor='yield_tag_details', nullable=True, must_return=False, overwrite=True, consumer=None, context='tags', store_all_in_context=True, clear_context=False, store_fqn=False, cache_entities=False, use_cache=False), NodeStage(type_=<class 'metadata.generated.schema.entity.data.container.Container'>, processor='yield_create_container_requests', nullable=True, must_return=False, overwrite=True, consumer=['objectstore_service'], context='container', store_all_in_context=False, clear_context=False, store_fqn=False, cache_entities=False, use_cache=True)] children=None post_process=None threads=False
+[2024-09-09T11:27:36.625+0000] {topology_runner.py:231} DEBUG - Processing stage: type_=<class 'metadata.ingestion.models.ometa_classification.OMetaTagAndClassification'> processor='yield_tag_details' nullable=True must_return=False overwrite=True consumer=None context='tags' store_all_in_context=True clear_context=False store_fqn=False cache_entities=False use_cache=False
+[2024-09-09T11:27:36.625+0000] {topology_runner.py:231} DEBUG - Processing stage: type_=<class 'metadata.generated.schema.entity.data.container.Container'> processor='yield_create_container_requests' nullable=True must_return=False overwrite=True consumer=['objectstore_service'] context='container' store_all_in_context=False clear_context=False store_fqn=False cache_entities=False use_cache=True
+[2024-09-09T11:27:36.626+0000] {topology_runner.py:395} DEBUG - No changes detected for Container 'OpenMetadata-S3.etlhunter'
+[2024-09-09T11:27:36.647+0000] {metadata.py:694} INFO - Looking for metadata template file at - s3://etlhunter/openmetadata.json
+[2024-09-09T11:27:36.675+0000] {metadata.py:710} DEBUG - Traceback (most recent call last):
+  File "/home/airflow/.local/lib/python3.10/site-packages/metadata/ingestion/source/storage/s3/metadata.py", line 703, in _load_metadata_file
+    metadata_config = StorageContainerConfig.model_validate(content)
+  File "/home/airflow/.local/lib/python3.10/site-packages/pydantic/main.py", line 551, in model_validate
+    return cls.__pydantic_validator__.validate_python(
+pydantic_core._pydantic_core.ValidationError: 2 validation errors for StorageContainerConfig
+entries
+  Field required [type=missing, input_value={'data': [{'name': 'sales...omers/customer_data/'}]}, input_type=dict]
+    For further information visit https://errors.pydantic.dev/2.7/v/missing
+data
+  Extra inputs are not permitted [type=extra_forbidden, input_value=[{'name': 'sales_data', '...tomers/customer_data/'}], input_type=list]
+    For further information visit https://errors.pydantic.dev/2.7/v/extra_forbidden
+[2024-09-09T11:27:36.676+0000] {metadata.py:711} WARNING - Failed loading metadata file s3://etlhunter/openmetadata.json-2 validation errors for StorageContainerConfig
+entries
+  Field required [type=missing, input_value={'data': [{'name': 'sales...omers/customer_data/'}]}, input_type=dict]
+    For further information visit https://errors.pydantic.dev/2.7/v/missing
+data
+  Extra inputs are not permitted [type=extra_forbidden, input_value=[{'name': 'sales_data', '...tomers/customer_data/'}], input_type=list]
+    For further information visit https://errors.pydantic.dev/2.7/v/extra_forbidden
+[2024-09-09T11:27:36.676+0000] {topology_runner.py:252} DEBUG - Post processing node producer='get_services' stages=[NodeStage(type_=<class 'metadata.generated.schema.entity.services.storageService.StorageService'>, processor='yield_create_request_objectstore_service', nullable=False, must_return=True, overwrite=False, consumer=None, context='objectstore_service', store_all_in_context=False, clear_context=False, store_fqn=False, cache_entities=True, use_cache=False)] children=['container'] post_process=['mark_containers_as_deleted'] threads=False
+[2024-09-09T11:27:36.802+0000] {ingestion_pipeline_mixin.py:52} DEBUG - Created Pipeline Status for pipeline OpenMetadata-S3.5be51295-3c29-433b-8ba9-8c4653955b26: runId='30ad3b62-e710-4566-ae7e-8970f5058a33' pipelineState=<PipelineState.success: 'success'> startDate=Timestamp(root=1725881254964) timestamp=Timestamp(root=1725881254964) endDate=Timestamp(root=1725881256725) status=IngestionStatus(root=[StepSummary(name='S3', records=0, updated_records=0, warnings=0, errors=0, filtered=0, failures=None), StepSummary(name='OpenMetadata', records=0, updated_records=0, warnings=0, errors=0, filtered=0, failures=None)])
+[2024-09-09T11:27:36.803+0000] {logger.py:175} INFO - [1mStatuses detailed info:[0m
+[2024-09-09T11:27:36.804+0000] {logger.py:175} INFO - [1mS3 Status:[0m
+[2024-09-09T11:27:36.804+0000] {logger.py:175} INFO - {'failures': [], 'filtered': [], 'records': [], 'source_start_time': 1725881255.1984751, 'updated_records': [], 'warnings': []}[0m
+[2024-09-09T11:27:36.804+0000] {logger.py:175} INFO - [1mOpenMetadata Status:[0m
+[2024-09-09T11:27:36.804+0000] {logger.py:175} INFO - {'failures': [], 'filtered': [], 'records': [], 'source_start_time': 1725881256.4218335, 'updated_records': [], 'warnings': []}[0m
+[2024-09-09T11:27:36.804+0000] {logger.py:175} INFO - [1mExecution Time Summary[0m
+[2024-09-09T11:27:36.806+0000] {logger.py:175} INFO - 
+[0m
+[2024-09-09T11:27:36.806+0000] {logger.py:175} INFO - [1mWorkflow S3 Summary:[0m
+[2024-09-09T11:27:36.806+0000] {logger.py:175} INFO - Processed records: 0[0m
+[2024-09-09T11:27:36.806+0000] {logger.py:175} INFO - Updated records: 0[0m
+[2024-09-09T11:27:36.807+0000] {logger.py:175} INFO - Warnings: 0[0m
+[2024-09-09T11:27:36.807+0000] {logger.py:175} INFO - Errors: 0[0m
+[2024-09-09T11:27:36.807+0000] {logger.py:175} INFO - [1mWorkflow OpenMetadata Summary:[0m
+[2024-09-09T11:27:36.807+0000] {logger.py:175} INFO - Processed records: 0[0m
+[2024-09-09T11:27:36.807+0000] {logger.py:175} INFO - Updated records: 0[0m
+[2024-09-09T11:27:36.807+0000] {logger.py:175} INFO - Warnings: 0[0m
+[2024-09-09T11:27:36.807+0000] {logger.py:175} INFO - Errors: 0[0m
+[2024-09-09T11:27:36.807+0000] {logger.py:175} INFO - [1m[36;1mSuccess %: 100.0[0m
+[2024-09-09T11:27:36.808+0000] {logger.py:175} INFO - [1m[36;1mWorkflow finished in time: 1.61s[0m
+[2024-09-09T11:27:36.808+0000] {python.py:237} INFO - Done. Returned value was: None
+[2024-09-09T11:27:36.864+0000] {local_task_job_runner.py:240} INFO - Task exited with return code 0
+[2024-09-09T11:27:36.879+0000] {taskinstance.py:3498} INFO - 0 downstream tasks scheduled from follow-on schedule check
+[2024-09-09T11:27:36.880+0000] {local_task_job_runner.py:222} INFO - ::endgroup::
+
+
+
 
 
