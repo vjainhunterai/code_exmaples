@@ -1,42 +1,15 @@
 {
-    "metadata": {
-        "name": "etlhunter_files_metadata",
-        "description": "Metadata for files stored in the etlhunter S3 bucket",
-        "service": {
-            "name": "your_s3_service_name",
-            "type": "storageService"
-        },
-        "owner": {
-            "name": "HunterAI",
-            "type": "DI"
-        },
-        "data": {
-            "dataset": [
-                {
-                    "name": "PDF Files",
-                    "type": "pdf",
-                    "path": "s3://etlhunter/",
-                    "description": "PDF files for analysis"
-                },
-                {
-                    "name": "Excel Files",
-                    "type": "excel",
-                    "path": "s3://etlhunter/",
-                    "description": "Excel files for reporting"
-                },
-                {
-                    "name": "CSV Files",
-                    "type": "csv",
-                    "path": "s3://etlhunter/",
-                    "description": "CSV files for data export"
-                },
-                {
-                    "name": "Text Files",
-                    "type": "text",
-                    "path": "s3://etlhunter/",
-                    "description": "Text files containing logs or documents"
-                }
+    "Version": "2012-10-17",
+    "Statement": [
+        {
+            "Effect": "Allow",
+            "Action": [
+                "s3:GetObject"
+            ],
+            "Resource": [
+                "arn:aws:s3:::etlhunter",
+                "arn:aws:s3:::etlhunter/*"
             ]
         }
-    }
+    ]
 }
