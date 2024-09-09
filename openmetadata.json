@@ -1,14 +1,16 @@
 {
-  "data": [
+  "entries": [
     {
       "name": "sales_data",
-      "description": "Sales data for the 2021 fiscal year",
-      "path": "s3://my-bucket/sales/2021/"
+      "description": "Container for sales data",
+      "tags": ["sales", "data"],
+      "location": "s3://etlhunter/sales_data/"
     },
     {
-      "name": "customer_profiles",
-      "description": "Detailed customer profile information",
-      "path": "s3://my-bucket/customers/profiles/"
+      "name": "customer_data",
+      "description": "Container for customer data",
+      "tags": ["customer", "data"],
+      "location": "s3://etlhunter/customers/customer_data/"
     }
   ]
 }
