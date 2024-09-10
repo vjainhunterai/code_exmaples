@@ -42,3 +42,11 @@ sudo apt-get install -y erlang-base \
 
 ## Install rabbitmq-server and its dependencies
 sudo apt-get install rabbitmq-server -y --fix-missing
+
+
++++++++++++++++++++++
+
+
+rabbitmqctl add_user username password
+rabbitmqctl set_user_tags username administrator
+rabbitmqctl set_permissions -p / username ".*" ".*" ".*"
