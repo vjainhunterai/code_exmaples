@@ -1,0 +1,6 @@
+Here's how it's functioning in your code:
+
+Invoice Matching: The logic compares pairs of invoices within each group of Extended_Amount and supp_no_dedup to see if their Invoice_Amount is the same. This suggests that the invoices might be duplicates or variations.
+
+Chq_No Check: After checking if the Invoice_Amount is the same, the code also compares the Chq_No (cheque number). The condition chq_nos[i] != chq_nos[j] ensures that invoices with the same amount but issued under different cheque numbers are treated differently. If two invoices have the same amount but different Chq_No values, 
+they are flagged as potential duplicates that need further examination based on the invoice numbers.
