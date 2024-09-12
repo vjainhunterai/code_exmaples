@@ -27,4 +27,34 @@ SELECT
 FROM input_data;
 
 
++++++++++++++++++++++
+
+
+SELECT 
+    CASE
+        -- Remove '-000' only if it's a suffix
+        WHEN input_id LIKE '%-000' THEN REPLACE(input_id, '-000', '')
+        -- Remove '000-' only if it's a prefix
+        WHEN input_id LIKE '000-%' THEN REPLACE(input_id, '000-', '')
+        
+        -- Handle cases with leading zeros (e.g., '01', '001', etc.)
+        WHEN input_id REGEXP '^0+[1-9][0-9]*$' THEN TRIM(LEADING '0' FROM input_id)
+
+        -- Handle cases with trailing zeros (e.g., '10', '100', etc.)
+        WHEN input_id REGEXP '^[1-9][0-9]*0+$' THEN CONCAT(SUBSTRING_INDEX(input_id, '0', 1), '1')
+
+        -- Handle cases with leading and trailing zeros, keep the middle part intact
+        WHEN input_id REGEXP '^0+[1-9]+0+$' THEN CONCAT(TRIM(LEADING '0' FROM input_id), '1')
+
+        -- Handle cases like '10001000', remove unnecessary zeros
+        WHEN input_id REGEXP '^[1-9]+0+[1-9]+0+$' THEN REPLACE(input_id, '0', '')
+
+        -- For all other cases, keep the original value
+        ELSE input_id
+    END AS cleaned_id
+FROM input_data;
+
+
+
+
 
