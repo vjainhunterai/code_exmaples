@@ -12,3 +12,19 @@ INV97819-000
 982856831
 17444416-000
 17444456-000
+
+
+
+===============
+
+
+SELECT 
+    REPLACE(
+        REPLACE(
+            REPLACE(input_id, '-000', ''),  -- Remove '-000'
+        '000-', ''),                        -- Remove '000-'
+    '000', '') AS cleaned_id               -- Handle any leftover '000' without dashes
+FROM input_data;
+
+
+
