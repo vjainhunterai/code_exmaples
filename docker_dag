@@ -1,0 +1,75 @@
+from airflow import DAG
+from airflow.operators.bash_operator import BashOperator
+from airflow.operators.python_operator import PythonOperator
+from datetime import datetime, timedelta
+import subprocess
+
+# Default arguments for the DAG
+default_args = {
+    'owner': 'airflow',
+    'depends_on_past': False,
+    'start_date': datetime(2024, 1, 1),
+    'email_on_failure': False,
+    'email_on_retry': False,
+    'retries': 1,
+    'retry_delay': timedelta(minutes=5),
+}
+
+# Initialize the DAG
+dag = DAG(
+    'docker_data_engineering_job',
+    default_args=default_args,
+    description='Build Docker image and execute the data engineering job in a container',
+    schedule_interval=None,
+)
+
+# Step 1: Clone GitHub repository
+clone_repo = BashOperator(
+    task_id='clone_repo',
+    bash_command="""
+    cd /home/ubuntu &&
+    if [ -d "dev_python" ]; then
+       rm -rf dev_python;
+       echo "Existing repository removed.";
+    fi &&
+    git clone https://vjainhunterai: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@github.com/vjainhunterai/dev_python.git &&
+    echo "Repository cloned successfully."
+    """,
+    dag=dag,
+)
+
+# Step 2: Pull the latest code if repo already exists
+pull_latest_code = BashOperator(
+    task_id='pull_latest_code',
+    bash_command='cd /home/ubuntu/dev_python && git pull',
+    dag=dag,
+)
+
+# Step 3: Build the Docker image
+build_docker_image = BashOperator(
+    task_id='build_docker_image',
+    bash_command="""
+    cd /home/ubuntu/dev_python &&
+    docker build -t dev_python_image .
+    """,
+    dag=dag,
+)
+
+# Step 4: Run the Docker container with the script
+run_docker_container = BashOperator(
+    task_id='run_docker_container',
+    bash_command="""
+    docker run --rm dev_python_image python3 /home/ubuntu/dev_python/src/l2Code_etl/l2Job.py
+    """,
+    dag=dag,
+)
+
+# Step 5: (Optional) Clean up the Docker image
+cleanup_docker_image = BashOperator(
+    task_id='cleanup_docker_image',
+    bash_command='docker rmi dev_python_image',
+    dag=dag,
+)
+
+# Define task dependencies
+clone_repo >> pull_latest_code >> build_docker_image >> run_docker_container >> cleanup_docker_image
