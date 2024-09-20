@@ -37,3 +37,30 @@ Traceback (most recent call last):
   File "/home/ubuntu/l2Job.py", line 4, in <module>
     from pandas import pandas as pd
 ModuleNotFoundError: No module named 'pandas'
+
+
+===================
+
+
+from airflow import DAG
+from airflow.operators.bash import BashOperator
+from datetime import datetime
+
+# Define the DAG
+default_args = {
+    'owner': 'airflow',
+    'start_date': datetime(2024, 9, 20),
+}
+
+with DAG('trigger_external_python_env', default_args=default_args, schedule_interval=None) as dag:
+
+    run_script_in_venv = BashOperator(
+        task_id='run_python_script_in_venv',
+        bash_command="""
+        source /path/to/your/venv/bin/activate && \
+        python /path/to/your_script.py
+        """,
+    )
+
+
+
