@@ -187,7 +187,7 @@ def run_data_engineering_job():
     try:
         # Activate the virtual environment and run the script
         subprocess.run(
-            ["bash", "-c", "source /home/ubuntu/airflow_venv/bin/activate && python /home/ubuntu/dev_python/src/l2Code_etl/l2Job.py"],
+            ["bash", "-c", "source /home/ubuntu/airflow_venv/bin/activate && python3 /home/ubuntu/dev_python/src/l2Code_etl/l2Job.py"],
             check=True
         )
         print("Data engineering job executed successfully.")
