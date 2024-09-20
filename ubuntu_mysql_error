@@ -57,10 +57,79 @@ with DAG('trigger_external_python_env', default_args=default_args, schedule_inte
     run_script_in_venv = BashOperator(
         task_id='run_python_script_in_venv',
         bash_command="""
-        source /path/to/your/venv/bin/activate && \
+        source /home/ubuntu/pyeng/bin/activate && \
         python /path/to/your_script.py
         """,
     )
+
+
+
+
+from airflow import DAG
+from airflow.operators.bash_operator import BashOperator
+from airflow.operators.python_operator import PythonOperator
+from datetime import datetime, timedelta
+import subprocess
+
+# Default arguments for the DAG
+default_args = {
+    'owner': 'airflow',
+    'depends_on_past': False,
+    'start_date': datetime(2024, 1, 1),
+    'email_on_failure': False,
+    'email_on_retry': False,
+    'retries': 1,
+    'retry_delay': timedelta(minutes=5),
+}
+
+# Initialize the DAG
+dag = DAG(
+    'data_engineering_job',
+    default_args=default_args,
+    description='Pull code from GitHub and execute the main data engineering job',
+    schedule_interval=None,
+)
+
+# Step 1: Clone GitHub repository
+clone_repo = BashOperator(
+    task_id='clone_repo',
+    bash_command="""
+    cd /home/ubuntu &&
+    if [ -d "dev_python" ]; then
+       rm -rf dev_python;
+       echo "Existing repository removed.";
+    fi &&
+    git clone https://vjainhunterai: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@github.com/vjainhunterai/dev_python.git  &&
+    echo "Repository cloned successfully."
+    """,
+    dag=dag,
+)
+
+# Step 2: Pull the latest code if repo already exists
+pull_latest_code = BashOperator(
+    task_id='pull_latest_code',
+    bash_command='cd /home/ubuntu/dev_python && git pull',
+    dag=dag,
+)
+
+# Step 3: Execute the main Python script for data engineering job
+def run_data_engineering_job():
+    try:
+        # Trigger the l2Job.py script
+        subprocess.run(["python3", "/home/ubuntu/dev_python/src/l2Code_etl/l2Job.py"], check=True)
+        print("Data engineering job executed successfully.")
+    except subprocess.CalledProcessError as e:
+        print(f"Error while running data engineering job: {e}")
+        raise
+
+execute_main_job = PythonOperator(
+    task_id='execute_main_job',
+    python_callable=run_data_engineering_job,
+    dag=dag,
+)
+
+# Define task dependencies
+clone_repo >> pull_latest_code >> execute_main_job
 
 
 
