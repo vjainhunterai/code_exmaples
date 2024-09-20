@@ -1,0 +1,26 @@
+sqlalchemy==1.4.41
+pandas==1.5.0
+mysql-connector-python==8.0.29
+
+
+
+=====================================
+
+
+# Use an official Python runtime as a parent image
+FROM python:3.9-slim
+
+# Set the working directory in the container
+WORKDIR /app
+
+# Copy the contents of your code directory to the container
+COPY /home/ubuntu/dev_python/src/l2_code /app
+
+# Install the required Python packages
+RUN pip install --no-cache-dir -r /app/requirements.txt
+
+# Run the Python script when the container launches
+CMD ["python3", "/app/l2Job.py"]
+
+
+
