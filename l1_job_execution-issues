@@ -27,3 +27,35 @@ Traceback (most recent call last):
   File "/home/ubuntu/pyeng/lib/python3.10/site-packages/pandas/io/common.py", line 882, in get_handle
     handle = open(handle, ioargs.mode)
 FileNotFoundError: [Errno 2] No such file or directory: '/home/ubuntu/dev_python/Data/metadata/paths.xlsx'
+
+
+
+=================================
+
+
+
+(pyeng) ubuntu@i-0f425bb12c09f2af3:~/dev_python$ python3 run_project_2308.py
+Error: [Errno 2] No such file or directory: 'C:\\Users\\jvineet\\PycharmProjects\\PythonLearnings\\Data\\processed\\LA_processed\\Hurley_Medical_8.2021-7.2023.csv'
+/home/ubuntu/dev_python/Data/metadata/Paths.xlsx
+{'host': 'prod-db.c969yoyq9cyy.us-east-1.rds.amazonaws.com', 'database': 'stg_tbl', 'user': 'admin', 'password': 'Gpoproddb!#!', 'port': 3306}
+Creating tables if they do not exist...
+Initializing session...
+['customer_data/09_Data_Upload_September2024', 'customer_data/08_Data_Upload_August2024']
+Attempting to download from S3 path: customer_data/09_Data_Upload_September2024/Community_Hospital_and_Wellness_110923_ap.txt
+Local file path: /home/ubuntu/dev_python/Data/raw/LA/Community_Hospital_and_Wellness_110923_ap.txt
+Downloaded customer_data/09_Data_Upload_September2024/Community_Hospital_and_Wellness_110923_ap.txt to /home/ubuntu/dev_python/Data/raw/LA/Community_Hospital_and_Wellness_110923_ap.txt
+Inserting log entry: {'exec_id': 'ec29a28b-7cd7-4c7a-9546-bddf0d4426cc', 'job_name': 'File Size Check', 'file_name': 'Community_Hospital_and_Wellness_110923_ap.txt', 'start_time': datetime.datetime(2024, 9, 23, 13, 15, 50, 651294), 'end_time': datetime.datetime(2024, 9, 23, 13, 15, 51, 665929), 'src_cnt': 60672, 'tgt_cnt': 0, 'lkp_cnt': 0, 'rej_cnt': 0, 'job_status': 'Success', 'crt_dttm': datetime.datetime(2024, 9, 23, 13, 15, 51, 665935)}
+Log entry committed.
+Inserting audit entry: {'exec_id': 'ec29a28b-7cd7-4c7a-9546-bddf0d4426cc', 'job_name': 'L1 Data Load', 'file_name': 'Community_Hospital_and_Wellness_110923_ap.txt', 'file_date': datetime.datetime(2024, 9, 23, 13, 15, 51, 665917), 'total_rec_cnt': 60672, 'processed_cnt': 0, 'job_status': 'WIP', 'rejection_cnt': 0, 'rejection_rsn': '', 's3_last_modified_date': datetime.datetime(2024, 9, 23, 13, 15, 51, 665925)}
+Audit entry committed.
+/home/ubuntu/dev_python/Data/raw/LA
+Delimiter for /home/ubuntu/dev_python/Data/raw/LA/Community_Hospital_and_Wellness_110923_ap.txt is '|'
+Traceback (most recent call last):
+  File "/home/ubuntu/dev_python/run_project_2308.py", line 244, in <module>
+    fileMover.move_files()
+  File "/home/ubuntu/dev_python/src/etl/fileMover.py", line 37, in move_files
+    for filename in os.listdir(self.source_dir):
+FileNotFoundError: [Errno 2] No such file or directory: 'C:\\Users\\jvineet\\PycharmProjects\\PythonLearnings\\Data\\raw\\LA'
+(pyeng) ubuntu@i-0f425bb12c09f2af3:~/dev_python$ pwd
+/home/ubuntu/dev_python
+(pyeng) ubuntu@i-0f425bb12c09f2af3:~/dev_python$
