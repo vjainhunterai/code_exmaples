@@ -1,0 +1,29 @@
+(pyeng) ubuntu@i-0f425bb12c09f2af3:~/dev_python/Data/metadata$ ls -lta
+total 36
+drwxrwxr-x 2 ubuntu ubuntu 4096 Sep 23 12:51 .
+drwxrwxr-x 4 ubuntu ubuntu 4096 Sep 23 12:51 ..
+-rw-rw-r-- 1 ubuntu ubuntu  249 Sep 23 12:51 Meta_File.txt
+-rw-rw-r-- 1 ubuntu ubuntu 1024 Sep 23 12:51 Meta_File_encrypt_python.txt
+-rw-rw-r-- 1 ubuntu ubuntu 9124 Sep 23 12:51 Paths.xlsx
+-rw-rw-r-- 1 ubuntu ubuntu  105 Sep 23 12:51 data.txt
+-rw-rw-r-- 1 ubuntu ubuntu   44 Sep 23 12:51 secret.key
+(pyeng) ubuntu@i-0f425bb12c09f2af3:~/dev_python/Data/metadata$ chmod 777 Paths.xlsx
+(pyeng) ubuntu@i-0f425bb12c09f2af3:~/dev_python/Data/metadata$ cd ..
+(pyeng) ubuntu@i-0f425bb12c09f2af3:~/dev_python/Data$ cd ..
+(pyeng) ubuntu@i-0f425bb12c09f2af3:~/dev_python$ python3 run_project_2308.py
+Error: [Errno 2] No such file or directory: 'C:\\Users\\jvineet\\PycharmProjects\\PythonLearnings\\Data\\processed\\LA_processed\\Hurley_Medical_8.2021-7.2023.csv'
+/home/ubuntu/dev_python/Data/metadata/paths.xlsx
+Traceback (most recent call last):
+  File "/home/ubuntu/dev_python/run_project_2308.py", line 62, in <module>
+    config = readEncryptedConfig(relativeExcelPath)
+  File "/home/ubuntu/dev_python/src/utils/readEncryptMetadata.py", line 17, in readEncryptedConfig
+    pathsDf = pd.read_excel(excelFilePath)
+  File "/home/ubuntu/pyeng/lib/python3.10/site-packages/pandas/io/excel/_base.py", line 495, in read_excel
+    io = ExcelFile(
+  File "/home/ubuntu/pyeng/lib/python3.10/site-packages/pandas/io/excel/_base.py", line 1550, in __init__
+    ext = inspect_excel_format(
+  File "/home/ubuntu/pyeng/lib/python3.10/site-packages/pandas/io/excel/_base.py", line 1402, in inspect_excel_format
+    with get_handle(
+  File "/home/ubuntu/pyeng/lib/python3.10/site-packages/pandas/io/common.py", line 882, in get_handle
+    handle = open(handle, ioargs.mode)
+FileNotFoundError: [Errno 2] No such file or directory: '/home/ubuntu/dev_python/Data/metadata/paths.xlsx'
