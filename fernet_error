@@ -1,0 +1,40 @@
+Traceback (most recent call last):
+  File "C:\Users\jvineet\PycharmProjects\PythonLearnings\.venv\lib\site-packages\cryptography\fernet.py", line 130, in _verify_signature
+    h.verify(data[-32:])
+cryptography.exceptions.InvalidSignature: Signature did not match digest.
+
+During handling of the above exception, another exception occurred:
+
+Traceback (most recent call last):
+  File "C:\Users\jvineet\Documents\Github2\dev_python\dev_python\run_project_2308.py", line 61, in <module>
+    config = readEncryptedConfig(relativeExcelPath)
+  File "C:\Users\jvineet\Documents\Github2\dev_python\dev_python\src\utils\readEncryptMetadata.py", line 32, in readEncryptedConfig
+    df_decrypted = df.map(lambda x: decryptData(str(x), cipherSuite))
+  File "C:\Users\jvineet\PycharmProjects\PythonLearnings\.venv\lib\site-packages\pandas\core\frame.py", line 10468, in map
+    return self.apply(infer).__finalize__(self, "map")
+  File "C:\Users\jvineet\PycharmProjects\PythonLearnings\.venv\lib\site-packages\pandas\core\frame.py", line 10374, in apply
+    return op.apply().__finalize__(self, method="apply")
+  File "C:\Users\jvineet\PycharmProjects\PythonLearnings\.venv\lib\site-packages\pandas\core\apply.py", line 916, in apply
+    return self.apply_standard()
+  File "C:\Users\jvineet\PycharmProjects\PythonLearnings\.venv\lib\site-packages\pandas\core\apply.py", line 1063, in apply_standard
+    results, res_index = self.apply_series_generator()
+  File "C:\Users\jvineet\PycharmProjects\PythonLearnings\.venv\lib\site-packages\pandas\core\apply.py", line 1081, in apply_series_generator
+    results[i] = self.func(v, *self.args, **self.kwargs)
+  File "C:\Users\jvineet\PycharmProjects\PythonLearnings\.venv\lib\site-packages\pandas\core\frame.py", line 10466, in infer
+    return x._map_values(func, na_action=na_action)
+  File "C:\Users\jvineet\PycharmProjects\PythonLearnings\.venv\lib\site-packages\pandas\core\base.py", line 921, in _map_values
+    return algorithms.map_array(arr, mapper, na_action=na_action, convert=convert)
+  File "C:\Users\jvineet\PycharmProjects\PythonLearnings\.venv\lib\site-packages\pandas\core\algorithms.py", line 1743, in map_array
+    return lib.map_infer(values, mapper, convert=convert)
+  File "lib.pyx", line 2972, in pandas._libs.lib.map_infer
+  File "C:\Users\jvineet\Documents\Github2\dev_python\dev_python\src\utils\readEncryptMetadata.py", line 32, in <lambda>
+    df_decrypted = df.map(lambda x: decryptData(str(x), cipherSuite))
+  File "C:\Users\jvineet\Documents\Github2\dev_python\dev_python\src\utils\decryption.py", line 10, in decryptData
+    return cipherSuite.decrypt(data.encode()).decode()
+  File "C:\Users\jvineet\PycharmProjects\PythonLearnings\.venv\lib\site-packages\cryptography\fernet.py", line 89, in decrypt
+    return self._decrypt_data(data, timestamp, time_info)
+  File "C:\Users\jvineet\PycharmProjects\PythonLearnings\.venv\lib\site-packages\cryptography\fernet.py", line 148, in _decrypt_data
+    self._verify_signature(data)
+  File "C:\Users\jvineet\PycharmProjects\PythonLearnings\.venv\lib\site-packages\cryptography\fernet.py", line 132, in _verify_signature
+    raise InvalidToken
+cryptography.fernet.InvalidToken
