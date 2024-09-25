@@ -1,0 +1,137 @@
+C:\Users\jvineet\PycharmProjects\PythonLearnings\.venv\Scripts\python.exe C:\Users\jvineet\Documents\Github3\dev_python\src\l3Code_etl\l3CodeProd_v1.py 
+start_time:  1727244299.7382295
+trigger_by:  jvineet
+Job_Name:  L3_Load
+Flow_Type Direct
+Database connection established.
+Metadata successfully retrieved from the database.
+SQL queries successfully fetched from the metadata table.
+L2 Audit table data successfully retrieved.
+L3 Audit table data successfully retrieved.
+Delta between L2 and L3 data successfully calculated.
+  Customer_Name L2_load_date
+0   REID HEALTH   2024-09-25
+insert ignore  into l3_dm_db.fact_invoice_details_python
+       select 
+       Invoice_primary_key	as	INVC_COMP_KEY	,
+       invhdrNumberInvoice	as	INVOICE_NUMBER	,
+       invhdrNumberPO	as	PO_NUMBER	,
+       invpricLineNbrPo   as PO_LINE_NUMBER,
+       case when invpricCommodityTitle= 'OTHERS-REST'  then   coalesce(prd_segment.PRD_KEY,-99) 
+       else coalesce(prd.PRD_KEY,prd_segment.PRD_KEY,-99)  end   as	PRD_KEY	,
+        -99	as	INVC_LOCATION_KEY	,
+       null	as	INVC_ISSUE_EMP_KEY	,
+       invpricUom	as	INVC_UNIT_KEY	,
+       invhdrPayByDate	as	INVC_PAYBY_DT	,
+       invpricTotalAmount	as	INVC_TOTAL_VALUE	,
+       invpricLineAmount	as	INVC_LINE_VALUE	,
+       invhdrCurrency	as	INVC_LINE_CRNCY	,
+       invpricQty	as	INVC_LINE_QUANTITY	,
+       invpricRate	as	INVC_PRICING_PER_QUANTITY	,
+       null	as	OVERDUE_FLG	,
+       null	as	OVERDUE_AMOUNT	,
+       invhdrDateInvoice	as	INVC_START_DT	,
+       dt.day_key as INVC_DAY_KEY,
+       invpricEndDate	as	INVC_END_DT	,
+       invpricSluProduct	as	INVC_SLU_PROD	,
+       SLUDescription as INVC_SLU_DESC,
+       invpricMinProductUnitPriceOfGroup	as	INVC_SLU_PROD_MINPRCE	,
+       invpricMaxProductUnitPriceOfGroup	as	INVC_SLU_PROD_MAXPRCE	,
+       invpricFlagOutlierProduct	as	INVC_SLU_PROD_OUTLIER	,
+       invpricSluSystem	as	INVC_SLU_SYSTEM	,
+       invpricMinSystemUnitPriceOfGroup	as	INVC_SLU_SYSTEM_MINPRCE	,
+       invpricMaxSystemUnitPriceOfGroup	as	INVC_SLU_SYSTEM_MAXPRCE	,
+       invpricFlagOutlierSystem	as	INVC_SLU_SYSTEM_OUTLIER	,
+       invpricSluState	as	INVC_SLU_STATE	,
+       invpricMinStateUnitPriceOfGroup	as	INVC_SLU_STATE_MINPRCE	,
+       invpricMaxStateUnitPriceOfGroup	as	INVC_SLU_STATE_MAXPRCE	,
+       invpricFlagOutlierState	as	INVC_SLU_STATE_OUTLIER	,
+       invpricDltpRankAtVendorSystem	as	INVC_DLTP_RANK_VENDORSYSTEM	,
+       invpricGpoDltpRankVendor	as	INVC_GPO_DLTP_RANK_VENDOR	,
+       invpricGpoItSpendRankVendor	as	INVC_GPO_ITSPEND_RANK_VENDOR	,
+       invpriccDescription	as	INVC_ITEM_DESCRIPTION	,
+       invpricQtyDerived	as	INVC_LINE_QUANTITY_DERIVED	,
+       invpricSegmentLevel1	as	INVC_SEG_LEVEL_1	,
+       invpricSegmentLevel2	as	INVC_SEG_LEVEL_2	,
+       invpricSegmentLevel3	as	INVC_SEG_LEVEL_3	,
+       invpricSegmentLevel4	as	INVC_SEG_LEVEL_4	,
+       invpricSegmentLevel1Vendor	as	INVC_SEG_LEVEL_1_VENDOR	,
+       invpricSegmentLevel2Vendor	as	INVC_SEG_LEVEL_2_VENDOR	,
+       invpricSegmentLevel3Vendor	as	INVC_SEG_LEVEL_3_VENDOR	,
+       invpricSegmentLevel1	as	INVC_SEG_LEVEL_1_CUSTOMER	,
+       invpricSegmentLevel2	as	INVC_SEG_LEVEL_2_CUSTOMER	,
+       invpricSegmentLevel3Customer	as	INVC_SEG_LEVEL_3_CUSTOMER	,
+      Field1 	as	INVC_TWO_GRAM	,
+       invpricBucketLTP	as	INVC_BUCKET_LTP	,
+       coalesce(party.PARTY_ORG_KEY,-99)	as	PARTY_ORG_KEY	,
+       coalesce(a.PARTY_GROUP_KEY,-99)	as	PARTY_GROUP_KEY	,
+       coalesce(a.VENDOR_KEY,-99)	as	VENDOR_KEY	,
+       coalesce(vendor.VENDOR_GROUP_KEY,-99)	as	VENDOR_GROUP_KEY	,
+       duplicate_flag	as	INVC_DUPLICATE_FLAG	,
+       active_flag	as	INVC_ACTIVE_FLAG	,
+       invhdrIdContract	as	CONTRACT_ID	,
+       null	as	SOW_KEY	,
+       invpricDatePo	as	INVC_ISSUE_DT	,
+       invpricRate	as	INVC_PRICING_PER_PRD	,
+       invpricSavingsProduct	as	INVC_PRODUCT_SAVINGS	,
+       invpricSavingsSystem	as	INVC_SYSTEM_SAVINGS	,
+       invpricSavingsState	as	INVC_STATE_SAVINGS	,
+       invpricCcCode	as	INVC_CC_CODE	,
+       Field4	  as	INVC_MODELNO_FIELD4	,
+       invpricDimExists	as	INVC_DIM_EXISTS	,
+       invhdrDocType	as	INVC_DOC_TYPE,
+       current_timestamp()   as Start_date,
+       load_date as LOAD_DATE
+       from ( select * from l2_cdm_db_new.l2_invoice_detail) a
+       left outer join l3_dm_db.dim_vendor vendor
+       on  a.vendor_key  = vendor.vendor_key
+       left outer join ( select 
+       PARTY_ORG_KEY,
+       PARTY_UNQ_IN_SRC,
+       PARTY_HQ_KEY,
+       PARTY_HQ_SUBMTG_MBR_ID,
+      sha2(concat(upper(a.PARTY_HQ_SUBMTG_MBR_NM),upper(a.PARTY_BO_HCO_NM),upper(coalesce(a.PART_RO_MBR_NM,'-99'))),512) as hash_key
+       from l3_dm_db.dim_party_org  a
+       ) party
+       on  a.party_org_hash_key = party.hash_key
+       left outer join l3_dm_db.dim_prd prd
+       on  upper(a.invpricCommodityTitle) = upper(prd.PRD_COMMODITY)
+      left outer join   l3_dm_db.dim_prd  prd_segment
+       on  upper(a.invpricSegmentTitle) = upper(prd_segment.PRD_COMMODITY)
+       left outer join l3_dm_db.dim_date dt
+       on a.invhdrDateInvoice = dt.`date`
+Operation Type: insert
+Executing SQL with variables: {}
+Traceback (most recent call last):
+  File "C:\Users\jvineet\Documents\Github3\dev_python\src\l3Code_etl\l3CodeProd_v1.py", line 219, in <module>
+    l3Execution()
+  File "C:\Users\jvineet\Documents\Github3\dev_python\src\l3Code_etl\l3CodeProd_v1.py", line 194, in l3Execution
+    insert_audit_record(
+  File "C:\Users\jvineet\Documents\Github3\dev_python\src\l3Code_etl\l3CodeProd_v1.py", line 110, in insert_audit_record
+    session.execute(text(insert_query), {
+  File "C:\Users\jvineet\PycharmProjects\PythonLearnings\.venv\lib\site-packages\sqlalchemy\orm\session.py", line 2351, in execute
+    return self._execute_internal(
+  File "C:\Users\jvineet\PycharmProjects\PythonLearnings\.venv\lib\site-packages\sqlalchemy\orm\session.py", line 2245, in _execute_internal
+    result = conn.execute(
+  File "C:\Users\jvineet\PycharmProjects\PythonLearnings\.venv\lib\site-packages\sqlalchemy\engine\base.py", line 1418, in execute
+    return meth(
+  File "C:\Users\jvineet\PycharmProjects\PythonLearnings\.venv\lib\site-packages\sqlalchemy\sql\elements.py", line 515, in _execute_on_connection
+    return connection._execute_clauseelement(
+  File "C:\Users\jvineet\PycharmProjects\PythonLearnings\.venv\lib\site-packages\sqlalchemy\engine\base.py", line 1640, in _execute_clauseelement
+    ret = self._execute_context(
+  File "C:\Users\jvineet\PycharmProjects\PythonLearnings\.venv\lib\site-packages\sqlalchemy\engine\base.py", line 1846, in _execute_context
+    return self._exec_single_context(
+  File "C:\Users\jvineet\PycharmProjects\PythonLearnings\.venv\lib\site-packages\sqlalchemy\engine\base.py", line 1986, in _exec_single_context
+    self._handle_dbapi_exception(
+  File "C:\Users\jvineet\PycharmProjects\PythonLearnings\.venv\lib\site-packages\sqlalchemy\engine\base.py", line 2356, in _handle_dbapi_exception
+    raise exc_info[1].with_traceback(exc_info[2])
+  File "C:\Users\jvineet\PycharmProjects\PythonLearnings\.venv\lib\site-packages\sqlalchemy\engine\base.py", line 1967, in _exec_single_context
+    self.dialect.do_execute(
+  File "C:\Users\jvineet\PycharmProjects\PythonLearnings\.venv\lib\site-packages\sqlalchemy\engine\default.py", line 924, in do_execute
+    cursor.execute(statement, parameters)
+  File "C:\Users\jvineet\PycharmProjects\PythonLearnings\.venv\lib\site-packages\mysql\connector\cursor_cext.py", line 344, in execute
+    prepared = self._connection.prepare_for_mysql(params)
+  File "C:\Users\jvineet\PycharmProjects\PythonLearnings\.venv\lib\site-packages\mysql\connector\connection_cext.py", line 889, in prepare_for_mysql
+    result[key] = self._cmysql.convert_to_mysql(value)[0]
+_mysql_connector.MySQLInterfaceError: Python type numpy.int64 cannot be converted
+Error during L3 Execution: Python type numpy.int64 cannot be converted
