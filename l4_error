@@ -1,0 +1,35 @@
+(pyeng) ubuntu@i-0f425bb12c09f2af3:~/dev_python/src/l4Code_etl$ python3 l4Code_v1.py
+start_time:  1727340253.9273138
+trigger_by:  ubuntu
+Job_Name:  L4_Load
+Flow_Type Direct
+Database connection established.
+Metadata successfully retrieved from the database.
+SQL queries successfully fetched from the metadata table.
+Fetched SQL Queries: [('truncate table l4_aggr_db_new.fact_invoice_details_temp', 'truncate'), ('\ninsert into l4_aggr_db_new.`fact_invoice_details_temp`\n select \n PARTY_GROUP_KEY,\n PARTY_ORG_KEY,\n VENDOR_KEY,\n VENDOR_GROUP_KEY,\n INVOICE_NU ... (2111 characters truncated) ... T ) ,month(INVC_START_DT )) order by \n INV.INVC_START_DT asc) as UNQ_Model_NMBR\n \n \n \n from  l3_dm_db.`fact_invoice_details_python` INV\n\n) INV', 'insert '), ("insert into  l4_aggr_db_new.`l4_aggr_mnthly_inv`\n select \n \n INV.PARTY_GROUP_KEY,\n PARTY_ORG_KEY,\n VENDOR_KEY,\n INV.VENDOR_GROUP_KEY,\n coalesc ... (4137 characters truncated) ... D_KEY,\n INV.INVC_SLU_PROD,\n coalesce(tail_vndr.vednor_spend_flag,0),\nconcat('M',INV.party_group_key,'V',INV.VENDOR_GROUP_KEY) ,\noem_key\n\n\n\n\n", 'insert')]
+L3 Invoice table data successfully retrieved.
+  party_group_key   load_date
+0            6067  2024-09-25
+L4 Audit table data successfully retrieved.
+Error calculating delta: You are trying to merge on object and int64 columns for key 'party_group_key'. If you wish to proceed you should use pd.concat
+Traceback (most recent call last):
+  File "/home/ubuntu/dev_python/src/l4Code_etl/l4Code_v1.py", line 258, in <module>
+    l4Execution()
+  File "/home/ubuntu/dev_python/src/l4Code_etl/l4Code_v1.py", line 215, in l4Execution
+    df_delta = delta_cust_details(df1, df2)
+  File "/home/ubuntu/dev_python/src/l4Code_etl/l4Code_v1.py", line 138, in delta_cust_details
+    merge_df = df1.merge(df2, on=['party_group_key', 'load_date'], how='left', indicator=True)
+  File "/home/ubuntu/pyeng/lib/python3.10/site-packages/pandas/core/frame.py", line 10832, in merge
+    return merge(
+  File "/home/ubuntu/pyeng/lib/python3.10/site-packages/pandas/core/reshape/merge.py", line 170, in merge
+    op = _MergeOperation(
+  File "/home/ubuntu/pyeng/lib/python3.10/site-packages/pandas/core/reshape/merge.py", line 807, in __init__
+    self._maybe_coerce_merge_keys()
+  File "/home/ubuntu/pyeng/lib/python3.10/site-packages/pandas/core/reshape/merge.py", line 1508, in _maybe_coerce_merge_keys
+    raise ValueError(msg)
+ValueError: You are trying to merge on object and int64 columns for key 'party_group_key'. If you wish to proceed you should use pd.concat
+
+
+
+==========================================
+
