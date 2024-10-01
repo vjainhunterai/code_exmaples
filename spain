@@ -1,0 +1,114 @@
+gpohealth_web_application
+
+
+
+CREATE TABLE `Customer_PowerBI_report` (
+  `id` int NOT NULL AUTO_INCREMENT,
+  `party_group_key` varchar(100) DEFAULT NULL,
+  `reportLink` text,
+  `reporttitle` varchar(100) DEFAULT NULL,
+  `ReportCategoryTitle` varchar(600) DEFAULT NULL,
+  PRIMARY KEY (`id`)
+) ENGINE=InnoDB AUTO_INCREMENT=14 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
+
+
+CREATE TABLE `customer_s3bucket_map` (
+  `id` int NOT NULL AUTO_INCREMENT,
+  `party_group_key` varchar(100) DEFAULT NULL,
+  `s3bucket` varchar(100) DEFAULT NULL,
+  `CreatedBy` varchar(100) DEFAULT NULL,
+  `CreatedOn` datetime DEFAULT NULL,
+  `ModifiledBy` varchar(100) DEFAULT NULL,
+  `LastModifiedDate` datetime DEFAULT NULL,
+  `customer_folder` varchar(255) DEFAULT NULL,
+  PRIMARY KEY (`id`)
+) ENGINE=InnoDB AUTO_INCREMENT=6 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
+
+
+
+CREATE TABLE `Files` (
+  `id` int NOT NULL AUTO_INCREMENT,
+  `path` varchar(255) DEFAULT NULL,
+  `user` varchar(255) DEFAULT NULL,
+  `filename` varchar(255) DEFAULT NULL,
+  `createdAt` datetime DEFAULT NULL,
+  `updatedAt` datetime DEFAULT NULL,
+  PRIMARY KEY (`id`)
+) ENGINE=InnoDB AUTO_INCREMENT=4052 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
+
+
+
+
+CREATE TABLE `portal_sessions` (
+  `session_id` varchar(128) CHARACTER SET utf8mb4 COLLATE utf8mb4_bin NOT NULL,
+  `expires` int unsigned NOT NULL,
+  `data` mediumtext CHARACTER SET utf8mb4 COLLATE utf8mb4_bin,
+  PRIMARY KEY (`session_id`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
+
+
+
+
+CREATE TABLE `s3_folder` (
+  `id` int NOT NULL AUTO_INCREMENT,
+  `folder_name` varchar(255) DEFAULT NULL,
+  `s3_bucket_name` varchar(45) DEFAULT NULL,
+  `party_group_key` int DEFAULT NULL,
+  PRIMARY KEY (`id`)
+) ENGINE=InnoDB AUTO_INCREMENT=6 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
+
+
+CREATE TABLE `User_Authorization_test` (
+  `id` int NOT NULL AUTO_INCREMENT,
+  `email` varchar(50) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci NOT NULL,
+  `auth_system_key` varchar(50) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci NOT NULL,
+  `user_action` varchar(10) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci NOT NULL,
+  `permission` varchar(1) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci DEFAULT '0',
+  `resource` text CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci,
+  `enabled` varchar(1) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci DEFAULT '1',
+  `created_on` timestamp NULL DEFAULT CURRENT_TIMESTAMP,
+  `updated_on` timestamp NULL DEFAULT NULL,
+  `created_by` varchar(50) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci DEFAULT NULL,
+  `updated_by` varchar(50) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci DEFAULT NULL,
+  `app_system` varchar(50) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci DEFAULT NULL,
+  PRIMARY KEY (`id`)
+) ENGINE=InnoDB AUTO_INCREMENT=87 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
+
+
+
+CREATE TABLE `Users` (
+  `id` int NOT NULL AUTO_INCREMENT,
+  `username` varchar(255) CHARACTER SET latin1 COLLATE latin1_swedish_ci DEFAULT NULL,
+  `password` varchar(255) CHARACTER SET latin1 COLLATE latin1_swedish_ci DEFAULT NULL,
+  `createdat` datetime DEFAULT NULL,
+  `updatedat` datetime DEFAULT NULL,
+  `enabled` int DEFAULT NULL,
+  PRIMARY KEY (`id`)
+) ENGINE=InnoDB AUTO_INCREMENT=24 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
+
+
+
+
+CREATE TABLE `Users_Customer_Map` (
+  `map_id` int NOT NULL AUTO_INCREMENT,
+  `usr_id` int NOT NULL,
+  `PARTY_GROUP_KEY` int NOT NULL,
+  PRIMARY KEY (`map_id`)
+) ENGINE=InnoDB AUTO_INCREMENT=33 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
+
+
+
+CREATE TABLE `Users_folder_Map` (
+  `map_id` int NOT NULL AUTO_INCREMENT,
+  `usr_id` int NOT NULL,
+  `folder_id` int NOT NULL,
+  PRIMARY KEY (`map_id`)
+) ENGINE=InnoDB AUTO_INCREMENT=18 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
+
+
+
+
+
+CREATE ALGORITHM=UNDEFINED DEFINER=`admin`@`%` SQL SECURITY DEFINER VIEW `gpohealth_web_application`.`cuv_powerbi_authorization` AS select `gpohealth_web_application`.`User_Authorization_test`.`id` AS `id`,`gpohealth_web_application`.`User_Authorization_test`.`email` AS `email`,`gpohealth_web_application`.`User_Authorization_test`.`resource` AS `PARTY_GROUP_KEY` from `gpohealth_web_application`.`User_Authorization_test` where ((`gpohealth_web_application`.`User_Authorization_test`.`app_system` = 'POWERBI_REPORT') and (`gpohealth_web_application`.`User_Authorization_test`.`enabled` = 1) and (`gpohealth_web_application`.`User_Authorization_test`.`permission` = 1) and (`gpohealth_web_application`.`User_Authorization_test`.`auth_system_key` = 'CustomerSystem'));
+
