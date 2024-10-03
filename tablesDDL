@@ -1,0 +1,24 @@
+import mysql.connector
+
+# Connect to MySQL
+conn = mysql.connector.connect(
+    host='your_host',
+    user='your_user',
+    password='your_password',
+    database='your_database'
+)
+
+cursor = conn.cursor()
+
+# Fetch all table names
+cursor.execute("SHOW TABLES")
+tables = cursor.fetchall()
+
+# Loop through tables and get their DDL
+for (table,) in tables:
+    cursor.execute(f"SHOW CREATE TABLE {table}")
+    ddl = cursor.fetchone()
+    print(f"DDL for {table}:\n{ddl[1]}\n")
+
+cursor.close()
+conn.close()
