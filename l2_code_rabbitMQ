@@ -30,7 +30,7 @@ Imported modules and their purposes:
 """
 
 # RabbitMQ connection parameters
-rabbitmq_host = 'localhost'
+rabbitmq_host = '172.31.30.137'
 rabbitmq_queue = 'l2_processing_queue'
 
 # Database connection parameters
@@ -386,3 +386,23 @@ def start_consuming():
 if __name__ == "__main__":
     # Start consuming messages from the RabbitMQ queue
     start_consuming()
+
+
+
+==============
+
+
+C:\Users\jvineet\PycharmProjects\PythonLearnings\.venv\Scripts\python.exe C:\Users\jvineet\Documents\Github3\dev_python\src\l2Code_etl\l2CodeProd_rabbitMQ.py 
+Traceback (most recent call last):
+  File "C:\Users\jvineet\Documents\Github3\dev_python\src\l2Code_etl\l2CodeProd_rabbitMQ.py", line 404, in <module>
+    start_consuming()
+  File "C:\Users\jvineet\Documents\Github3\dev_python\src\l2Code_etl\l2CodeProd_rabbitMQ.py", line 383, in start_consuming
+    connection = pika.BlockingConnection(pika.ConnectionParameters(host=rabbitmq_host))
+  File "C:\Users\jvineet\PycharmProjects\PythonLearnings\.venv\lib\site-packages\pika\adapters\blocking_connection.py", line 360, in __init__
+    self._impl = self._create_connection(parameters, _impl_class)
+  File "C:\Users\jvineet\PycharmProjects\PythonLearnings\.venv\lib\site-packages\pika\adapters\blocking_connection.py", line 451, in _create_connection
+    raise self._reap_last_connection_workflow_error(error)
+pika.exceptions.ProbableAuthenticationError: ConnectionClosedByBroker: (403) 'ACCESS_REFUSED - Login was refused using authentication mechanism PLAIN. For details see the broker logfile.'
+
+Process finished with exit code 1
+
