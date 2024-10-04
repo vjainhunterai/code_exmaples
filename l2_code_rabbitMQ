@@ -36,7 +36,14 @@ class DBHandler:
 # RabbitMQ Helper to publish messages to RabbitMQ queue
 def publish_to_rabbitmq(queue_name, message):
     try:
-        connection = pika.BlockingConnection(pika.ConnectionParameters(host='localhost'))  # Update if required
+        credentials = pika.PlainCredentials('admin', 'admin')
+        connection_params = pika.ConnectionParameters(
+    '172.31.30.137',  # Replace with 'your-server-ip' if connecting remotely
+    5672,
+    '/',  # The default vhost
+    credentials
+)
+        connection = pika.BlockingConnection(connection_params)
         channel = connection.channel()
 
         # Declare a queue
@@ -93,7 +100,7 @@ def l2Execution():
         queue_name = "l2_audit_updates"
 
         # Initialize DB connection
-        dbUrl = 'mysql+mysqlconnector://admin:yourpassword@yourdb.com/joblog_metadata'  # Update DB credentials
+        dbUrl = 'mysql+mysqlconnector://admin:Gpoproddb!#!@prod-db.c969yoyq9cyy.us-east-1.rds.amazonaws.com/joblog_metadata'
         db_handler = create_connection(dbUrl)
 
         # Simulate reading metadata and context from the DB
