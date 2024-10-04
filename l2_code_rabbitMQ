@@ -1,0 +1,388 @@
+# Standard library imports
+import json
+import os
+import time
+from datetime import datetime
+
+# Third-party library imports
+import pika
+import pandas as pd
+from sqlalchemy import create_engine, Table, Column, Integer, String, MetaData, DateTime, Date, text
+from sqlalchemy.orm import sessionmaker
+from sqlalchemy.exc import SQLAlchemyError
+
+"""
+This module handles L2 data processing and auditing.
+
+It uses RabbitMQ for message queuing, SQLAlchemy for database operations,
+and pandas for data manipulation. The module is designed to process L2 data,
+insert audit entries, and handle database operations.
+
+Imported modules and their purposes:
+- json: For JSON data parsing and manipulation
+- os: For interacting with the operating system
+- time: For time-related functions
+- datetime: For working with dates and times
+- pika: For RabbitMQ message queue operations
+- pandas: For data manipulation and analysis
+- sqlalchemy: For database operations and ORM functionality
+- SQLAlchemyError: For handling SQLAlchemy-specific exceptions
+"""
+
+# RabbitMQ connection parameters
+rabbitmq_host = 'localhost'
+rabbitmq_queue = 'l2_processing_queue'
+
+# Database connection parameters
+dbUrl = 'mysql+mysqlconnector://abc:jskhjkfl!@hdlkjlkfsajlkf/joblog_metadata'
+
+class databaseHandler:
+    """
+    A class to handle database operations for L2 data processing and auditing.
+
+    This class manages database connections, table creation, and provides methods
+    for inserting audit entries and closing connections.
+    """
+
+    def __init__(self, dbUrl):
+        """
+        Initialize the databaseHandler with a database URL.
+
+        Args:
+            dbUrl (str): The URL for the database connection.
+        """
+        # Create engine and establish connection
+        self.engine = create_engine(dbUrl)
+        self.connection = self.engine.connect()
+        self.metadata = MetaData()
+
+        print("Creating tables if they do not exist...")
+
+        # Define the l2_audit_data table structure
+        self.l2AuditTable = Table('l2_audit_data', self.metadata,
+                                  Column('Job_ID', String(250)),
+                                  Column('Job_Name', String(250)),
+                                  Column('Customer_Name', String(500)),
+                                  Column('Flow_Type', String(250)),
+                                  Column('Operation_type', String(120)),
+                                  Column('Source_Count', Integer),
+                                  Column('Target_count', Integer),
+                                  Column('New_rcrd_count', Integer),
+                                  Column('update_rcrd_count', Integer),
+                                  Column('Start_Time', DateTime),
+                                  Column('End_Time', DateTime),
+                                  Column('Status', String(250)),
+                                  Column('Insert_By', String(250)),
+                                  Column('Error_desc', String(500)),
+                                  Column('L1_load_date', Date),
+                                  Column('L2_load_date', DateTime))
+
+        # Create tables in the database if they don't exist
+        self.metadata.create_all(self.engine)
+
+        print("Initializing session...")
+        # Create a session for database operations
+        Session = sessionmaker(bind=self.engine)
+        self.session = Session()
+
+    def insertL2AuditEntry(self, l2AuditEntry):
+        """
+        Insert an L2 audit entry into the database.
+
+        Args:
+            l2AuditEntry (dict): A dictionary containing the audit entry data.
+
+        Raises:
+            Exception: If there's an error during the insertion process.
+        """
+        try:
+            print(f"Inserting L2 audit entry: {l2AuditEntry}")
+            # Prepare and execute the insert statement
+            ins = self.l2AuditTable.insert().values(l2AuditEntry)
+            self.session.execute(ins)
+            self.session.commit()
+            print("L2 audit entry committed.")
+        except Exception as e:
+            print(f"Error inserting L2 audit record: {e}")
+            # Rollback the session in case of an error
+            self.session.rollback()
+
+    def close(self):
+        """
+        Close the database session and connection.
+        """
+        print("Closing the session and connection...")
+        self.session.close()
+        self.connection.close()
+
+def create_connection(dbUrl):
+    """
+    Create a database connection using the provided URL.
+
+    Args:
+        dbUrl (str): The URL of the database to connect to.
+
+    Returns:
+        databaseHandler: An instance of the databaseHandler class.
+
+    Raises:
+        SQLAlchemyError: If there's an error creating the database connection.
+    """
+    try:
+        # Attempt to create a database handler
+        db_handler = databaseHandler(dbUrl)
+        print("Database connection established.")
+        return db_handler
+    except SQLAlchemyError as e:
+        # Log the error and re-raise it
+        print(f"Error creating database connection: {e}")
+        raise
+def read_metadata(l2MetadataTable, l2metadb, engine):
+    """
+    Read metadata from a specified table in the database.
+
+    Args:
+        l2MetadataTable (str): The name of the metadata table.
+        l2metadb (str): The name of the database containing the metadata table.
+        engine (sqlalchemy.engine.Engine): The SQLAlchemy engine for database connection.
+
+    Returns:
+        dict: A dictionary containing the metadata, with 'key' as the index and 'value' as the corresponding value.
+
+    Raises:
+        SQLAlchemyError: If there's an error reading the metadata from the database.
+    """
+    try:
+        # Construct the SQL query to select all data from the metadata table
+        l2_metaquery = f"SELECT * FROM {l2metadb}.{l2MetadataTable}"
+        
+        # Execute the query and store the results in a DataFrame
+        df_metadata = pd.read_sql_query(l2_metaquery, engine)
+        
+        print("Metadata successfully retrieved from the database.")
+        
+        # Convert the DataFrame to a dictionary and return it
+        return df_metadata.set_index('key')['value'].to_dict()
+    except SQLAlchemyError as e:
+        # Log the error and re-raise it
+        print(f"Error reading metadata: {e}")
+        raise
+def fetch_all_sql_queries(session, query_meta_table, ctxArea):
+    """
+    Fetch all SQL queries from the metadata table for a specific context area.
+
+    Args:
+        session (sqlalchemy.orm.Session): The database session.
+        query_meta_table (str): The name of the metadata table containing SQL queries.
+        ctxArea (str): The context area to filter the queries.
+
+    Returns:
+        list: A list of tuples containing (ctxval, remarks) for each query.
+
+    Raises:
+        SQLAlchemyError: If there's an error fetching the SQL queries from the database.
+    """
+    try:
+        # Construct and execute the SQL query to fetch relevant data
+        result = session.execute(
+            text(f"SELECT ctxval,remarks FROM {query_meta_table} WHERE ctxarea='{ctxArea}' ORDER BY ctxkey"))
+        print("SQL queries successfully fetched from the metadata table.")
+        
+        # Return all fetched rows
+        return result.fetchall()
+    except SQLAlchemyError as e:
+        # Log the error and re-raise it
+        print(f"Error fetching SQL queries: {e}")
+        raise
+def l2Audit_cnt(srcDb, targetDb, srcTable, targetTable, Customer_Name, LoadDate, engine):
+    """
+    Perform an audit count for L2 data by comparing source and target databases.
+
+    Args:
+        srcDb (str): Source database name.
+        targetDb (str): Target database name.
+        srcTable (str): Source table name.
+        targetTable (str): Target table name.
+        Customer_Name (str): Name of the customer to filter the data.
+        LoadDate (str): Load date to filter the data.
+        engine (sqlalchemy.engine.Engine): SQLAlchemy engine for database connection.
+
+    Returns:
+        tuple: A tuple containing (source_count, target_count).
+    """
+    # Query to count rows in the source table
+    src_qury = f"SELECT count(*) FROM {srcDb}.{srcTable} WHERE invhdrNameCustomer='{Customer_Name}' and load_date='{LoadDate}'"
+    tsrc_cnt = pd.read_sql_query(src_qury, engine)
+    src_cnt = tsrc_cnt.iloc[0, 0]
+
+    # Query to count rows in the target table
+    trgt_qury = f"SELECT count(*) FROM {targetDb}.{targetTable} WHERE invhdrNameCustomer='{Customer_Name}' and load_date='{LoadDate}'"
+    ttrgt_cnt = pd.read_sql_query(trgt_qury, engine)
+    trgt_cnt = ttrgt_cnt.iloc[0, 0]
+
+    return src_cnt, trgt_cnt
+def execute_sql(session, sql_query, variables=None):
+    """
+    Execute a SQL query with optional variables and handle the transaction.
+
+    Args:
+        session (sqlalchemy.orm.Session): The database session.
+        sql_query (str): The SQL query to execute.
+        variables (dict, optional): Variables to be used in the SQL query. Defaults to None.
+
+    Returns:
+        tuple: A tuple containing ('SUCCESS', None) if the query executes successfully,
+               or ('FAIL', error_message) if an error occurs.
+    """
+    try:
+        # Convert the SQL query to a SQLAlchemy text object
+        query = text(sql_query)
+        
+        # Execute the query with provided variables or an empty dict
+        session.execute(query, variables or {})
+        
+        # Commit the transaction
+        session.commit()
+        
+        return 'SUCCESS', None
+    except SQLAlchemyError as e:
+        # Rollback the transaction in case of an error
+        session.rollback()
+        
+        # Capture the error message
+        error_mesg = str(e)
+        
+        return 'FAIL', error_mesg
+def process_message(ch, method, properties, body):
+    """
+    Process a message received from RabbitMQ.
+
+    This function handles the entire workflow of processing a message,
+    including database operations, SQL query execution, and audit logging.
+
+    Args:
+        ch (pika.channel.Channel): The channel object.
+        method (pika.spec.Basic.Deliver): The method frame.
+        properties (pika.spec.BasicProperties): Message properties.
+        body (bytes): The message body.
+
+    Raises:
+        Exception: If there's an error during message processing.
+    """
+    # Parse the incoming message
+    message = json.loads(body)
+    print(f"Received message: {message}")
+    
+    try:
+        # Create a database connection
+        db_handler = create_connection(dbUrl)
+        
+        # Define metadata table names and fetch metadata
+        l2MetadataTable = "prod_context_l2_l3"
+        meta_db_name = "joblog_metadata"
+        meta_l2_keys = read_metadata(l2MetadataTable, meta_db_name, db_handler.engine)
+        
+        # Extract customer name and load date from the message
+        customer_name = message.get('Customer_Name')
+        L1_load_date = message.get('L1_load_date')
+        
+        # Fetch SQL queries from metadata
+        query_meta_table = meta_l2_keys["L2_Query_Metadata"]
+        ctxArea = meta_l2_keys["L2_ctxarea"]
+        sql_queries = fetch_all_sql_queries(db_handler.session, query_meta_table, ctxArea)
+        
+        # Get table and database names from metadata
+        l1InvTable = meta_l2_keys["L1_Inv_Table"]
+        targetTable = meta_l2_keys["L2_Inv_Table"]
+        srcDb = meta_l2_keys["L1_server_DB"]
+        targetDb = meta_l2_keys["L2_Server_Database"]
+        
+        # Process each SQL query
+        for sql_row in sql_queries:
+            sql_query = sql_row[0]
+            variables = {
+                "context_customer": customer_name,
+                "context_l1_date": L1_load_date
+            }
+            # Execute the SQL query
+            status, error_message = execute_sql(db_handler.session, sql_query, variables)
+            
+            # Perform audit count
+            Source_Count, Target_count = l2Audit_cnt(srcDb, targetDb, l1InvTable, targetTable, customer_name, L1_load_date, db_handler.engine)
+            
+            # Determine job status and error description
+            job_status = "SUCCESS" if status == "SUCCESS" else "FAILED"
+            error_desc = "" if status == "SUCCESS" else error_message
+            
+            # Prepare audit entry
+            audit_entry = {
+                'Job_ID': "1234",
+                'Job_Name': "L2_Load",
+                'Customer_Name': customer_name,
+                'Flow_Type': "Direct",
+                'Operation_type': "L2_Audit",
+                'Source_Count': int(Source_Count),
+                'Target_count': int(Target_count),
+                'New_rcrd_count': 0,
+                'update_rcrd_count': 0,
+                'Start_Time': datetime.now(),
+                'End_Time': datetime.now(),
+                'Status': job_status,
+                'Insert_By': os.getlogin(),
+                'Error_desc': error_desc,
+                'L1_load_date': L1_load_date,
+                'L2_load_date': datetime.now()
+            }
+            # Insert audit entry into database
+            db_handler.insertL2AuditEntry(audit_entry)
+            
+            # Raise an exception if SQL execution failed
+            if status == "FAIL":
+                raise Exception(f"SQL Execution Failed: {error_message}")
+        
+        print(f"Successfully processed message for customer: {customer_name}")
+        # Acknowledge the message
+        ch.basic_ack(delivery_tag=method.delivery_tag)
+    except Exception as e:
+        print(f"Error processing message: {e}")
+        # Negative acknowledge and requeue the message
+        ch.basic_nack(delivery_tag=method.delivery_tag, requeue=True)
+    finally:
+        # Close the database connection if it was opened
+        if 'db_handler' in locals():
+            db_handler.close()
+
+def start_consuming():
+    """
+    Establishes a connection to RabbitMQ and starts consuming messages from the specified queue.
+
+    This function sets up a connection to RabbitMQ, declares the queue, sets quality of service,
+    and begins consuming messages. It uses the process_message function as the callback
+    for handling incoming messages.
+
+    The function will run indefinitely, processing messages as they arrive, until interrupted.
+
+    Raises:
+        pika.exceptions.AMQPError: If there's an issue with the RabbitMQ connection or channel.
+    """
+    # Establish a connection to RabbitMQ
+    connection = pika.BlockingConnection(pika.ConnectionParameters(host=rabbitmq_host))
+    channel = connection.channel()
+    
+    # Declare the queue to consume from
+    channel.queue_declare(queue=rabbitmq_queue, durable=True)
+    
+    # Set quality of service to process one message at a time
+    channel.basic_qos(prefetch_count=1)
+    
+    # Set up the consumer with the process_message callback
+    channel.basic_consume(queue=rabbitmq_queue, on_message_callback=process_message)
+    
+    # Inform the user that the consumer is ready and waiting for messages
+    print("Waiting for messages. To exit press CTRL+C")
+    
+    # Start consuming messages indefinitely
+    channel.start_consuming()
+if __name__ == "__main__":
+    # Start consuming messages from the RabbitMQ queue
+    start_consuming()
