@@ -3,9 +3,9 @@ import pika
 def send_message():
     try:
         # Set up connection parameters with the new credentials
-        credentials = pika.PlainCredentials('myuser', 'mypassword')
+        credentials = pika.PlainCredentials('admin', 'admin')
         connection_params = pika.ConnectionParameters(
-            'localhost',  # Replace with 'your-server-ip' if connecting remotely
+            '172.31.30.137',  # Replace with 'your-server-ip' if connecting remotely
             5672,
             '/',  # The default vhost
             credentials
