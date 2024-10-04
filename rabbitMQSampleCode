@@ -2,8 +2,14 @@ import pika
 
 def send_message():
     try:
-        # Connect to RabbitMQ server
-        connection_params = pika.ConnectionParameters('localhost')  # Replace 'localhost' if connecting to a remote server
+        # Set up connection parameters with the new credentials
+        credentials = pika.PlainCredentials('myuser', 'mypassword')
+        connection_params = pika.ConnectionParameters(
+            'localhost',  # Replace with 'your-server-ip' if connecting remotely
+            5672,
+            '/',  # The default vhost
+            credentials
+        )
         connection = pika.BlockingConnection(connection_params)
         channel = connection.channel()
 
@@ -13,7 +19,7 @@ def send_message():
         # Send a message
         message = "Hello"
         channel.basic_publish(exchange='',
-                              routing_key='hello',  # Queue name
+                              routing_key='hello',
                               body=message)
 
         print(f" [x] Sent '{message}'")
