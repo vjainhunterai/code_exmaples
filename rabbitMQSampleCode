@@ -1,23 +1,30 @@
 import pika
 
 def send_message():
-    # Connect to RabbitMQ server
-    connection = pika.BlockingConnection(pika.ConnectionParameters('localhost'))  # Use 'localhost' if RabbitMQ is on the same machine
-    channel = connection.channel()
+    try:
+        # Connect to RabbitMQ server
+        connection_params = pika.ConnectionParameters('localhost')  # Replace 'localhost' if connecting to a remote server
+        connection = pika.BlockingConnection(connection_params)
+        channel = connection.channel()
 
-    # Declare a queue (if it doesn't already exist)
-    channel.queue_declare(queue='hello')
+        # Declare a queue (idempotent operation)
+        channel.queue_declare(queue='hello')
 
-    # Send a message
-    message = "Hello"
-    channel.basic_publish(exchange='',
-                          routing_key='hello',  # The queue name
-                          body=message)
+        # Send a message
+        message = "Hello"
+        channel.basic_publish(exchange='',
+                              routing_key='hello',  # Queue name
+                              body=message)
 
-    print(f" [x] Sent '{message}'")
+        print(f" [x] Sent '{message}'")
 
-    # Close the connection
-    connection.close()
+        # Close the connection
+        connection.close()
+
+    except pika.exceptions.AMQPConnectionError as e:
+        print(f"Error connecting to RabbitMQ: {e}")
+    except Exception as e:
+        print(f"An error occurred: {e}")
 
 if __name__ == "__main__":
     send_message()
