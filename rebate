@@ -1,0 +1,90 @@
+Updated Tables Overview
+Contracts: Stores contract details.
+Rebate_Programs: Defines different rebate programs (by contract).
+Sales: Tracks sales data per year, per contract, and by product.
+Rebate_Program_Types: Stores the different types of rebate programs.
+Rebate_Eligibility: Calculates and stores rebate details for eligible sales.
+Rebate_Exceptions: Tracks exceptions and the specific conditions for those exceptions.
+Exception_Types: Defines the types of exceptions.
+Exception_Conditions: Stores the logic/condition for each exception.
+Updated Table Design
+1. Contracts (No change)
+contract_id (PK)
+customer_id (FK)
+contract_name
+start_date
+end_date
+created_at
+2. Rebate_Programs (No change)
+rebate_program_id (PK)
+contract_id (FK)
+program_name
+rebate_type_id (FK)
+rebate_percentage
+threshold
+created_at
+3. Sales (No change)
+sale_id (PK)
+contract_id (FK)
+year
+product_id (FK)
+sale_amount
+sale_quantity
+sale_date
+4. Rebate_Program_Types (No change)
+rebate_type_id (PK)
+rebate_type_name
+calculation_method
+5. Rebate_Eligibility (No change)
+rebate_eligibility_id (PK)
+rebate_program_id (FK)
+sale_id (FK)
+eligible_amount
+rebate_amount
+calculation_date
+6. Rebate_Exceptions
+exception_id (PK): Unique identifier for each exception.
+rebate_program_id (FK): References Rebate_Programs (which program the exception applies to).
+sale_id (FK): References Sales (to track exceptions at the sale level).
+exception_type_id (FK): References Exception_Types (what type of exception is applied).
+custom_rebate_percentage: A custom rebate percentage for this specific exception (overrides the regular percentage).
+custom_threshold: Custom threshold for eligibility (overrides the program-wide threshold).
+notes: Additional notes or comments about the exception.
+created_at: Timestamp when the exception was added.
+7. Exception_Types
+exception_type_id (PK): Unique identifier for the type of exception.
+exception_name: Descriptive name (e.g., "High Volume Sales", "Product-Specific Exclusion").
+description: Detailed explanation of the exception type.
+8. Exception_Conditions
+condition_id (PK): Unique identifier for the condition.
+exception_type_id (FK): References Exception_Types to link the condition to a specific exception.
+condition_logic: Defines the logic or condition that triggers the exception (e.g., "Sales over $1 million", "Product ABC excluded").
+condition_value: The specific value that must be met for the exception to apply (e.g., 1000000 for $1 million).
+Exception Use Case Example
+Let’s walk through an example with an exception:
+
+Standard Sales Comparison Rebate Program:
+
+A contract has a rebate program that gives a 2.5% rebate on the difference between previous year and current year sales, as long as the threshold is $500K.
+Exception for High Volume Sales:
+
+If a sale exceeds $1 million, the contract gives a higher rebate percentage (e.g., 3.5% instead of 2.5%). This exception is defined in Rebate_Exceptions, linked to the rebate program and sales record.
+Custom Product-Based Exception:
+
+A particular product might be excluded from rebates entirely. In this case, an entry is added to Rebate_Exceptions, linking to the specific product in the Sales table and applying a condition from Exception_Types that disqualifies the product from rebates.
+Workflow with Exceptions
+Sales Entry: Sales are entered into the Sales table as usual, along with the year, product, and amount.
+
+Rebate Program Calculation: When calculating the rebate, the system first applies the standard rebate logic from Rebate_Programs. If no exceptions apply, it calculates the rebate amount as usual.
+
+Exception Check: The system checks the Rebate_Exceptions table for any applicable exceptions to the sales record or program.
+
+If an exception is found, it applies custom logic (e.g., custom rebate percentage, custom threshold).
+The condition in Exception_Conditions helps trigger the exception.
+Storing Results: The rebate amounts (with or without exceptions) are stored in the Rebate_Eligibility table.
+
+Advantages
+Flexibility: This model allows flexibility to handle various exceptions that override standard rebate conditions.
+Extensibility: New types of rebate exceptions can easily be added by extending the Exception_Types and Exception_Conditions tables.
+Custom Logic: Each exception can apply custom rebate percentages, thresholds, or even completely exclude certain sales from rebate eligibility.
+Would you like more details on any part of this model?
