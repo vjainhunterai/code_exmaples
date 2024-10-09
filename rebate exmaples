@@ -1,0 +1,204 @@
+Example 1: Sales-Based Rebate with an Exception for High Sales Volume
+Scenario:
+Rebate Program: A standard rebate program offers a 2.5% rebate on the difference between current year and previous year sales for a contract. The threshold for eligibility is $500,000.
+Exception: If a sale exceeds $1 million, the rebate increases to 3.5%.
+Steps:
+Standard Rebate Calculation:
+
+Previous Year Sales: $500,000
+Current Year Sales: $900,000
+Eligible Rebate Amount: $900,000 - $500,000 = $400,000
+Standard Rebate: $400,000 * 2.5% = $10,000
+High Volume Exception:
+
+One sale in the current year was for $1.2 million.
+The system applies the 3.5% rebate to this sale due to the exception.
+Rebate Calculation for Exception Sale: $1,200,000 - $500,000 = $700,000 * 3.5% = $24,500
+Data Entries:
+Rebate_Programs Table:
+
+plaintext
+Copy code
+rebate_program_id: 1
+contract_id: 100
+program_name: 'Year-over-Year Sales Comparison'
+rebate_type_id: 1
+rebate_percentage: 2.5%
+threshold: 500000
+Sales Table:
+
+plaintext
+Copy code
+sale_id: 101
+contract_id: 100
+year: 2024
+sale_amount: 900000
+sale_date: '2024-09-30'
+Rebate_Exceptions Table (for the high-volume sale):
+
+plaintext
+Copy code
+exception_id: 1
+rebate_program_id: 1
+sale_id: 101
+exception_type_id: 1 (High Volume Sales)
+custom_rebate_percentage: 3.5%
+Rebate_Eligibility Table:
+
+plaintext
+Copy code
+rebate_eligibility_id: 1
+rebate_program_id: 1
+sale_id: 101
+eligible_amount: 400000
+rebate_amount: 10000
+Rebate_Eligibility Table (for exception sale):
+
+plaintext
+Copy code
+rebate_eligibility_id: 2
+rebate_program_id: 1
+sale_id: 102
+eligible_amount: 700000
+rebate_amount: 24500
+Example 2: Product-Based Rebate with an Exclusion for a Specific Product
+Scenario:
+Rebate Program: A product-based rebate program offers a 5% rebate on all sales of specific products under a contract.
+Exception: One product (Product ABC) is excluded from the rebate.
+Steps:
+Standard Rebate Calculation:
+
+Product XYZ Sales: $100,000
+Rebate Calculation: $100,000 * 5% = $5,000
+Product Exclusion:
+
+Product ABC is excluded, so no rebate is calculated for sales of this product.
+Data Entries:
+Rebate_Programs Table:
+
+plaintext
+Copy code
+rebate_program_id: 2
+contract_id: 101
+program_name: 'Product-Based Rebate'
+rebate_type_id: 2
+rebate_percentage: 5%
+Sales Table (for Product XYZ):
+
+plaintext
+Copy code
+sale_id: 201
+contract_id: 101
+product_id: 1 (Product XYZ)
+year: 2024
+sale_amount: 100000
+sale_date: '2024-09-30'
+Sales Table (for Product ABC):
+
+plaintext
+Copy code
+sale_id: 202
+contract_id: 101
+product_id: 2 (Product ABC)
+year: 2024
+sale_amount: 50000
+sale_date: '2024-09-30'
+Rebate_Exceptions Table (for Product ABC exclusion):
+
+plaintext
+Copy code
+exception_id: 2
+rebate_program_id: 2
+sale_id: 202
+exception_type_id: 2 (Product Exclusion)
+custom_rebate_percentage: 0%
+Rebate_Eligibility Table (for Product XYZ):
+
+plaintext
+Copy code
+rebate_eligibility_id: 3
+rebate_program_id: 2
+sale_id: 201
+eligible_amount: 100000
+rebate_amount: 5000
+Rebate_Eligibility Table (for Product ABC, with no rebate):
+
+plaintext
+Copy code
+rebate_eligibility_id: 4
+rebate_program_id: 2
+sale_id: 202
+eligible_amount: 50000
+rebate_amount: 0
+Example 3: Sales-Based Rebate with a Custom Threshold Exception
+Scenario:
+Rebate Program: A rebate program gives a 2% rebate on the difference between previous year and current year sales, with a threshold of $300,000.
+Exception: A custom threshold of $200,000 applies for specific sales made after September 2024.
+Steps:
+Standard Rebate Calculation:
+
+Previous Year Sales: $400,000
+Current Year Sales (August 2024): $600,000
+Rebate Calculation: ($600,000 - $400,000) * 2% = $4,000 (standard threshold of $300,000).
+Custom Threshold Exception:
+
+For a sale made in October 2024, the custom threshold of $200,000 applies.
+Current Year Sales (October 2024): $700,000
+Rebate Calculation (with custom threshold): ($700,000 - $400,000) * 2% = $6,000.
+Data Entries:
+Rebate_Programs Table:
+
+plaintext
+Copy code
+rebate_program_id: 3
+contract_id: 102
+program_name: 'Year-over-Year Sales with Custom Threshold'
+rebate_type_id: 1
+rebate_percentage: 2%
+threshold: 300000
+Sales Table (for August sale):
+
+plaintext
+Copy code
+sale_id: 301
+contract_id: 102
+year: 2024
+sale_amount: 600000
+sale_date: '2024-08-30'
+Sales Table (for October sale):
+
+plaintext
+Copy code
+sale_id: 302
+contract_id: 102
+year: 2024
+sale_amount: 700000
+sale_date: '2024-10-05'
+Rebate_Exceptions Table (for custom threshold in October):
+
+plaintext
+Copy code
+exception_id: 3
+rebate_program_id: 3
+sale_id: 302
+exception_type_id: 3 (Custom Threshold)
+custom_threshold: 200000
+Rebate_Eligibility Table (for August sale):
+
+plaintext
+Copy code
+rebate_eligibility_id: 5
+rebate_program_id: 3
+sale_id: 301
+eligible_amount: 200000
+rebate_amount: 4000
+Rebate_Eligibility Table (for October sale with custom threshold):
+
+plaintext
+Copy code
+rebate_eligibility_id: 6
+rebate_program_id: 3
+sale_id: 302
+eligible_amount: 300000
+rebate_amount: 6000
+These examples show how the system dynamically handles rebates, exceptions, and custom logic across different contracts and sales scenarios. Would you like to explore more cases or modify these examples?
