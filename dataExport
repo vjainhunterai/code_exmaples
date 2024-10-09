@@ -1,0 +1,53 @@
+import mysql.connector
+import csv
+
+# Function to connect to the MySQL database
+def connect_to_db():
+    try:
+        # Replace with your MySQL credentials
+        connection = mysql.connector.connect(
+            host='your_mysql_host',
+            user='your_mysql_user',
+            password='your_mysql_password',
+            database='your_database_name'
+        )
+        if connection.is_connected():
+            print("Successfully connected to the database")
+            return connection
+    except mysql.connector.Error as e:
+        print(f"Error while connecting to MySQL: {e}")
+        return None
+
+# Function to export data to a pipe-separated CSV file
+def export_data_to_pipe_separated_file(query, output_file_path):
+    connection = connect_to_db()
+    if connection is None:
+        return
+
+    try:
+        cursor = connection.cursor()
+        cursor.execute(query)
+        result = cursor.fetchall()
+        header = [i[0] for i in cursor.description]
+
+        # Writing the result to a pipe-separated file
+        with open(output_file_path, mode='w', newline='') as file:
+            writer = csv.writer(file, delimiter='|')  # Set delimiter to pipe '|'
+            writer.writerow(header)  # Write the header (column names)
+            writer.writerows(result)  # Write the rows of data
+
+        print(f"Data exported successfully to {output_file_path}")
+
+    except mysql.connector.Error as e:
+        print(f"Error: {e}")
+
+    finally:
+        if connection.is_connected():
+            cursor.close()
+            connection.close()
+
+if __name__ == "__main__":
+    # Customize your SQL query
+    query = "SELECT * FROM your_table_name"  # Change this to the table you want to export
+    output_file_path = "output_data.txt"  # Specify the file path where the data will be saved
+    export_data_to_pipe_separated_file(query, output_file_path)
