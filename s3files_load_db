@@ -1,0 +1,93 @@
+import boto3
+from datetime import datetime
+import mysql.connector
+
+def list_s3_files(bucket_name, folder_name, aws_access_key_id, aws_secret_access_key, region_name, db_config):
+    # Create an S3 client with explicit credentials
+    s3_client = boto3.client(
+        's3',
+        aws_access_key_id=aws_access_key_id,
+        aws_secret_access_key=aws_secret_access_key,
+        region_name=region_name
+    )
+    
+    # Connect to the MySQL database
+    connection = mysql.connector.connect(**db_config)
+    cursor = connection.cursor()
+
+    # Create table if it doesn't exist
+    create_table_query = """
+    CREATE TABLE IF NOT EXISTS s3_files (
+        id INT AUTO_INCREMENT PRIMARY KEY,
+        file_name VARCHAR(255),
+        file_size BIGINT,
+        upload_time DATETIME,
+        user VARCHAR(255)
+    )
+    """
+    cursor.execute(create_table_query)
+    
+    # Paginator to handle large number of files
+    paginator = s3_client.get_paginator('list_objects_v2')
+
+    # Paginate over the objects in the specified folder (prefix)
+    page_iterator = paginator.paginate(Bucket=bucket_name, Prefix=folder_name)
+
+    found_files = False
+
+    for page in page_iterator:
+        # If no files found, handle it
+        if 'Contents' not in page:
+            continue  # Continue in case there are paginated results
+
+        for obj in page['Contents']:
+            found_files = True  # At least one file was found
+            file_name = obj['Key']
+            file_size = obj['Size']
+            upload_time = obj['LastModified']
+
+            # Fetch object metadata to get user if it's stored
+            metadata = s3_client.head_object(Bucket=bucket_name, Key=file_name).get('Metadata', {})
+            user = metadata.get('user', 'Unknown')
+
+            # Convert upload time to a readable format
+            upload_time_str = upload_time.strftime("%Y-%m-%d %H:%M:%S")
+
+            print(f"File: {file_name}, Size: {file_size} bytes, Uploaded on: {upload_time_str}, User: {user}")
+            
+            # Insert file details into MySQL table
+            insert_query = """
+            INSERT INTO s3_files (file_name, file_size, upload_time, user)
+            VALUES (%s, %s, %s, %s)
+            """
+            cursor.execute(insert_query, (file_name, file_size, upload_time, user))
+
+    if not found_files:
+        print(f"No files found in folder '{folder_name}' in bucket '{bucket_name}'")
+
+    # Commit the transaction and close the connection
+    connection.commit()
+    cursor.close()
+    connection.close()
+
+if __name__ == "__main__":
+    bucket_name = input("Enter the S3 bucket name: ")
+    folder_name = input("Enter the folder name (prefix) in the bucket: ")
+
+    # Credentials (replace with your actual credentials)
+    aws_access_key_id = 'your-access-key-id'
+    aws_secret_access_key = 'your-secret-access-key'
+    region_name = 'your-region'  # e.g., 'us-west-2'
+
+    # MySQL database configuration
+    db_config = {
+        'user': 'your-db-username',
+        'password': 'your-db-password',
+        'host': 'your-db-host',
+        'database': 'your-database-name',
+    }
+
+    # Add debug message to see the prefix being used
+    print(f"Looking for files in the bucket '{bucket_name}' under folder '{folder_name}'...")
+
+    list_s3_files(bucket_name, folder_name, aws_access_key_id, aws_secret_access_key, region_name, db_config)
