@@ -1,0 +1,43 @@
+import boto3
+from botocore.exceptions import NoCredentialsError, PartialCredentialsError, ClientError
+
+def verify_s3_access(bucket_name, aws_access_key_id, aws_secret_access_key, region_name):
+    try:
+        # Create an S3 client
+        s3_client = boto3.client(
+            's3',
+            aws_access_key_id=aws_access_key_id,
+            aws_secret_access_key=aws_secret_access_key,
+            region_name=region_name
+        )
+        
+        # Try listing objects in the bucket
+        response = s3_client.list_objects_v2(Bucket=bucket_name)
+        
+        if 'Contents' in response:
+            print(f"Access granted: You can list files in the bucket '{bucket_name}'")
+            for obj in response['Contents']:
+                print(f"File: {obj['Key']}, Size: {obj['Size']} bytes")
+        else:
+            print(f"Access granted: The bucket '{bucket_name}' is empty or no files were listed.")
+    
+    except ClientError as e:
+        error_code = e.response['Error']['Code']
+        if error_code == 'AccessDenied':
+            print(f"Access Denied: You do not have permission to access the bucket '{bucket_name}'.")
+        else:
+            print(f"Error: {e}")
+    except NoCredentialsError:
+        print("Error: AWS credentials not found.")
+    except PartialCredentialsError:
+        print("Error: Incomplete AWS credentials.")
+
+if __name__ == "__main__":
+    bucket_name = input("Enter the S3 bucket name: ")
+
+    # Replace with your actual credentials
+    aws_access_key_id = 'your-access-key-id'
+    aws_secret_access_key = 'your-secret-access-key'
+    region_name = 'your-region'  # e.g., 'us-west-2'
+
+    verify_s3_access(bucket_name, aws_access_key_id, aws_secret_access_key, region_name)
