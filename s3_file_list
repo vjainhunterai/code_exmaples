@@ -1,0 +1,43 @@
+import boto3
+from datetime import datetime
+
+def list_s3_files(bucket_name, aws_access_key_id, aws_secret_access_key, region_name):
+    # Create an S3 client with explicit credentials
+    s3_client = boto3.client(
+        's3',
+        aws_access_key_id=aws_access_key_id,
+        aws_secret_access_key=aws_secret_access_key,
+        region_name=region_name
+    )
+    
+    # List all objects in the specified bucket
+    response = s3_client.list_objects_v2(Bucket=bucket_name)
+
+    if 'Contents' not in response:
+        print(f"No files found in bucket {bucket_name}")
+        return
+    
+    # Iterate over the objects and print details
+    print(f"Files in bucket '{bucket_name}':")
+    for obj in response['Contents']:
+        file_name = obj['Key']
+        file_size = obj['Size']
+        upload_time = obj['LastModified']
+        # Fetch object metadata to get user if it's stored
+        metadata = s3_client.head_object(Bucket=bucket_name, Key=file_name).get('Metadata', {})
+        user = metadata.get('user', 'Unknown')
+
+        # Convert upload time to a readable format
+        upload_time_str = upload_time.strftime("%Y-%m-%d %H:%M:%S")
+
+        print(f"File: {file_name}, Size: {file_size} bytes, Uploaded on: {upload_time_str}, User: {user}")
+
+if __name__ == "__main__":
+    bucket_name = input("Enter the S3 bucket name: ")
+    
+    # Credentials (replace with your actual credentials)
+    aws_access_key_id = 'your-access-key-id'
+    aws_secret_access_key = 'your-secret-access-key'
+    region_name = 'your-region'  # e.g., 'us-west-2'
+
+    list_s3_files(bucket_name, aws_access_key_id, aws_secret_access_key, region_name)
