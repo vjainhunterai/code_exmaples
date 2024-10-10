@@ -91,3 +91,30 @@ if __name__ == "__main__":
     print(f"Looking for files in the bucket '{bucket_name}' under folder '{folder_name}'...")
 
     list_s3_files(bucket_name, folder_name, aws_access_key_id, aws_secret_access_key, region_name, db_config)
+
+
+
+====================================
+
+
+
+Traceback (most recent call last):
+  File "C:\Users\jvineet\PycharmProjects\PythonLearnings\.venv\lib\site-packages\mysql\connector\connection_cext.py", line 705, in cmd_query
+    self._cmysql.query(
+_mysql_connector.MySQLInterfaceError: Unknown column 'file_size' in 'field list'
+
+The above exception was the direct cause of the following exception:
+
+Traceback (most recent call last):
+  File "C:\Users\jvineet\Documents\Github3\dev_python\s3file_dbload.py", line 95, in <module>
+    list_s3_files(bucket_name, folder_name, aws_access_key_id, aws_secret_access_key, region_name, db_config)
+  File "C:\Users\jvineet\Documents\Github3\dev_python\s3file_dbload.py", line 64, in list_s3_files
+    cursor.execute(insert_query, (file_name, file_size, upload_time, user))
+  File "C:\Users\jvineet\PycharmProjects\PythonLearnings\.venv\lib\site-packages\mysql\connector\cursor_cext.py", line 357, in execute
+    result = self._connection.cmd_query(
+  File "C:\Users\jvineet\PycharmProjects\PythonLearnings\.venv\lib\site-packages\mysql\connector\opentelemetry\context_propagation.py", line 97, in wrapper
+    return method(cnx, *args, **kwargs)
+  File "C:\Users\jvineet\PycharmProjects\PythonLearnings\.venv\lib\site-packages\mysql\connector\connection_cext.py", line 713, in cmd_query
+    raise get_mysql_exception(
+mysql.connector.errors.ProgrammingError: 1054 (42S22): Unknown column 'file_size' in 'field list'
+
