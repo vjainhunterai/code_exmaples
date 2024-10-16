@@ -1,0 +1,96 @@
+7ec22d351d67
+*** Found local files:
+***   * /opt/airflow/logs/dag_id=9cb1d292-40de-423a-bb0c-995253c7b46d/run_id=scheduled__2024-10-16T07:00:00+00:00/task_id=test_suite_task/attempt=1.log
+[2024-10-16T08:01:49.091+0000] {local_task_job_runner.py:120} INFO - ::group::Pre task execution logs
+[2024-10-16T08:01:49.169+0000] {taskinstance.py:2076} INFO - Dependencies all met for dep_context=non-requeueable deps ti=<TaskInstance: 9cb1d292-40de-423a-bb0c-995253c7b46d.test_suite_task scheduled__2024-10-16T07:00:00+00:00 [queued]>
+[2024-10-16T08:01:49.189+0000] {taskinstance.py:2076} INFO - Dependencies all met for dep_context=requeueable deps ti=<TaskInstance: 9cb1d292-40de-423a-bb0c-995253c7b46d.test_suite_task scheduled__2024-10-16T07:00:00+00:00 [queued]>
+[2024-10-16T08:01:49.190+0000] {taskinstance.py:2306} INFO - Starting attempt 1 of 1
+[2024-10-16T08:01:49.218+0000] {taskinstance.py:2330} INFO - Executing <Task(CustomPythonOperator): test_suite_task> on 2024-10-16 07:00:00+00:00
+[2024-10-16T08:01:49.237+0000] {standard_task_runner.py:63} INFO - Started process 10646 to run task
+[2024-10-16T08:01:49.248+0000] {standard_task_runner.py:90} INFO - Running: ['airflow', 'tasks', 'run', '9cb1d292-40de-423a-bb0c-995253c7b46d', 'test_suite_task', 'scheduled__2024-10-16T07:00:00+00:00', '--job-id', '2022', '--raw', '--subdir', 'DAGS_FOLDER/9cb1d292-40de-423a-bb0c-995253c7b46d.py', '--cfg-path', '/tmp/tmpr_rd0wjy']
+[2024-10-16T08:01:49.250+0000] {standard_task_runner.py:91} INFO - Job 2022: Subtask test_suite_task
+[2024-10-16T08:01:49.339+0000] {task_command.py:426} INFO - Running <TaskInstance: 9cb1d292-40de-423a-bb0c-995253c7b46d.test_suite_task scheduled__2024-10-16T07:00:00+00:00 [running]> on host 7ec22d351d67
+[2024-10-16T08:01:49.604+0000] {taskinstance.py:2648} INFO - Exporting env vars: AIRFLOW_CTX_DAG_OWNER='openmetadata' AIRFLOW_CTX_DAG_ID='9cb1d292-40de-423a-bb0c-995253c7b46d' AIRFLOW_CTX_TASK_ID='test_suite_task' AIRFLOW_CTX_EXECUTION_DATE='2024-10-16T07:00:00+00:00' AIRFLOW_CTX_TRY_NUMBER='1' AIRFLOW_CTX_DAG_RUN_ID='scheduled__2024-10-16T07:00:00+00:00'
+[2024-10-16T08:01:49.607+0000] {taskinstance.py:430} INFO - ::endgroup::
+[2024-10-16T08:01:49.674+0000] {server_mixin.py:74} INFO - OpenMetadata client running with Server version [1.5.2] and Client version [1.5.2.0]
+[2024-10-16T08:01:54.411+0000] {core.py:33} INFO - Executing test case Small Invoice Spend Check (l2 vs l4)_Automation for entity MySQL.stg_tbl.stg_tbl.l4_aggr_mnthly_inv_python
+[2024-10-16T08:01:54.554+0000] {tableCustomSQLQuery.py:76} WARNING - Error computing root='MySQL.stg_tbl.stg_tbl.l4_aggr_mnthly_inv_python.Small Invoice Spend Check (l2 vs l4)_Automation': SQL expression is not safe
+WITH dynamic_params AS (
+     SELECT DISTINCT 
+       Party_Group_Key,
+      DATE(L4_Load_Date) AS load_date,
+      'Test Case 1' AS test_Case_name
+     FROM 
+     metadata.l4_audit_data
+),
+smallinvcspend1 AS (
+	SELECT 
+	SUM(invpricLineAmount)  AS small_invoice_spend_1
+    FROM stg_tbl.l2_invoice_detail_python
+    WHERE invpricLineAmount<500
+        ),
+smallinvcspend2 AS ( 
+    SELECT SUM(small_inv_amt) AS small_invoice_spend_2
+    FROM stg_tbl.l4_aggr_mnthly_inv_python
+  )
+#### Only run the test case if no existing result is found for the dynamic params
+SELECT 
+       CASE
+        WHEN NOT EXISTS (
+        SELECT 1
+        FROM your_result_table r 
+WHERE r.party_group_key = d.Party_Group_Key
+AND r.load_date=d.load_date
+AND r.test_Case_name = d.test_Case_name
+        )
+        THEN
+        CASE
+        WHEN ABS(coalesce(s1.small_invoice_spend_1,0)- coalesce(s2.small_invoice_spend_2,0))<=1 THEN 0
+        ELSE 1
+        END
+        ELSE null   ##Skip the test if the case already exists
+     END AS difference_flag
+FROM
+  smallinvcspend1 s1,
+  smallinvcspend2 s2,
+  dynamic_params d;
+INSERT INTO your_result_table (party_group_key,load_date,test_Case_name,test_result)
+  SELECT 
+     d.party_group_key,
+     d.load_date,
+     d.test_case_name,
+     'Completed'
+FROM (
+   SELECT DISTINCT 
+    Party_Group_Key,
+    DATE(L4_Load_Date) AS load_date,
+    'test case 1' AS test_Case_name
+    FROM metadata.l4_audit_data)d
+WHERE NOT EXISTS (
+SELECT 1 
+FROM your_result_table r 
+WHERE r.party_group_key = d.Party_Group_Key
+AND r.load_date=d.load_date
+AND r.test_Case_name = d.test_Case_name
+);
+[2024-10-16T08:01:57.585+0000] {logger.py:175} INFO - [1mWorkflow OpenMetadata Summary:[0m
+[2024-10-16T08:01:57.586+0000] {logger.py:175} INFO - Processed records: 1[0m
+[2024-10-16T08:01:57.587+0000] {logger.py:175} INFO - Updated records: 0[0m
+[2024-10-16T08:01:57.587+0000] {logger.py:175} INFO - Warnings: 0[0m
+[2024-10-16T08:01:57.587+0000] {logger.py:175} INFO - Errors: 0[0m
+[2024-10-16T08:01:57.587+0000] {logger.py:175} INFO - [1mWorkflow Data Quality Summary:[0m
+[2024-10-16T08:01:57.588+0000] {logger.py:175} INFO - Processed records: 2[0m
+[2024-10-16T08:01:57.588+0000] {logger.py:175} INFO - Updated records: 0[0m
+[2024-10-16T08:01:57.588+0000] {logger.py:175} INFO - Warnings: 0[0m
+[2024-10-16T08:01:57.588+0000] {logger.py:175} INFO - Errors: 0[0m
+[2024-10-16T08:01:57.589+0000] {logger.py:175} INFO - [1mWorkflow OpenMetadata Summary:[0m
+[2024-10-16T08:01:57.589+0000] {logger.py:175} INFO - Processed records: 2[0m
+[2024-10-16T08:01:57.589+0000] {logger.py:175} INFO - Updated records: 0[0m
+[2024-10-16T08:01:57.589+0000] {logger.py:175} INFO - Warnings: 0[0m
+[2024-10-16T08:01:57.589+0000] {logger.py:175} INFO - Errors: 0[0m
+[2024-10-16T08:01:57.589+0000] {logger.py:175} INFO - [1m[36;1mSuccess %: 100.0[0m
+[2024-10-16T08:01:57.589+0000] {logger.py:175} INFO - [1m[36;1mWorkflow finished in time: 5.99s[0m
+[2024-10-16T08:01:57.589+0000] {python.py:237} INFO - Done. Returned value was: None
+[2024-10-16T08:01:57.676+0000] {local_task_job_runner.py:240} INFO - Task exited with return code 0
+[2024-10-16T08:01:57.714+0000] {taskinstance.py:3498} INFO - 0 downstream tasks scheduled from follow-on schedule check
+[2024-10-16T08:01:57.719+0000] {local_task_job_runner.py:222} INFO - ::endgroup::
