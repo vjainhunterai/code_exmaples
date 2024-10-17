@@ -1,0 +1,90 @@
+28c6afb3b7e5
+*** Found local files:
+***   * /opt/airflow/logs/dag_id=a50bd8be-04ad-47c3-8439-7c00c3dc8a6e/run_id=manual__2024-10-17T07:04:34+00:00/task_id=ingestion_task/attempt=1.log
+[2024-10-17T07:04:36.393+0000] {local_task_job_runner.py:120} INFO - ::group::Pre task execution logs
+[2024-10-17T07:04:36.507+0000] {taskinstance.py:2076} INFO - Dependencies all met for dep_context=non-requeueable deps ti=<TaskInstance: a50bd8be-04ad-47c3-8439-7c00c3dc8a6e.ingestion_task manual__2024-10-17T07:04:34+00:00 [queued]>
+[2024-10-17T07:04:36.543+0000] {taskinstance.py:2076} INFO - Dependencies all met for dep_context=requeueable deps ti=<TaskInstance: a50bd8be-04ad-47c3-8439-7c00c3dc8a6e.ingestion_task manual__2024-10-17T07:04:34+00:00 [queued]>
+[2024-10-17T07:04:36.544+0000] {taskinstance.py:2306} INFO - Starting attempt 1 of 1
+[2024-10-17T07:04:36.598+0000] {taskinstance.py:2330} INFO - Executing <Task(CustomPythonOperator): ingestion_task> on 2024-10-17 07:04:34+00:00
+[2024-10-17T07:04:36.630+0000] {standard_task_runner.py:63} INFO - Started process 20691 to run task
+[2024-10-17T07:04:36.645+0000] {standard_task_runner.py:90} INFO - Running: ['airflow', 'tasks', 'run', 'a50bd8be-04ad-47c3-8439-7c00c3dc8a6e', 'ingestion_task', 'manual__2024-10-17T07:04:34+00:00', '--job-id', '2154', '--raw', '--subdir', 'DAGS_FOLDER/a50bd8be-04ad-47c3-8439-7c00c3dc8a6e.py', '--cfg-path', '/tmp/tmpvzyvralp']
+[2024-10-17T07:04:36.646+0000] {standard_task_runner.py:91} INFO - Job 2154: Subtask ingestion_task
+[2024-10-17T07:04:36.791+0000] {task_command.py:426} INFO - Running <TaskInstance: a50bd8be-04ad-47c3-8439-7c00c3dc8a6e.ingestion_task manual__2024-10-17T07:04:34+00:00 [running]> on host 28c6afb3b7e5
+[2024-10-17T07:04:37.049+0000] {taskinstance.py:2648} INFO - Exporting env vars: AIRFLOW_CTX_DAG_OWNER='admin' AIRFLOW_CTX_DAG_ID='a50bd8be-04ad-47c3-8439-7c00c3dc8a6e' AIRFLOW_CTX_TASK_ID='ingestion_task' AIRFLOW_CTX_EXECUTION_DATE='2024-10-17T07:04:34+00:00' AIRFLOW_CTX_TRY_NUMBER='1' AIRFLOW_CTX_DAG_RUN_ID='manual__2024-10-17T07:04:34+00:00'
+[2024-10-17T07:04:37.050+0000] {taskinstance.py:430} INFO - ::endgroup::
+[2024-10-17T07:04:37.094+0000] {server_mixin.py:74} INFO - OpenMetadata client running with Server version [1.5.2] and Client version [1.5.2.0]
+[2024-10-17T07:04:37.260+0000] {ingestion_pipeline_mixin.py:52} DEBUG - Created Pipeline Status for pipeline PowerBI.a50bd8be-04ad-47c3-8439-7c00c3dc8a6e: runId='f76d3d99-87b8-4aeb-b4fc-1257bcaa5eeb' pipelineState=<PipelineState.running: 'running'> startDate=Timestamp(root=1729148677079) timestamp=Timestamp(root=1729148677079) endDate=None status=None
+[2024-10-17T07:04:37.824+0000] {client.py:84} INFO - Generating PowerBi access token
+[2024-10-17T07:04:37.824+0000] {client.py:91} INFO - Token does not exist in the cache. Getting a new token.
+[2024-10-17T07:04:38.003+0000] {client.py:101} INFO - PowerBi Access Token generated successfully
+[2024-10-17T07:04:38.302+0000] {client.py:118} DEBUG - Traceback (most recent call last):
+  File "/home/airflow/.local/lib/python3.10/site-packages/metadata/ingestion/source/dashboard/powerbi/client.py", line 111, in fetch_dashboards
+    response_data = self.client.get("/myorg/admin/dashboards")
+  File "/home/airflow/.local/lib/python3.10/site-packages/metadata/utils/execution_time_tracker.py", line 195, in inner
+    result = func(*args, **kwargs)
+  File "/home/airflow/.local/lib/python3.10/site-packages/metadata/ingestion/ometa/client.py", line 296, in get
+    return self._request("GET", path, data)
+  File "/home/airflow/.local/lib/python3.10/site-packages/metadata/ingestion/ometa/client.py", line 212, in _request
+    return self._one_request(method, url, opts, retry)
+  File "/home/airflow/.local/lib/python3.10/site-packages/metadata/ingestion/ometa/client.py", line 243, in _one_request
+    resp.raise_for_status()
+  File "/home/airflow/.local/lib/python3.10/site-packages/requests/models.py", line 1021, in raise_for_status
+    raise HTTPError(http_error_msg, response=self)
+requests.exceptions.HTTPError: 403 Client Error: Forbidden for url: https://api.powerbi.com/v1.0/myorg/admin/dashboards
+[2024-10-17T07:04:38.302+0000] {client.py:119} WARNING - Error fetching dashboards: 403 Client Error: Forbidden for url: https://api.powerbi.com/v1.0/myorg/admin/dashboards
+[2024-10-17T07:04:38.302+0000] {test_connections.py:221} INFO - Test connection results:
+[2024-10-17T07:04:38.302+0000] {test_connections.py:222} INFO - failed=[] success=["'GetDashboards': Pass"] warning=[]
+[2024-10-17T07:04:38.302+0000] {metadata.py:69} DEBUG - Source type:powerbi,<class 'metadata.ingestion.source.dashboard.powerbi.metadata.PowerbiSource'> configured
+[2024-10-17T07:04:38.636+0000] {client.py:235} DEBUG - Traceback (most recent call last):
+  File "/home/airflow/.local/lib/python3.10/site-packages/metadata/ingestion/source/dashboard/powerbi/client.py", line 219, in fetch_all_workspaces
+    response_data = self.client.get(api_url, data=params_data)
+  File "/home/airflow/.local/lib/python3.10/site-packages/metadata/utils/execution_time_tracker.py", line 195, in inner
+    result = func(*args, **kwargs)
+  File "/home/airflow/.local/lib/python3.10/site-packages/metadata/ingestion/ometa/client.py", line 296, in get
+    return self._request("GET", path, data)
+  File "/home/airflow/.local/lib/python3.10/site-packages/metadata/ingestion/ometa/client.py", line 212, in _request
+    return self._one_request(method, url, opts, retry)
+  File "/home/airflow/.local/lib/python3.10/site-packages/metadata/ingestion/ometa/client.py", line 243, in _one_request
+    resp.raise_for_status()
+  File "/home/airflow/.local/lib/python3.10/site-packages/requests/models.py", line 1021, in raise_for_status
+    raise HTTPError(http_error_msg, response=self)
+requests.exceptions.HTTPError: 401 Client Error: Unauthorized for url: https://api.powerbi.com/v1.0/myorg/admin/groups?%24top=1
+[2024-10-17T07:04:38.636+0000] {client.py:236} WARNING - Error fetching workspaces: 401 Client Error: Unauthorized for url: https://api.powerbi.com/v1.0/myorg/admin/groups?%24top=1
+[2024-10-17T07:04:38.637+0000] {metadata.py:208} ERROR - Unable to fetch any PowerBI workspaces
+[2024-10-17T07:04:38.637+0000] {metadata.py:71} DEBUG - Source type:powerbi,<class 'metadata.ingestion.source.dashboard.powerbi.metadata.PowerbiSource'>  prepared
+[2024-10-17T07:04:38.932+0000] {metadata.py:80} DEBUG - Sink type:metadata-rest, <class 'metadata.ingestion.sink.metadata_rest.MetadataRestSink'> configured
+[2024-10-17T07:04:38.933+0000] {topology_runner.py:166} DEBUG - Processing node producer='get_services' stages=[NodeStage(type_=<class 'metadata.generated.schema.entity.services.dashboardService.DashboardService'>, processor='yield_create_request_dashboard_service', nullable=False, must_return=True, overwrite=False, consumer=None, context='dashboard_service', store_all_in_context=False, clear_context=False, store_fqn=False, cache_entities=True, use_cache=False), NodeStage(type_=<class 'metadata.ingestion.models.ometa_classification.OMetaTagAndClassification'>, processor='yield_bulk_tags', nullable=True, must_return=False, overwrite=True, consumer=None, context=None, store_all_in_context=False, clear_context=False, store_fqn=False, cache_entities=False, use_cache=False)] children=['bulk_data_model', 'dashboard'] post_process=['mark_dashboards_as_deleted', 'mark_datamodels_as_deleted'] threads=False
+[2024-10-17T07:04:38.934+0000] {topology_runner.py:231} DEBUG - Processing stage: type_=<class 'metadata.generated.schema.entity.services.dashboardService.DashboardService'> processor='yield_create_request_dashboard_service' nullable=False must_return=True overwrite=False consumer=None context='dashboard_service' store_all_in_context=False clear_context=False store_fqn=False cache_entities=True use_cache=False
+[2024-10-17T07:04:39.118+0000] {topology_runner.py:231} DEBUG - Processing stage: type_=<class 'metadata.ingestion.models.ometa_classification.OMetaTagAndClassification'> processor='yield_bulk_tags' nullable=True must_return=False overwrite=True consumer=None context=None store_all_in_context=False clear_context=False store_fqn=False cache_entities=False use_cache=False
+[2024-10-17T07:04:39.118+0000] {topology_runner.py:166} DEBUG - Processing node producer='list_datamodels' stages=[NodeStage(type_=<class 'metadata.generated.schema.entity.data.dashboardDataModel.DashboardDataModel'>, processor='yield_bulk_datamodel', nullable=True, must_return=False, overwrite=True, consumer=['dashboard_service'], context=None, store_all_in_context=False, clear_context=False, store_fqn=False, cache_entities=False, use_cache=True)] children=None post_process=None threads=False
+[2024-10-17T07:04:39.119+0000] {topology_runner.py:166} DEBUG - Processing node producer='get_dashboard' stages=[NodeStage(type_=<class 'metadata.ingestion.models.ometa_classification.OMetaTagAndClassification'>, processor='yield_tags', nullable=True, must_return=False, overwrite=True, consumer=None, context=None, store_all_in_context=False, clear_context=False, store_fqn=False, cache_entities=False, use_cache=False), NodeStage(type_=<class 'metadata.generated.schema.entity.data.chart.Chart'>, processor='yield_dashboard_chart', nullable=True, must_return=False, overwrite=True, consumer=['dashboard_service'], context='charts', store_all_in_context=True, clear_context=True, store_fqn=False, cache_entities=False, use_cache=True), NodeStage(type_=<class 'metadata.generated.schema.entity.data.dashboardDataModel.DashboardDataModel'>, processor='yield_datamodel', nullable=True, must_return=False, overwrite=True, consumer=['dashboard_service'], context='dataModels', store_all_in_context=True, clear_context=True, store_fqn=False, cache_entities=False, use_cache=True), NodeStage(type_=<class 'metadata.generated.schema.entity.data.dashboard.Dashboard'>, processor='yield_dashboard', nullable=False, must_return=False, overwrite=True, consumer=['dashboard_service'], context='dashboard', store_all_in_context=False, clear_context=False, store_fqn=False, cache_entities=False, use_cache=True), NodeStage(type_=<class 'metadata.generated.schema.api.lineage.addLineage.AddLineageRequest'>, processor='yield_dashboard_lineage', nullable=True, must_return=False, overwrite=True, consumer=['dashboard_service'], context=None, store_all_in_context=False, clear_context=False, store_fqn=False, cache_entities=False, use_cache=False), NodeStage(type_=<class 'metadata.generated.schema.type.usageRequest.UsageRequest'>, processor='yield_dashboard_usage', nullable=True, must_return=False, overwrite=True, consumer=['dashboard_service'], context=None, store_all_in_context=False, clear_context=False, store_fqn=False, cache_entities=False, use_cache=False)] children=None post_process=None threads=False
+[2024-10-17T07:04:39.119+0000] {topology_runner.py:252} DEBUG - Post processing node producer='get_services' stages=[NodeStage(type_=<class 'metadata.generated.schema.entity.services.dashboardService.DashboardService'>, processor='yield_create_request_dashboard_service', nullable=False, must_return=True, overwrite=False, consumer=None, context='dashboard_service', store_all_in_context=False, clear_context=False, store_fqn=False, cache_entities=True, use_cache=False), NodeStage(type_=<class 'metadata.ingestion.models.ometa_classification.OMetaTagAndClassification'>, processor='yield_bulk_tags', nullable=True, must_return=False, overwrite=True, consumer=None, context=None, store_all_in_context=False, clear_context=False, store_fqn=False, cache_entities=False, use_cache=False)] children=['bulk_data_model', 'dashboard'] post_process=['mark_dashboards_as_deleted', 'mark_datamodels_as_deleted'] threads=False
+[2024-10-17T07:04:39.120+0000] {dashboard_service.py:412} INFO - Mark Deleted Dashboards set to True
+[2024-10-17T07:04:39.155+0000] {dashboard_service.py:426} INFO - Mark Deleted Datamodels set to True
+[2024-10-17T07:04:39.370+0000] {ingestion_pipeline_mixin.py:52} DEBUG - Created Pipeline Status for pipeline PowerBI.a50bd8be-04ad-47c3-8439-7c00c3dc8a6e: runId='f76d3d99-87b8-4aeb-b4fc-1257bcaa5eeb' pipelineState=<PipelineState.success: 'success'> startDate=Timestamp(root=1729148677079) timestamp=Timestamp(root=1729148677079) endDate=Timestamp(root=1729148679221) status=IngestionStatus(root=[StepSummary(name='PowerBI', records=0, updated_records=0, warnings=0, errors=0, filtered=0, failures=None), StepSummary(name='OpenMetadata', records=0, updated_records=0, warnings=0, errors=0, filtered=0, failures=None)])
+[2024-10-17T07:04:39.373+0000] {base.py:133} WARNING - Error trying to close the step <metadata.ingestion.source.dashboard.powerbi.metadata.PowerbiSource object at 0x76e4667c5de0> due to [[Errno 2] No such file or directory: '/tmp/pbitFiles']
+[2024-10-17T07:04:39.373+0000] {logger.py:175} INFO - [1mStatuses detailed info:[0m
+[2024-10-17T07:04:39.373+0000] {logger.py:175} INFO - [1mPowerBI Status:[0m
+[2024-10-17T07:04:39.374+0000] {logger.py:175} INFO - {'failures': [], 'filtered': [], 'records': [], 'source_start_time': 1729148677.4107513, 'updated_records': [], 'warnings': []}[0m
+[2024-10-17T07:04:39.374+0000] {logger.py:175} INFO - [1mOpenMetadata Status:[0m
+[2024-10-17T07:04:39.374+0000] {logger.py:175} INFO - {'failures': [], 'filtered': [], 'records': [], 'source_start_time': 1729148678.9328961, 'updated_records': [], 'warnings': []}[0m
+[2024-10-17T07:04:39.374+0000] {logger.py:175} INFO - [1mExecution Time Summary[0m
+[2024-10-17T07:04:39.377+0000] {logger.py:175} INFO - 
+[0m
+[2024-10-17T07:04:39.378+0000] {logger.py:175} INFO - [1mWorkflow PowerBI Summary:[0m
+[2024-10-17T07:04:39.378+0000] {logger.py:175} INFO - Processed records: 0[0m
+[2024-10-17T07:04:39.378+0000] {logger.py:175} INFO - Updated records: 0[0m
+[2024-10-17T07:04:39.378+0000] {logger.py:175} INFO - Warnings: 0[0m
+[2024-10-17T07:04:39.378+0000] {logger.py:175} INFO - Errors: 0[0m
+[2024-10-17T07:04:39.379+0000] {logger.py:175} INFO - [1mWorkflow OpenMetadata Summary:[0m
+[2024-10-17T07:04:39.379+0000] {logger.py:175} INFO - Processed records: 0[0m
+[2024-10-17T07:04:39.379+0000] {logger.py:175} INFO - Updated records: 0[0m
+[2024-10-17T07:04:39.379+0000] {logger.py:175} INFO - Warnings: 0[0m
+[2024-10-17T07:04:39.379+0000] {logger.py:175} INFO - Errors: 0[0m
+[2024-10-17T07:04:39.379+0000] {logger.py:175} INFO - [1m[36;1mSuccess %: 100.0[0m
+[2024-10-17T07:04:39.379+0000] {logger.py:175} INFO - [1m[36;1mWorkflow finished in time: 1.97s[0m
+[2024-10-17T07:04:39.379+0000] {base.py:133} WARNING - Error trying to close the step <metadata.ingestion.source.dashboard.powerbi.metadata.PowerbiSource object at 0x76e4667c5de0> due to [[Errno 2] No such file or directory: '/tmp/pbitFiles']
+[2024-10-17T07:04:39.380+0000] {python.py:237} INFO - Done. Returned value was: None
+[2024-10-17T07:04:39.467+0000] {local_task_job_runner.py:240} INFO - Task exited with return code 0
+[2024-10-17T07:04:39.492+0000] {taskinstance.py:3498} INFO - 0 downstream tasks scheduled from follow-on schedule check
+[2024-10-17T07:04:39.494+0000] {local_task_job_runner.py:222} INFO - ::endgroup::
