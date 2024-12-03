@@ -46,6 +46,23 @@ In the Airflow, you will also see some sample DAGs that will ingest sample data 
 
 You can access Airflow at http://localhost:8080. Use the following credentials to log in to Airflow.
 
+
+==========================================================================
+
+
+
+authenticationConfiguration:
+  provider: "azure"
+  publicKeyUrls:
+    - "https://login.microsoftonline.com/common/discovery/keys"
+    - "https://172.31.30.137:8585/api/v1/system/config/jwks"
+  authority: "https://login.microsoftonline.com/1685ee7a-5191-4b15-b097-af0b89a8832c"
+  clientId: "41d42a77-01a9-49cd-a49c-48bb19eef50f" 
+  callbackUrl: "https://172.31.30.137:8585/callback"
+
+
+
+
 Username: admin
 Password: admin
 
