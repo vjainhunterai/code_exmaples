@@ -76,5 +76,42 @@ Password: admin
 openmetadata_managed_apis.workflows.workflow_factory.WorkflowCreationError: Failed to generate workflow [906aaed1-5333-4160-b0c6-701f025dc869] verify config is correct: Failed to initialize the OpenMetadata client due to: HTTPConnectionPool(host='openmetadata-server', port=8585): Max retries exceeded with url: /api/v1/system/version (Caused by NewConnectionError('<urllib3.connection.HTTPConnection object at 0x72b0437d54e0>: Failed to establish a new connection: [Errno 111] Connection refused')). Make sure that the Airflow host can reach the OpenMetadata server running at http://openmetadata-server:8585/api and that the client and server are in the same version.
 
 
+===============================================================
+
+
+
+ WARN [2024-12-04 10:42:01,548] [main] i.d.l.AbstractAppenderFactory - Ignoring 'logFormat', because 'layout' does not extend PatternLayoutBase
+openmetadata_server         | WARN [2024-12-04 10:42:01,611] [main] i.d.l.AbstractAppenderFactory - Ignoring 'logFormat', because 'layout' does not extend PatternLayoutBase
+openmetadata_server         | INFO [2024-12-04 10:42:01,679] [main] o.e.j.u.log - Logging initialized @5806ms to org.eclipse.jetty.util.log.Slf4jLog
+openmetadata_server         | INFO [2024-12-04 10:42:01,896] [main] i.d.s.DefaultServerFactory - Registering jersey handler with root path prefix: /
+openmetadata_server         | INFO [2024-12-04 10:42:01,899] [main] i.d.s.DefaultServerFactory - Registering admin handler with root path prefix: /
+openmetadata_server         | INFO [2024-12-04 10:42:01,910] [main] i.d.a.AssetsBundle - Registering AssetBundle with name: swagger-assets for path /api/swagger-static/*
+openmetadata_server         | INFO [2024-12-04 10:42:01,913] [main] i.d.a.AssetsBundle - Registering AssetBundle with name: swagger-oauth2-connect for path /api/oauth2-redirect.html/*
+openmetadata_server         | INFO [2024-12-04 10:42:02,113] [main] o.r.Reflections - Reflections took 143 ms to scan 1 urls, producing 175 keys and 631 values
+openmetadata_server         | INFO [2024-12-04 10:42:02,775] [main] i.g.m.d.m.MicrometerBundle - Adding prometheus scraping endpoint as a servlet mapped to: /prometheus
+openmetadata_server         | INFO [2024-12-04 10:42:21,810] [main] o.o.s.OpenMetadataApplication - Validating Flyway migrations
+openmetadata_server         | INFO [2024-12-04 10:42:21,838] [main] o.o.s.OpenMetadataApplication - Validating native migrations
+openmetadata_server         | java.lang.reflect.InvocationTargetException
+openmetadata_server         |   at java.base/jdk.internal.reflect.NativeConstructorAccessorImpl.newInstance0(Native Method)
+openmetadata_server         |   at java.base/jdk.internal.reflect.NativeConstructorAccessorImpl.newInstance(NativeConstructorAccessorImpl.java:77)
+openmetadata_server         |   at java.base/jdk.internal.reflect.DelegatingConstructorAccessorImpl.newInstance(DelegatingConstructorAccessorImpl.java:45)
+openmetadata_server         |   at java.base/java.lang.reflect.Constructor.newInstanceWithCaller(Constructor.java:500)
+openmetadata_server         |   at java.base/java.lang.reflect.Constructor.newInstance(Constructor.java:481)
+openmetadata_server         |   at org.openmetadata.service.OpenMetadataApplication.registerAuthorizer(OpenMetadataApplication.java:499)
+openmetadata_server         |   at org.openmetadata.service.OpenMetadataApplication.run(OpenMetadataApplication.java:202)
+openmetadata_server         |   at org.openmetadata.service.OpenMetadataApplication.run(OpenMetadataApplication.java:134)
+openmetadata_server         |   at io.dropwizard.cli.EnvironmentCommand.run(EnvironmentCommand.java:67)
+openmetadata_server         |   at io.dropwizard.cli.ConfiguredCommand.run(ConfiguredCommand.java:98)
+openmetadata_server         |   at io.dropwizard.cli.Cli.run(Cli.java:78)
+openmetadata_server         |   at io.dropwizard.Application.run(Application.java:94)
+openmetadata_server         |   at org.openmetadata.service.OpenMetadataApplication.main(OpenMetadataApplication.java:616)
+openmetadata_server         | Caused by: java.net.MalformedURLException: no protocol: -https://172.31.30.137:8585/api/v1/system/config/jwks
+openmetadata_server         |   at java.base/java.net.URL.<init>(URL.java:674)
+openmetadata_server         |   at java.base/java.net.URL.<init>(URL.java:569)
+openmetadata_server         |   at java.base/java.net.URL.<init>(URL.java:516)
+openmetadata_server         |   at org.openmetadata.service.security.JwtFilter.<init>(JwtFilter.java:113)
+openmetadata_server         |   ... 13 more
+openmetadata_server         | INFO [2024-12-04 10:42:21,879] [JettyShutdownThread] i.d.h.c.HealthCheckManager - delayed shutdown: started (waiting 1 second)
+openmetadata_server         | INFO [2024-12-04 10:42:22,880] [JettyShutdownThread] i.d.h.c.HealthCheckManager - delayed shutdown: finished
 
 
