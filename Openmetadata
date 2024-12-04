@@ -67,3 +67,14 @@ Username: admin
 Password: admin
 
 
+
+=================================================
+
+
+
+
+openmetadata_managed_apis.workflows.workflow_factory.WorkflowCreationError: Failed to generate workflow [906aaed1-5333-4160-b0c6-701f025dc869] verify config is correct: Failed to initialize the OpenMetadata client due to: HTTPConnectionPool(host='openmetadata-server', port=8585): Max retries exceeded with url: /api/v1/system/version (Caused by NewConnectionError('<urllib3.connection.HTTPConnection object at 0x72b0437d54e0>: Failed to establish a new connection: [Errno 111] Connection refused')). Make sure that the Airflow host can reach the OpenMetadata server running at http://openmetadata-server:8585/api and that the client and server are in the same version.
+
+
+
+
